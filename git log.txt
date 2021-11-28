@@ -1,0 +1,10 @@
+Mariusz@DESKTOP-EOG4OGM MINGW64 /a/gity/zad1 (main)
+$ git log --pretty=oneline
+8a6288f6c9c19444a92a3086f6aa948b7efa018d (HEAD -> main, origin/main, origin/HEAD) Merge pull request #2 from ChronoBrake/playoff
+e7cc9f5381853a4a19d9bd447d9da92bf3e2059b (tag: v11, tag: v1.1, origin/playoff, playoff) Spotkania finałowe baraży
+c2ac02d5423a7bc5514fbb3a4f76ba9393c58eed Spotkania półfinałowe baraży
+01413a78b6169d1fc2a4ec05f1d645b630a7de70 Merge pull request #1 from ChronoBrake/buy_nothing_day
+0692a5e4d42b1b29592b9ea4519245057688f292 (tag: v1.0) Obchody dnia bez zakupów
+41b95121a60c34606428e5d3b28dc7f57c2a65cc Opis dnia bez zakupów
+ac251ffa8ea2be7387f5375997f6213cc0e7efb1 Dzień bez zakupów
+0760114080b2c43857ab1a264b97bf5e4bc97f24 Initial commit
