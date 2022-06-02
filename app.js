@@ -1,5 +1,4 @@
 !function(e) {
-	console.log('WCZYTANO WUNGIEL+');
     var t = {};
     function n(r) {
         if (t[r])
@@ -11607,11 +11606,8 @@
                 },
                 towary_dostepne: function() {
                     var e = !0;
-					console.log('towary_dostepne->debug');
-					console.log(this);
                     return this.koszyk.zawartosc.forEach((function(t) {
-                        //zmieniono t.czyDostepny || (e = !1)
-						t.czyDostepny = true || (e = 1)
+                        t.czyDostepny || (e = !1)
                     }
                     )),
                     e
@@ -11638,7 +11634,6 @@
             },
             methods: {
                 sprawdzCzyMoznaPrzejscDoKasy: function() {
-					console.log(this.sposob_dostawy.czyPobieranaOplata);
                     if (0 == this.koszyk.akcyza && this.akcyza_selected < 1 && 0 == this.koszyk.ppw)
                         this.czyMoznaPrzejscDoKasy = 0;
                     else if ("" != this.sposob_dostawy)
@@ -11651,7 +11646,6 @@
                                         this.koszykErrors = 0;
                                         var e = this;
                                         if (this.koszyk.zawartosc.forEach((function(t) {
-                                            console.log(t);
                                             null == t.produktNaSkladzie && e.koszykErrors++,
                                             0 == t.czyDostepny && e.koszykErrors++
                                         }
@@ -11659,22 +11653,16 @@
                                         !(this.koszykErrors > 0))
                                             return this.czyMoznaPrzejscDoKasy = 1,
                                             !0;
-                                        this.czyMoznaPrzejscDoKasy = 0;
-                                        console.log('sprawdz5');
-                                        console.log(this.koszykErrors);
+                                        this.czyMoznaPrzejscDoKasy = 0
                                     }
-                                else{
-                                    console.log('sprawdz4');
-                                    this.czyMoznaPrzejscDoKasy = 0;}
-                            else{
-                                console.log('sprawdz3');
-                                this.czyMoznaPrzejscDoKasy = 0;}
-                        else{
+                                else
+                                    this.czyMoznaPrzejscDoKasy = 0;
+                            else
+                                this.czyMoznaPrzejscDoKasy = 0;
+                        else
                             this.czyMoznaPrzejscDoKasy = 0;
-                            console.log('sprawdz2');}
-                    else{
-                        this.czyMoznaPrzejscDoKasy = 0;
-                        console.log('sprawdz1');}
+                    else
+                        this.czyMoznaPrzejscDoKasy = 0
                 },
                 validate: function() {
                     0 == this.koszyk.akcyza && this.akcyza_selected < 1 && 0 == this.koszyk.ppw && (this.akcyza_error = "Proszę wybrać powód zwolnienia."),
@@ -11804,7 +11792,6 @@
                     return Number(Math.round(e + "e" + t) + "e-" + t)
                 },
                 zapiszDaneOrazIdzDoKasy: function() {
-                    console.log('zapiszDaneOrazIdzDoKasy->debug');
                     var e = this;
                     if (1 == this.sposob_dostawy.czyWymagaAdresuDostawy)
                         var t = {
@@ -26391,25 +26378,20 @@
             },
             computed: {
                 brak_towaru: function() {
-					console.log('brak_towaru->debug');
                     var e = !1;
                     return this.cart.zawartosc.forEach((function(t) {
-                        //zmieniono 0 == t.czyDostepny && (e = !0)
-						t.czyDostepny == true && (e = 1)
+                        0 == t.czyDostepny && (e = !0)
                     }
                     )),
                     e
                 },
                 check_brak_pesel: function() {
-					console.log('check_brak_pesel->debug');
                     return 0 == this.brak_pesel
                 },
                 check_ustawiony_pesel: function() {
-					console.log('check_ustawiony_pesel->debug');
                     return 1 == this.brak_pesel
                 },
                 dane_zamowienia: function() {
-					console.log('dane_zamowienia->debug');
                     var e = {
                         adres_dostawy: {}
                     };
@@ -26504,7 +26486,6 @@
             },
             methods: {
                 saveSessionData: function() {
-					console.log('saveSessionData->debug');
                     axios.post("/koszyk/kasa/aktualizuj-dane-kasy", {
                         miasto: this.adres_miasto,
                         imie: this.imie,
@@ -26547,7 +26528,6 @@
                     ))
                 },
                 submitZamowienie: function() {
-					console.log('submitZamowienie->debug');
                     this.zlozenie_zamowienia_start = 1,
                     this.unsetErrorMessage(),
                     this.$refs.zamowienie_form.submit(),
@@ -26569,7 +26549,6 @@
                     this.info_kurier_error = this.info_kurier_remaining > this.info_kurier_max
                 },
                 checkData: (g = p(a.a.mark((function e() {
-					console.log('checkData->debug');
                     var t, n;
                     return a.a.wrap((function(e) {
                         for (; ; )
@@ -42510,7 +42489,6 @@
                     return 1 == this.produkt.dostepnoscNaDwolonymSkladzie ? "" : "grayscale"
                 },
                 dodajDoKoszyka: function() {
-					console.log('dodajDoKoszyka->debug');
                     var e = this;
                     this.cena_transportu = "",
                     this.loading = !0,
@@ -42536,7 +42514,6 @@
                     ))
                 },
                 czyTrnasportDostepny: function(e) {
-					console.log('czyTrnasportDostepny->debug');
                     return 1 == this.ps.sklad.opcje_transportu.filter((function(t) {
                         return t.id == e
                     }
