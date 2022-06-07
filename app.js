@@ -1239,6 +1239,11 @@
             })
         }(n("wd/R"))
     },
+    "3DSZ": function(e, t, n) {
+        "use strict";
+        var r = n("Xjsd");
+        n.n(r).a
+    },
     "3E1r": function(e, t, n) {
         !function(e) {
             "use strict";
@@ -5725,17 +5730,6 @@
         t._setTarget = function(e) {
             t.target = s = e
         }
-    },
-    Amm7: function(e, t, n) {
-        var r = n("gS1V");
-        "string" == typeof r && (r = [[e.i, r, ""]]);
-        var a = {
-            hmr: !0,
-            transform: void 0,
-            insertInto: void 0
-        };
-        n("aET+")(r, a);
-        r.locals && (e.exports = r.locals)
     },
     AphP: function(e, t, n) {
         "use strict";
@@ -26286,7 +26280,10 @@
                 security_token: {},
                 op: {},
                 user: {},
-                bank: {}
+                bank: {},
+                static_host: {
+                    default: ""
+                }
             },
             components: {
                 VueRecaptcha: _
@@ -27279,21 +27276,21 @@
             }, [n("img", {
                 staticClass: "img-fluid shopping-path-img shopping-path-cart",
                 attrs: {
-                    src: "/img/shopping_path/koszyk_red_1.jpg",
-                    onmouseover: "this.src='/img/shopping_path/koszyk_red_2.jpg'",
-                    onmouseout: "this.src='/img/shopping_path/koszyk_red_1.jpg'"
+                    src: e.static_host + "/img/shopping_path/koszyk_red_1.jpg",
+                    onmouseover: "this.src='" + e.static_host + "/img/shopping_path/koszyk_red_2.jpg'",
+                    onmouseout: "this.src='" + e.static_host + "/img/shopping_path/koszyk_red_1.jpg'"
                 }
             })]), e._v(" "), n("img", {
                 staticClass: "img-fluid shopping-path-img shopping-path-payout",
                 attrs: {
-                    src: "/img/shopping_path/kasa_red_1.jpg",
-                    onmouseover: "this.src='/img/shopping_path/kasa_red_2.jpg'",
-                    onmouseout: "this.src='/img/shopping_path/kasa_red_1.jpg'"
+                    src: e.static_host + "/img/shopping_path/kasa_red_1.jpg",
+                    onmouseover: "this.src='" + e.static_host + "/img/shopping_path/kasa_red_2.jpg'",
+                    onmouseout: "this.src='" + e.static_host + "/img/shopping_path/kasa_red_1.jpg'"
                 }
             }), e._v(" "), n("img", {
                 staticClass: "img-fluid shopping-path-img shopping-path-payment",
                 attrs: {
-                    src: "/img/shopping_path/platnosc_grey.jpg"
+                    src: e.static_host + "/img/shopping_path/platnosc_grey.jpg"
                 }
             })])]), e._v(" "), n("div", {
                 staticClass: "row d-lg-none"
@@ -27312,21 +27309,21 @@
             }, [n("img", {
                 staticClass: "img-fluid shopping-path-img shopping-path-cart",
                 attrs: {
-                    src: "/img/shopping_path/koszyk_red_1_m.jpg",
-                    onmouseover: "this.src='/img/shopping_path/koszyk_red_2_m.jpg'",
-                    onmouseout: "this.src='/img/shopping_path/koszyk_red_1_m.jpg'"
+                    src: e.static_host + "/img/shopping_path/koszyk_red_1_m.jpg",
+                    onmouseover: "this.src='" + e.static_host + "/img/shopping_path/koszyk_red_2_m.jpg'",
+                    onmouseout: "this.src='" + e.static_host + "/img/shopping_path/koszyk_red_1_m.jpg'"
                 }
             })]), e._v(" "), n("img", {
                 staticClass: "img-fluid shopping-path-img shopping-path-payout",
                 attrs: {
-                    src: "/img/shopping_path/kasa_red_1_m.jpg",
-                    onmouseover: "this.src='/img/shopping_path/kasa_red_2_m.jpg'",
-                    onmouseout: "this.src='/img/shopping_path/kasa_red_1_m.jpg'"
+                    src: e.static_host + "/img/shopping_path/kasa_red_1_m.jpg",
+                    onmouseover: "this.src='" + e.static_host + "/img/shopping_path/kasa_red_2_m.jpg'",
+                    onmouseout: "this.src='" + e.static_host + "/img/shopping_path/kasa_red_1_m.jpg'"
                 }
             }), e._v(" "), n("img", {
                 staticClass: "img-fluid shopping-path-img shopping-path-payment",
                 attrs: {
-                    src: "/img/shopping_path/platnosc_grey_m.jpg"
+                    src: e.static_host + "/img/shopping_path/platnosc_grey_m.jpg"
                 }
             })])])])]), e._v(" "), n("section", {
                 attrs: {
@@ -36357,6 +36354,17 @@
         }
         ))
     },
+    Xjsd: function(e, t, n) {
+        var r = n("oM8o");
+        "string" == typeof r && (r = [[e.i, r, ""]]);
+        var a = {
+            hmr: !0,
+            transform: void 0,
+            insertInto: void 0
+        };
+        n("aET+")(r, a);
+        r.locals && (e.exports = r.locals)
+    },
     Xtr8: function(e, t, n) {
         var r = n("XKFU")
           , a = n("g3g5")
@@ -42169,9 +42177,6 @@
         ], !1, null, "0bda8353", null);
         t.default = i.exports
     },
-    gS1V: function(e, t, n) {
-        (e.exports = n("I1BE")(!1)).push([e.i, "\n@media only screen and (max-width: 520px) {\n.btn[data-v-bc6fe1a6] {\n        width: 100%;\n        text-align: center;\n}\n}\n.pgg_family_logo[data-v-bc6fe1a6] {\n    position: absolute;\n    top: -10px;\n    left: 0;\n    width: 50%;\n}\n@media (min-width: 600px) and (max-width: 991px) {\n.pgg_family_logo[data-v-bc6fe1a6] {\n        width: 30%;\n}\n}\n\n\n\n", ""])
-    },
     gVVK: function(e, t, n) {
         !function(e) {
             "use strict";
@@ -42409,7 +42414,25 @@
             }()
         }
         var a = {
-            props: ["produkt", "zmien_sklad_route", "akcyza_insert", "pojedynczy_produkt", "lista_skladow", "add_produkt_route", "reload_url", "sklad_id_ins", "opcje_transportu", "ilosc_na_zamowienie", "env", "sprzedaz_akcyza", "sprzedaz_ppw", "sprzedaz_luz_ilosc"],
+            props: {
+                produkt: {},
+                zmien_sklad_route: {},
+                akcyza_insert: {},
+                pojedynczy_produkt: {},
+                lista_skladow: {},
+                add_produkt_route: {},
+                reload_url: {},
+                sklad_id_ins: {},
+                opcje_transportu: {},
+                ilosc_na_zamowienie: {},
+                env: {},
+                sprzedaz_akcyza: {},
+                sprzedaz_ppw: {},
+                sprzedaz_luz_ilosc: {},
+                static_host: {
+                    default: ""
+                }
+            },
             data: function() {
                 return {
                     akcyza: this.akcyza_insert,
@@ -42549,7 +42572,7 @@
                 null != this.sklad_id_ins && (this.sklad_id = this.sklad_id_ins)
             }
         }
-          , i = (n("y4Z+"),
+          , i = (n("3DSZ"),
         n("KHd+"))
           , o = Object(i.a)(a, (function() {
             var e = this
@@ -42579,7 +42602,7 @@
             }), e._v(" "), n("meta", {
                 attrs: {
                     itemprop: "image",
-                    content: "https://sklep.pgg.pl/img/produkty/" + e.produkt.id + "/" + e.produkt.img_prefix + "_380_507.jpg"
+                    content: e.static_host + "/img/produkty/" + e.produkt.id + "/" + e.produkt.img_prefix + "_380_507.jpg"
                 }
             }), e._v(" "), e._m(0), e._v(" "), e._m(1), e._v(" "), n("div", {
                 staticClass: "row"
@@ -42590,7 +42613,7 @@
             }, [e.akcyza && 1 == e.ps.pgg_family_A || !e.akcyza && 1 == e.ps.pgg_family ? n("img", {
                 staticClass: "pgg_family_logo",
                 attrs: {
-                    src: "\\images\\logo\\pggfamily-logo-vertical.gif",
+                    src: e.static_host + "imageslogopggfamily-logo-vertical.gif",
                     alt: ""
                 }
             }) : e._e(), e._v(" "), n("a", {
@@ -42603,7 +42626,7 @@
                 attrs: {
                     abt: 10 * Math.random() + " grayscale",
                     alt: e.produkt.sortyment.nazwa,
-                    src: "/img/produkty/" + e.produkt.id + "/" + e.produkt.img_prefix + "_380_507.jpg"
+                    src: e.static_host + "/img/produkty/" + e.produkt.id + "/" + e.produkt.img_prefix + "_380_507.jpg"
                 }
             })])]), e._v(" "), 0 == e.pojedynczy_produkt ? n("div", [n("a", {
                 staticClass: "pb-info-btn btn btn-secondary btn-block py-4",
@@ -43123,7 +43146,7 @@
                 staticClass: "font-weight-bold text-4 ml-2"
             }, [this._v("BŁĄD POŁĄCZENIA")])])
         }
-        ], !1, null, "bc6fe1a6", null);
+        ], !1, null, "02fa05ff", null);
         t.default = o.exports
     },
     gjCT: function(e, t, n) {
@@ -46778,6 +46801,9 @@
                 return a(this, e)
             }
         })
+    },
+    oM8o: function(e, t, n) {
+        (e.exports = n("I1BE")(!1)).push([e.i, "\n@media only screen and (max-width: 520px) {\n.btn[data-v-02fa05ff] {\n        width: 100%;\n        text-align: center;\n}\n}\n.pgg_family_logo[data-v-02fa05ff] {\n    position: absolute;\n    top: -10px;\n    left: 0;\n    width: 50%;\n}\n@media (min-width: 600px) and (max-width: 991px) {\n.pgg_family_logo[data-v-02fa05ff] {\n        width: 30%;\n}\n}\n\n\n\n", ""])
     },
     "oZ/O": function(e, t, n) {
         var r = n("XKFU")
@@ -53191,11 +53217,6 @@
                 throw TypeError(e + " is not an object!");
             return e
         }
-    },
-    "y4Z+": function(e, t, n) {
-        "use strict";
-        var r = n("Amm7");
-        n.n(r).a
     },
     yK9s: function(e, t, n) {
         "use strict";
