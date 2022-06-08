@@ -776,9 +776,6 @@
             })
         }(n("wd/R"))
     },
-    "0uak": function(e, t, n) {
-        (e.exports = n("I1BE")(!1)).push([e.i, '\n.show-for-mobile[data-v-f43aec38] {\n    display: none;\n}\nth[data-v-f43aec38] {\n    color: #5c5c5c;\n    border: 0;\n    text-align: center;\n}\ntd[data-v-f43aec38], th[data-v-f43aec38] {\n    text-align: center;\n    padding: 0;\n}\n.table thead th[data-v-f43aec38] {\n    border: 0;\n}\n.table td[data-v-f43aec38] {\n    border-top: 0;\n}\ninput[data-v-f43aec38]:not([type="checkbox"]):not([type="radio"]) {\n    font-size: 1.2em;\n}\n@media only screen and (max-width: 40em) {\nthead th[data-v-f43aec38]:not(:first-child) {\n        display: none;\n}\n.cart-product-thumbnail[data-v-f43aec38] {\n        display: none;\n}\ntd[data-v-f43aec38], th[data-v-f43aec38] {\n        display: block;\n        text-align: center;\n        border: 0;\n}\ntd[data-th][data-v-f43aec38]:before  {\n        content: attr(data-th);\n}\n.show-for-mobile[data-v-f43aec38] {\n        display: flex;\n}\ntr[data-v-f43aec38] {\n        margin-bottom: 10em;\n}\n.table-label[data-v-f43aec38] {\n        display: block;\n        margin-bottom: 1em;\n}\n.cart-product-thumbnail[data-v-f43aec38] {\n        padding-top: 2em;\n}\n}\n', ""])
-    },
     "11IZ": function(e, t, n) {
         var r = n("dyZX").parseFloat
           , a = n("qncB").trim;
@@ -5194,6 +5191,9 @@
         e.exports = function(e) {
             return "object" == typeof e ? null !== e : "function" == typeof e
         }
+    },
+    "955p": function(e, t, n) {
+        (e.exports = n("I1BE")(!1)).push([e.i, '\n.show-for-mobile[data-v-ba5f83da] {\n    display: none;\n}\nth[data-v-ba5f83da] {\n    color: #5c5c5c;\n    border: 0;\n    text-align: center;\n}\ntd[data-v-ba5f83da], th[data-v-ba5f83da] {\n    text-align: center;\n    padding: 0;\n}\n.table thead th[data-v-ba5f83da] {\n    border: 0;\n}\n.table td[data-v-ba5f83da] {\n    border-top: 0;\n}\ninput[data-v-ba5f83da]:not([type="checkbox"]):not([type="radio"]) {\n    font-size: 1.2em;\n}\n@media only screen and (max-width: 40em) {\nthead th[data-v-ba5f83da]:not(:first-child) {\n        display: none;\n}\n.cart-product-thumbnail[data-v-ba5f83da] {\n        display: none;\n}\ntd[data-v-ba5f83da], th[data-v-ba5f83da] {\n        display: block;\n        text-align: center;\n        border: 0;\n}\ntd[data-th][data-v-ba5f83da]:before  {\n        content: attr(data-th);\n}\n.show-for-mobile[data-v-ba5f83da] {\n        display: flex;\n}\ntr[data-v-ba5f83da] {\n        margin-bottom: 10em;\n}\n.table-label[data-v-ba5f83da] {\n        display: block;\n        margin-bottom: 1em;\n}\n.cart-product-thumbnail[data-v-ba5f83da] {\n        padding-top: 2em;\n}\n}\n', ""])
     },
     "9AAn": function(e, t, n) {
         "use strict";
@@ -11529,7 +11529,29 @@
         "use strict";
         n.r(t);
         var r = {
-            props: ["koszyk_ins", "messages", "slownik_akcyza_ins", "opcje_transportu", "adresy_dostawy", "old_data", "transport_opcja_id", "max_ilosc", "sklad", "env", "kom_tylko_odbior_osobisty", "sprzedaz_akcyza", "sprzedaz_ppw", "sprzedaz_luz_ilosc", "pna", "pna_u", "user_type", "auth"],
+            props: {
+                koszyk_ins: {},
+                messages: {},
+                slownik_akcyza_ins: {},
+                opcje_transportu: {},
+                adresy_dostawy: {},
+                old_data: {},
+                transport_opcja_id: {},
+                max_ilosc: {},
+                sklad: {},
+                env: {},
+                kom_tylko_odbior_osobisty: {},
+                sprzedaz_akcyza: {},
+                sprzedaz_ppw: {},
+                sprzedaz_luz_ilosc: {},
+                pna: {},
+                pna_u: {},
+                user_type: {},
+                auth: {},
+                static_host: {
+                    default: ""
+                }
+            },
             data: function() {
                 return {
                     koszyk: this.koszyk_ins,
@@ -11843,7 +11865,7 @@
                 this.sprawdzProdukty()
             }
         }
-          , a = (n("XSfJ"),
+          , a = (n("XiPj"),
         n("KHd+"))
           , i = Object(a.a)(r, (function() {
             var e = this
@@ -11868,7 +11890,7 @@
                     }
                 }, [n("img", {
                     attrs: {
-                        src: "/img/produkty/" + t.produkt.id + "/" + t.produkt.img_prefix + "_380_507.jpg",
+                        src: e.static_host + "/img/produkty/" + t.produkt.id + "/" + t.produkt.img_prefix + "_380_507.jpg",
                         alt: ""
                     }
                 })]) : n("a", {
@@ -11877,7 +11899,7 @@
                     }
                 }, [n("img", {
                     attrs: {
-                        src: "/img/produkty/" + t.produkt.id + "/" + t.produkt.img_prefix + "_380_507.jpg",
+                        src: e.static_host + "/img/produkty/" + t.produkt.id + "/" + t.produkt.img_prefix + "_380_507.jpg",
                         alt: ""
                     }
                 })])]), e._v(" "), n("td", [n("div", {
@@ -12534,7 +12556,7 @@
                 staticClass: "col-12 mt-3"
             }, [t("h4", [this._v("PODSUMOWANIE")])])
         }
-        ], !1, null, "f43aec38", null);
+        ], !1, null, "ba5f83da", null);
         t.default = i.exports
     },
     Faw5: function(e, t, n) {
@@ -34754,6 +34776,17 @@
         ).BREAK = u,
         t.RETURN = c
     },
+    SvPy: function(e, t, n) {
+        var r = n("955p");
+        "string" == typeof r && (r = [[e.i, r, ""]]);
+        var a = {
+            hmr: !0,
+            transform: void 0,
+            insertInto: void 0
+        };
+        n("aET+")(r, a);
+        r.locals && (e.exports = r.locals)
+    },
     T39b: function(e, t, n) {
         "use strict";
         var r = n("wmvG")
@@ -36282,11 +36315,6 @@
             return n
         }
     },
-    XSfJ: function(e, t, n) {
-        "use strict";
-        var r = n("vxxc");
-        n.n(r).a
-    },
     XXVU: function(e, t, n) {
         "use strict";
         Object.defineProperty(t, "__esModule", {
@@ -36353,6 +36381,11 @@
             })
         }
         ))
+    },
+    XiPj: function(e, t, n) {
+        "use strict";
+        var r = n("SvPy");
+        n.n(r).a
     },
     Xjsd: function(e, t, n) {
         var r = n("oM8o");
@@ -49746,17 +49779,6 @@
                 throw TypeError(t);
             return +e
         }
-    },
-    vxxc: function(e, t, n) {
-        var r = n("0uak");
-        "string" == typeof r && (r = [[e.i, r, ""]]);
-        var a = {
-            hmr: !0,
-            transform: void 0,
-            insertInto: void 0
-        };
-        n("aET+")(r, a);
-        r.locals && (e.exports = r.locals)
     },
     w0Vi: function(e, t, n) {
         "use strict";
