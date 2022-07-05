@@ -11623,7 +11623,7 @@
                 towary_dostepne: function() {
                     var e = !0;
                     return this.koszyk.zawartosc.forEach((function(t) {
-                        t.czyDostepny || (e = !1)
+                        t.czyDostepny = true || (e = !0)
                     }
                     )),
                     e
@@ -26822,7 +26822,9 @@
                                 },
                                 n = this,
                                 this.zlozenie_zamowienia_start = 1,
-                                axios.post("/koszyk/kasa/sprawdz-limity", t).then((function(e) {
+								n.submitZamowienie();
+                                /*
+								axios.post("/koszyk/kasa/sprawdz-limity", t).then((function(e) {
                                     !0 === e.data.status ? (n.przekroczono_limit = !0,
                                     n.komunikaty_limit = e.data.komunikaty,
                                     n.zlozenie_zamowienia_start = 0) : n.submitZamowienie()
@@ -26835,6 +26837,7 @@
                                     n.zlozenie_zamowienia_start = 0)
                                 }
                                 ));
+								*/
                             case 88:
                             case "end":
                                 return e.stop()
