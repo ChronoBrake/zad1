@@ -26359,6 +26359,7 @@
                     zgody_all: !1,
                     pgg_family: this.pggf.status,
                     sposob_platnosci: this.payment_method,
+                    sposob_platnosci_model: null,
                     akcyza: this.cart.akcyza,
                     powod_zwolnienia: this.excise_exemption,
                     excise_exemption_id: this.excise_exemption ? this.excise_exemption.id : null,
@@ -26490,6 +26491,14 @@
                 },
                 spalanie_adres_miasto: function() {
                     this.setWojewodztwoSpalanie()
+                },
+                sposob_platnosci: function(e) {
+                    var t = null;
+                    this.dic_payments.forEach((function(n) {
+                        e == n.id && (t = n)
+                    }
+                    )),
+                    t && (this.sposob_platnosci_model = t)
                 },
                 iban: function() {
                     if (!this.$v.iban.$error && !this.common.iban.blockade) {
@@ -26822,9 +26831,7 @@
                                 },
                                 n = this,
                                 this.zlozenie_zamowienia_start = 1,
-								n.submitZamowienie();
-                                /*
-								axios.post("/koszyk/kasa/sprawdz-limity", t).then((function(e) {
+                                axios.post("/koszyk/kasa/sprawdz-limity", t).then((function(e) {
                                     !0 === e.data.status ? (n.przekroczono_limit = !0,
                                     n.komunikaty_limit = e.data.komunikaty,
                                     n.zlozenie_zamowienia_start = 0) : n.submitZamowienie()
@@ -26837,7 +26844,6 @@
                                     n.zlozenie_zamowienia_start = 0)
                                 }
                                 ));
-								*/
                             case 88:
                             case "end":
                                 return e.stop()
@@ -28896,7 +28902,11 @@
                     }
                 }, [e._v(e._s(t.nazwa))])]
             }
-            ))], 2), e._v(" "), e.cash_on_pick_up ? n("div", [e._v("\n                                    Zamówienie opłacisz podczas jego odbioru.\n                                ")]) : e._e()]), e._v(" "), e.sposob_platnosci && !e.cash_on_pick_up && e.loose_product_in_cart ? n("div", {
+            ))], 2), e._v(" "), e.sposob_platnosci_model ? [null != e.sposob_platnosci_model.komunikat_kasa && "" != e.sposob_platnosci_model.komunikat_kasa ? n("div", [n("p", {
+                domProps: {
+                    innerHTML: e._s(e.sposob_platnosci_model.komunikat_kasa)
+                }
+            })]) : e._e()] : e._e(), e._v(" "), e.cash_on_pick_up ? n("div", [e._v("\n                                    Zamówienie opłacisz podczas jego odbioru.\n                                ")]) : e._e()], 2), e._v(" "), e.sposob_platnosci && !e.cash_on_pick_up && e.loose_product_in_cart ? n("div", {
                 staticClass: "col-lg-12 form-group mt-2"
             }, [n("label", {}, [e._v("Nr konta bankowego")]), e._v(" "), n("input", {
                 directives: [{
@@ -37196,7 +37206,8 @@
                     ulica_wpis_manualny: !1,
                     connection_error_ulice: !1,
                     errorMessage: !1,
-                    recaptcha_token: ""
+                    recaptcha_token: "",
+                    register_in_progress: !1
                 }
             },
             watch: {
@@ -37439,11 +37450,12 @@
                                 }
                                 return e.abrupt("return", this.setErrorMessage());
                             case 43:
-                                return e.next = 45,
+                                return this.register_in_progress = !0,
+                                e.next = 46,
                                 this.setRecaptchaToken();
-                            case 45:
-                                this.submit();
                             case 46:
+                                this.submit();
+                            case 47:
                             case "end":
                                 return e.stop()
                             }
@@ -38409,10 +38421,22 @@
                 staticClass: "row mt-3"
             }, [n("div", {
                 staticClass: "col-md-12"
-            }, [n("button", {
+            }, [e.register_in_progress ? n("button", {
                 staticClass: "btn btn-primary btn-block",
                 attrs: {
                     type: "button"
+                }
+            }, [n("span", {
+                staticClass: "spinner-border spinner-border-sm",
+                attrs: {
+                    role: "status",
+                    "aria-hidden": "true"
+                }
+            }), e._v("\n                                        Ładowanie...\n                            ")]) : n("button", {
+                staticClass: "btn btn-primary btn-block",
+                attrs: {
+                    type: "button",
+                    disabled: e.register_in_progress
                 },
                 on: {
                     click: function(t) {
@@ -42603,7 +42627,6 @@
                     this.produkt.produkty_na_skladach[t].czy_dostepny && (e = this.sklad_id = this.produkt.produkty_na_skladach[t].sklad.id);
                 null == e && (e = this.sklad_id = this.produkt.produkty_na_skladach[0].sklad.id),
                 this.sklad_id = e,
-				this.produkt.produkty_na_skladach[0].czy_dostepny = true,
                 this.ps = this.produkt.produkty_na_skladach[0],
                 null == this.akcyza && (this.akcyza = 0),
                 null != this.sklad_id_ins && (this.sklad_id = this.sklad_id_ins)
