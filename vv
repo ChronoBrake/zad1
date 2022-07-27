@@ -1,4 +1,4 @@
-_token: q2EB3X8Ya98TtIPvzFd8RZ9v7TqfOXUX9CMLnkgD
+_token: Nit829LCCWnCcCuQdzR4XjU40ahXYSFVPGrlmSvS
 imie: Monika
 nazwisko: Czechowska
 adres_kod: 86-300
@@ -18,10 +18,10 @@ zgody_all: on
 zgoda_cookies: on
 zgoda_faktury: on
 zgoda_przetwarzanie: on
-g-recaptcha-response: 123
-sposob_dostawy: sposob_dostawy
+g-recaptcha-response: tutajtoken
+sposob_dostawy: 4
 kod_rabatowy: 
-sklad_id: 1
+sklad_id: skladid
 akcyza: 0
 ppw: 0
 loose: false
@@ -30,5 +30,5 @@ wojewodztwo_id: 2
 spalanie_wojewodztwo_id: 2
 akcyza_zwolnienie_id: 34
 action: order
-recaptcha_v2_token: 123
-dane_zamowienia: {"adres_dostawy":{"miasto":"Grudziądz","kod":"86-300","ulica":"Szosa Toruńska","dom":"17"},"transport_opcja_id":4,"wartosc":4100,"wartosc_transportu":340,"security_token":"5761e06d7241ad53390656614fae64a440572652","zawartosc":[{"produkt_id":"8","produkt_na_skladzie":{"id":6},"ilosc":"4","cena":1025,"cena_tona":1025,"cennik_id":5526019,"pgg_family":false,"wartosc":4100,"promo_cena":0,"promo_cena_tona":0,"promo_cennik_id":null,"promo_promocja_id":null,"promo_wartosc":0,"rabat_cena":0,"rabat_cena_tona":0,"rabat_cennik_id":null,"rabat_wartosc":0}]}
+recaptcha_v2_token: tutajtoken
+dane_zamowienia: tutajdane
