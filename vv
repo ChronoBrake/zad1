@@ -18,8 +18,8 @@ zgody_all: on
 zgoda_cookies: on
 zgoda_faktury: on
 zgoda_przetwarzanie: on
-g-recaptcha-response: 03ANYolqsbV2mkGa2L7lSFMDmMMy8nhgvlJMFfOBACZZAC48C_veEL5bJJCqVjzuTkQJOGVExZGO4xzL_LGcxVv-3QY_dfFCm0AHY4VLKgHTKDo3Rl00quDectci12ibfngo-HTQpr3E6ppZSKCpYPRVXGQaRPSzi3w5ukVkO8tHZmCJPqr3wX9aT0_Vr3OmtNHWNH90pbwQFx5EhVVSXkIthNEbewkicRrJrpYacHXT_0DrgCAxjvNbQWWqeyLwO0uMikYAxLCcuF3KryHf5EFvsM8fo-KLTlV3c7pVti2xhy1imoIvs_24elfIY6ggzdJ2XylB-C_w_FWmEzZ5YZQeF0aFcHXeIuqx-eP01TukYmj699Oc4LKCAr46Yvie6H3P6CMde1a2NbMlgkyF-uhCOISd1_plA4pY5TFl4k0jprOTuLAIqCus1IR1wfnzlIGsjWDq7Jfolnml-FUGyBo60qut89Ra5yIYBUkelL2KLrDUBq40gdM4xlTe6YPLemyXMkvU8RXE_i2ycY3umhSJF3o5EZsFRdvw
-sposob_dostawy: 4
+g-recaptcha-response: 123
+sposob_dostawy: sposob_dostawy
 kod_rabatowy: 
 sklad_id: 1
 akcyza: 0
@@ -30,5 +30,5 @@ wojewodztwo_id: 2
 spalanie_wojewodztwo_id: 2
 akcyza_zwolnienie_id: 34
 action: order
-recaptcha_v2_token: 03ANYolqsbV2mkGa2L7lSFMDmMMy8nhgvlJMFfOBACZZAC48C_veEL5bJJCqVjzuTkQJOGVExZGO4xzL_LGcxVv-3QY_dfFCm0AHY4VLKgHTKDo3Rl00quDectci12ibfngo-HTQpr3E6ppZSKCpYPRVXGQaRPSzi3w5ukVkO8tHZmCJPqr3wX9aT0_Vr3OmtNHWNH90pbwQFx5EhVVSXkIthNEbewkicRrJrpYacHXT_0DrgCAxjvNbQWWqeyLwO0uMikYAxLCcuF3KryHf5EFvsM8fo-KLTlV3c7pVti2xhy1imoIvs_24elfIY6ggzdJ2XylB-C_w_FWmEzZ5YZQeF0aFcHXeIuqx-eP01TukYmj699Oc4LKCAr46Yvie6H3P6CMde1a2NbMlgkyF-uhCOISd1_plA4pY5TFl4k0jprOTuLAIqCus1IR1wfnzlIGsjWDq7Jfolnml-FUGyBo60qut89Ra5yIYBUkelL2KLrDUBq40gdM4xlTe6YPLemyXMkvU8RXE_i2ycY3umhSJF3o5EZsFRdvw
+recaptcha_v2_token: 123
 dane_zamowienia: {"adres_dostawy":{"miasto":"Grudziądz","kod":"86-300","ulica":"Szosa Toruńska","dom":"17"},"transport_opcja_id":4,"wartosc":4100,"wartosc_transportu":340,"security_token":"5761e06d7241ad53390656614fae64a440572652","zawartosc":[{"produkt_id":"8","produkt_na_skladzie":{"id":6},"ilosc":"4","cena":1025,"cena_tona":1025,"cennik_id":5526019,"pgg_family":false,"wartosc":4100,"promo_cena":0,"promo_cena_tona":0,"promo_cennik_id":null,"promo_promocja_id":null,"promo_wartosc":0,"rabat_cena":0,"rabat_cena_tona":0,"rabat_cennik_id":null,"rabat_wartosc":0}]}
