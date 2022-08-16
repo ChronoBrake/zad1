@@ -1,4 +1,4 @@
- .pretty *{
+.pretty *{
     box-sizing:border-box
 }
 .pretty input:not([type=checkbox]):not([type=radio]){
@@ -1299,7 +1299,7 @@ body{
 @media only screen and (max-width:767px){
     body{
         padding-right:0!important;
-        margin-bottom:632px
+        margin-bottom:662px
     }
 }
 @media only screen and (min-width:768px) and (max-width:991px){
@@ -1413,6 +1413,9 @@ del{
 }
 .base-a:hover{
     color:#d71920!important
+}
+.without-underscore{
+    border-bottom:none!important
 }
 h1.product-name{
     font-size:2.35714286em;
