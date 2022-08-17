@@ -561,6 +561,9 @@
         }
         ))
     },
+    "0YJg": function(e, t, n) {
+        (e.exports = n("I1BE")(!1)).push([e.i, "\n@media only screen and (max-width: 520px) {\n.btn[data-v-422d030c] {\n        width: 100%;\n        text-align: center;\n}\n}\n.pgg_family_logo[data-v-422d030c] {\n    position: absolute;\n    top: -10px;\n    left: 0;\n    width: 50%;\n}\n@media (min-width: 600px) and (max-width: 991px) {\n.pgg_family_logo[data-v-422d030c] {\n        width: 30%;\n}\n}\n\n\n\n", ""])
+    },
     "0YWM": function(e, t, n) {
         var r = n("EemH")
           , a = n("OP3Y")
@@ -6199,11 +6202,6 @@
             e.sticky && (t += "y"),
             t
         }
-    },
-    C77M: function(e, t, n) {
-        "use strict";
-        var r = n("fEpB");
-        n.n(r).a
     },
     CX2u: function(e, t, n) {
         "use strict";
@@ -31028,9 +31026,6 @@
             })
         }(n("wd/R"))
     },
-    Oeod: function(e, t, n) {
-        (e.exports = n("I1BE")(!1)).push([e.i, "\n@media only screen and (max-width: 520px) {\n.btn[data-v-86a5abaa] {\n        width: 100%;\n        text-align: center;\n}\n}\n.pgg_family_logo[data-v-86a5abaa] {\n    position: absolute;\n    top: -10px;\n    left: 0;\n    width: 50%;\n}\n@media (min-width: 600px) and (max-width: 991px) {\n.pgg_family_logo[data-v-86a5abaa] {\n        width: 30%;\n}\n}\n\n\n\n", ""])
-    },
     OjkT: function(e, t, n) {
         !function(e) {
             "use strict";
@@ -42263,17 +42258,6 @@
         }
         ), "trimEnd")
     },
-    fEpB: function(e, t, n) {
-        var r = n("Oeod");
-        "string" == typeof r && (r = [[e.i, r, ""]]);
-        var a = {
-            hmr: !0,
-            transform: void 0,
-            insertInto: void 0
-        };
-        n("aET+")(r, a);
-        r.locals && (e.exports = r.locals)
-    },
     fN96: function(e, t, n) {
         var r = n("XKFU");
         r(r.S, "Number", {
@@ -43917,7 +43901,8 @@
                         produkt_id: this.produkt.id,
                         sklad_id: this.sklad_id,
                         akcyza: this.akcyza,
-                        ilosc: this.localIlosc
+                        ilosc: this.localIlosc,
+                        _token: this.csrf
                     }).then((function(t) {
                         if (e.env,
                         "OK" != t.data)
@@ -43969,7 +43954,7 @@
                 null != this.sklad_id_ins && (this.sklad_id = this.sklad_id_ins)
             }
         }
-          , i = (n("C77M"),
+          , i = (n("ly/w"),
         n("KHd+"))
           , o = Object(i.a)(a, (function() {
             var e = this
@@ -44545,7 +44530,7 @@
                 staticClass: "font-weight-bold text-4 ml-2"
             }, [this._v("BŁĄD POŁĄCZENIA")])])
         }
-        ], !1, null, "86a5abaa", null);
+        ], !1, null, "422d030c", null);
         t.default = o.exports
     },
     gjCT: function(e, t, n) {
@@ -50415,6 +50400,11 @@
         e.exports = Math.sign || function(e) {
             return 0 == (e = +e) || e != e ? e : e < 0 ? -1 : 1
         }
+    },
+    "ly/w": function(e, t, n) {
+        "use strict";
+        var r = n("xcZR");
+        n.n(r).a
     },
     lyxo: function(e, t, n) {
         !function(e) {
@@ -57074,6 +57064,17 @@
                 return e.replace(/^\s*/, "").replace(/\s*$/, "")
             }
         }
+    },
+    xcZR: function(e, t, n) {
+        var r = n("0YJg");
+        "string" == typeof r && (r = [[e.i, r, ""]]);
+        var a = {
+            hmr: !0,
+            transform: void 0,
+            insertInto: void 0
+        };
+        n("aET+")(r, a);
+        r.locals && (e.exports = r.locals)
     },
     xfY5: function(e, t, n) {
         "use strict";
