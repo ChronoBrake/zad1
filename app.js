@@ -561,9 +561,6 @@
         }
         ))
     },
-    "0YJg": function(e, t, n) {
-        (e.exports = n("I1BE")(!1)).push([e.i, "\n@media only screen and (max-width: 520px) {\n.btn[data-v-422d030c] {\n        width: 100%;\n        text-align: center;\n}\n}\n.pgg_family_logo[data-v-422d030c] {\n    position: absolute;\n    top: -10px;\n    left: 0;\n    width: 50%;\n}\n@media (min-width: 600px) and (max-width: 991px) {\n.pgg_family_logo[data-v-422d030c] {\n        width: 30%;\n}\n}\n\n\n\n", ""])
-    },
     "0YWM": function(e, t, n) {
         var r = n("EemH")
           , a = n("OP3Y")
@@ -3359,6 +3356,11 @@
                 )))
             }(e)
         }
+    },
+    "8ByP": function(e, t, n) {
+        "use strict";
+        var r = n("nJ6I");
+        n.n(r).a
     },
     "8L3F": function(e, t, n) {
         "use strict";
@@ -32013,6 +32015,9 @@
             })
         }(n("wd/R"))
     },
+    Q0kO: function(e, t, n) {
+        (e.exports = n("I1BE")(!1)).push([e.i, "\n@media only screen and (max-width: 520px) {\n.btn[data-v-7e7768af] {\n        width: 100%;\n        text-align: center;\n}\n}\n.pgg_family_logo[data-v-7e7768af] {\n    position: absolute;\n    top: -10px;\n    left: 0;\n    width: 50%;\n}\n@media (min-width: 600px) and (max-width: 991px) {\n.pgg_family_logo[data-v-7e7768af] {\n        width: 30%;\n}\n}\n\n\n\n", ""])
+    },
     QNwp: function(e, t, n) {
         n("7VC1"),
         e.exports = n("g3g5").String.padEnd
@@ -43912,6 +43917,7 @@
                     }
                     )).catch((function(t) {
                         419 == t.response.status && (e.error = "Strona wygasła. Proszę o odświeżenie okna przeglądarki."),
+                        401 == t.response.status && (e.error = "Proszę się zalogować."),
                         500 == t.response.status && (e.error = "Wystąpił nieznany błąd. Przepraszamy."),
                         322 == t.response.status && (e.error = t.response.data),
                         e.loading = !1
@@ -43954,7 +43960,7 @@
                 null != this.sklad_id_ins && (this.sklad_id = this.sklad_id_ins)
             }
         }
-          , i = (n("ly/w"),
+          , i = (n("8ByP"),
         n("KHd+"))
           , o = Object(i.a)(a, (function() {
             var e = this
@@ -44530,7 +44536,7 @@
                 staticClass: "font-weight-bold text-4 ml-2"
             }, [this._v("BŁĄD POŁĄCZENIA")])])
         }
-        ], !1, null, "422d030c", null);
+        ], !1, null, "7e7768af", null);
         t.default = o.exports
     },
     gjCT: function(e, t, n) {
@@ -50401,11 +50407,6 @@
             return 0 == (e = +e) || e != e ? e : e < 0 ? -1 : 1
         }
     },
-    "ly/w": function(e, t, n) {
-        "use strict";
-        var r = n("xcZR");
-        n.n(r).a
-    },
     lyxo: function(e, t, n) {
         !function(e) {
             "use strict";
@@ -50613,6 +50614,17 @@
             }
         }
         ))
+    },
+    nJ6I: function(e, t, n) {
+        var r = n("Q0kO");
+        "string" == typeof r && (r = [[e.i, r, ""]]);
+        var a = {
+            hmr: !0,
+            transform: void 0,
+            insertInto: void 0
+        };
+        n("aET+")(r, a);
+        r.locals && (e.exports = r.locals)
     },
     ne8i: function(e, t, n) {
         var r = n("RYi7")
@@ -57064,17 +57076,6 @@
                 return e.replace(/^\s*/, "").replace(/\s*$/, "")
             }
         }
-    },
-    xcZR: function(e, t, n) {
-        var r = n("0YJg");
-        "string" == typeof r && (r = [[e.i, r, ""]]);
-        var a = {
-            hmr: !0,
-            transform: void 0,
-            insertInto: void 0
-        };
-        n("aET+")(r, a);
-        r.locals && (e.exports = r.locals)
     },
     xfY5: function(e, t, n) {
         "use strict";
