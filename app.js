@@ -529,6 +529,17 @@
     "/e88": function(e, t) {
         e.exports = "\t\n\v\f\r   ᠎             　\u2028\u2029\ufeff"
     },
+    "/gAT": function(e, t, n) {
+        var r = n("6kNC");
+        "string" == typeof r && (r = [[e.i, r, ""]]);
+        var a = {
+            hmr: !0,
+            transform: void 0,
+            insertInto: void 0
+        };
+        n("aET+")(r, a);
+        r.locals && (e.exports = r.locals)
+    },
     0: function(e, t, n) {
         n("bUC5"),
         e.exports = n("pyCd")
@@ -1710,17 +1721,6 @@
     "4R4u": function(e, t) {
         e.exports = "constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf".split(",")
     },
-    "4WJN": function(e, t, n) {
-        var r = n("MDGm");
-        "string" == typeof r && (r = [[e.i, r, ""]]);
-        var a = {
-            hmr: !0,
-            transform: void 0,
-            insertInto: void 0
-        };
-        n("aET+")(r, a);
-        r.locals && (e.exports = r.locals)
-    },
     "4dOw": function(e, t, n) {
         !function(e) {
             "use strict";
@@ -2074,6 +2074,9 @@
         "use strict";
         var r = n("LpLQ");
         n.n(r).a
+    },
+    "6kNC": function(e, t, n) {
+        (e.exports = n("I1BE")(!1)).push([e.i, "\n@media only screen and (max-width: 520px) {\n.btn[data-v-7bcd92fb] {\n        width: 100%;\n        text-align: center;\n}\n}\n.pgg_family_logo[data-v-7bcd92fb] {\n    position: absolute;\n    top: -10px;\n    left: 0;\n    width: 50%;\n}\n@media (min-width: 600px) and (max-width: 991px) {\n.pgg_family_logo[data-v-7bcd92fb] {\n        width: 30%;\n}\n}\n\n\n\n", ""])
     },
     "7BF0": function(e, t, n) {
         "use strict";
@@ -3106,11 +3109,6 @@
                 }
             })
         }(n("wd/R"))
-    },
-    "83vo": function(e, t, n) {
-        "use strict";
-        var r = n("4WJN");
-        n.n(r).a
     },
     "84bF": function(e, t, n) {
         "use strict";
@@ -6242,6 +6240,11 @@
                 : e)
             }
         })
+    },
+    Cfpc: function(e, t, n) {
+        "use strict";
+        var r = n("/gAT");
+        n.n(r).a
     },
     Cfrj: function(e, t, n) {
         var r = n("RYi7")
@@ -26789,9 +26792,6 @@
             return void 0 !== e && (r.Array === e || i[a] === e)
         }
     },
-    MDGm: function(e, t, n) {
-        (e.exports = n("I1BE")(!1)).push([e.i, "\n@media only screen and (max-width: 520px) {\n.btn[data-v-6e6cbc99] {\n        width: 100%;\n        text-align: center;\n}\n}\n.pgg_family_logo[data-v-6e6cbc99] {\n    position: absolute;\n    top: -10px;\n    left: 0;\n    width: 50%;\n}\n@media (min-width: 600px) and (max-width: 991px) {\n.pgg_family_logo[data-v-6e6cbc99] {\n        width: 30%;\n}\n}\n\n\n\n", ""])
-    },
     MLWZ: function(e, t, n) {
         "use strict";
         var r = n("xTJ+");
@@ -43931,6 +43931,7 @@
                         401 == t.response.status && (e.error = "Proszę się zalogować."),
                         500 == t.response.status && (e.error = "Wystąpił nieznany błąd. Przepraszamy."),
                         322 == t.response.status && (e.error = t.response.data),
+                        403 == t.response.status && (e.error = "Proszę dokończyć rejestrację przed zakupem."),
                         e.loading = !1
                     }
                     ))
@@ -43971,7 +43972,7 @@
                 null != this.sklad_id_ins && (this.sklad_id = this.sklad_id_ins)
             }
         }
-          , i = (n("83vo"),
+          , i = (n("Cfpc"),
         n("KHd+"))
           , o = Object(i.a)(a, (function() {
             var e = this
@@ -44547,7 +44548,7 @@
                 staticClass: "font-weight-bold text-4 ml-2"
             }, [this._v("BŁĄD POŁĄCZENIA")])])
         }
-        ], !1, null, "6e6cbc99", null);
+        ], !1, null, "7bcd92fb", null);
         t.default = o.exports
     },
     gjCT: function(e, t, n) {
