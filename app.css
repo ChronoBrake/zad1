@@ -1874,3 +1874,7 @@ ul.basic>li:before{
 .dropzone .dz-preview{
     width:calc(100% - 32px)
 }
+.alert-flash>p{
+    color:#fff;
+    margin-bottom:0
+}
