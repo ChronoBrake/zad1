@@ -147,6 +147,11 @@
             }
         }
     },
+    "+0Ob": function(e, t, n) {
+        "use strict";
+        var r = n("GHpg");
+        n.n(r).a
+    },
     "+An0": function(e, t, n) {
         (e.exports = n("I1BE")(!1)).push([e.i, "\n@media only screen and (max-width: 520px) {\n.btn[data-v-0bda8353] {\n        width: 100%;\n        text-align: center;\n}\n}\n\n", ""])
     },
@@ -528,17 +533,6 @@
     },
     "/e88": function(e, t) {
         e.exports = "\t\n\v\f\r   ᠎             　\u2028\u2029\ufeff"
-    },
-    "/gAT": function(e, t, n) {
-        var r = n("6kNC");
-        "string" == typeof r && (r = [[e.i, r, ""]]);
-        var a = {
-            hmr: !0,
-            transform: void 0,
-            insertInto: void 0
-        };
-        n("aET+")(r, a);
-        r.locals && (e.exports = r.locals)
     },
     0: function(e, t, n) {
         n("bUC5"),
@@ -2074,9 +2068,6 @@
         "use strict";
         var r = n("LpLQ");
         n.n(r).a
-    },
-    "6kNC": function(e, t, n) {
-        (e.exports = n("I1BE")(!1)).push([e.i, "\n@media only screen and (max-width: 520px) {\n.btn[data-v-7bcd92fb] {\n        width: 100%;\n        text-align: center;\n}\n}\n.pgg_family_logo[data-v-7bcd92fb] {\n    position: absolute;\n    top: -10px;\n    left: 0;\n    width: 50%;\n}\n@media (min-width: 600px) and (max-width: 991px) {\n.pgg_family_logo[data-v-7bcd92fb] {\n        width: 30%;\n}\n}\n\n\n\n", ""])
     },
     "7BF0": function(e, t, n) {
         "use strict";
@@ -6240,11 +6231,6 @@
                 : e)
             }
         })
-    },
-    Cfpc: function(e, t, n) {
-        "use strict";
-        var r = n("/gAT");
-        n.n(r).a
     },
     Cfrj: function(e, t, n) {
         var r = n("RYi7")
@@ -14439,6 +14425,17 @@
         }
         ], !1, null, "668216f0", null);
         t.default = s.exports
+    },
+    GHpg: function(e, t, n) {
+        var r = n("Mrj4");
+        "string" == typeof r && (r = [[e.i, r, ""]]);
+        var a = {
+            hmr: !0,
+            transform: void 0,
+            insertInto: void 0
+        };
+        n("aET+")(r, a);
+        r.locals && (e.exports = r.locals)
     },
     GNAe: function(e, t, n) {
         var r = n("XKFU")
@@ -26840,6 +26837,9 @@
             }
             return e.apply(n, t)
         }
+    },
+    Mrj4: function(e, t, n) {
+        (e.exports = n("I1BE")(!1)).push([e.i, "\n@media only screen and (max-width: 520px) {\n.btn[data-v-54328ace] {\n        width: 100%;\n        text-align: center;\n}\n}\n.pgg_family_logo[data-v-54328ace] {\n    position: absolute;\n    top: -10px;\n    left: 0;\n    width: 50%;\n}\n@media (min-width: 600px) and (max-width: 991px) {\n.pgg_family_logo[data-v-54328ace] {\n        width: 30%;\n}\n}\n\n\n\n", ""])
     },
     MtdB: function(e, t, n) {
         var r = n("XKFU");
@@ -43972,7 +43972,7 @@
                 null != this.sklad_id_ins && (this.sklad_id = this.sklad_id_ins)
             }
         }
-          , i = (n("Cfpc"),
+          , i = (n("+0Ob"),
         n("KHd+"))
           , o = Object(i.a)(a, (function() {
             var e = this
@@ -44301,7 +44301,11 @@
                     staticClass: "col-2"
                 }, [n("i", {
                     class: t.icon
-                })])])])
+                })])]), e._v(" "), "OSOBISTY" == t.kod && 1 == e.czyTrnasportDostepny(t.id) && e.ps.odbior_u_kdw ? n("div", {
+                    staticClass: "row"
+                }, [n("div", {
+                    staticClass: "col-10 font-weight-bold"
+                }, [e._v("\n                                        Transport do KDW\n                                    ")]), e._v(" "), e._m(9, !0)]) : e._e()])
             }
             )), 0)]), e._v(" "), n("div", {
                 staticClass: "mt-3 mb-0 d-block d-md-none"
@@ -44401,7 +44405,7 @@
                 staticClass: "alert alert-danger rounded-0"
             }, [e._v("\n                        Zamówienie może składać się maksymalnie z " + e._s(e.maxNaZamowienie) + " sztuk produktu.\n                    ")]) : e._e(), e._v(" "), e.connection_error ? n("div", {
                 staticClass: "alert alert-danger-outline rounded-0 mt-2"
-            }, [e._m(9), e._v("\n                        Podczas dodawania produktu do koszyka nie udało się nawiązać połączenia z serwerem."), n("br"), e._v(" "), n("button", {
+            }, [e._m(10), e._v("\n                        Podczas dodawania produktu do koszyka nie udało się nawiązać połączenia z serwerem."), n("br"), e._v(" "), n("button", {
                 staticClass: "btn btn-sm mt-2",
                 attrs: {
                     type: "button"
@@ -44542,13 +44546,22 @@
         , function() {
             var e = this.$createElement
               , t = this._self._c || e;
+            return t("div", {
+                staticClass: "col-2"
+            }, [t("i", {
+                staticClass: "fas fa-warehouse"
+            })])
+        }
+        , function() {
+            var e = this.$createElement
+              , t = this._self._c || e;
             return t("div", [t("i", {
                 staticClass: "fas fa-wifi text-5"
             }), this._v(" "), t("span", {
                 staticClass: "font-weight-bold text-4 ml-2"
             }, [this._v("BŁĄD POŁĄCZENIA")])])
         }
-        ], !1, null, "7bcd92fb", null);
+        ], !1, null, "54328ace", null);
         t.default = o.exports
     },
     gjCT: function(e, t, n) {
