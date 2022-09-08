@@ -150,9 +150,6 @@
     "+An0": function(e, t, n) {
         (e.exports = n("I1BE")(!1)).push([e.i, "\n@media only screen and (max-width: 520px) {\n.btn[data-v-0bda8353] {\n        width: 100%;\n        text-align: center;\n}\n}\n\n", ""])
     },
-    "+JoC": function(e, t, n) {
-        (e.exports = n("I1BE")(!1)).push([e.i, "\n@media only screen and (max-width: 520px) {\n.btn[data-v-3573ec74] {\n        width: 100%;\n        text-align: center;\n}\n}\n.pgg_family_logo[data-v-3573ec74] {\n    position: absolute;\n    top: -10px;\n    left: 0;\n    width: 50%;\n}\n@media (min-width: 600px) and (max-width: 991px) {\n.pgg_family_logo[data-v-3573ec74] {\n        width: 30%;\n}\n}\n\n\n\n", ""])
-    },
     "+Xmh": function(e, t, n) {
         n("jm62"),
         e.exports = n("g3g5").Object.getOwnPropertyDescriptors
@@ -11491,11 +11488,6 @@
             if (s(e, t))
                 return a(!r.f.call(e, t), e[t])
         }
-    },
-    ErzE: function(e, t, n) {
-        "use strict";
-        var r = n("bVVy");
-        n.n(r).a
     },
     "Ew+T": function(e, t, n) {
         var r = n("XKFU")
@@ -26953,6 +26945,11 @@
             e
         }
     },
+    NmUX: function(e, t, n) {
+        "use strict";
+        var r = n("nBtg");
+        n.n(r).a
+    },
     Nr18: function(e, t, n) {
         "use strict";
         var r = n("S/j/")
@@ -37628,6 +37625,9 @@
             e
         }
     },
+    Z1wA: function(e, t, n) {
+        (e.exports = n("I1BE")(!1)).push([e.i, "\n@media only screen and (max-width: 520px) {\n.btn[data-v-e37d561a] {\r\n    width: 100%;\r\n    text-align: center;\n}\n}\n.pgg_family_logo[data-v-e37d561a] {\r\n  position: absolute;\r\n  top: -10px;\r\n  left: 0;\r\n  width: 50%;\n}\n@media (min-width: 600px) and (max-width: 991px) {\n.pgg_family_logo[data-v-e37d561a] {\r\n    width: 30%;\n}\n}\r\n", ""])
+    },
     Z2Ku: function(e, t, n) {
         "use strict";
         var r = n("XKFU")
@@ -40607,17 +40607,6 @@
     },
     bUxp: function(e, t, n) {
         (e.exports = n("I1BE")(!1)).push([e.i, ".kalendarz .dostepny[data-v-07242b5e], .legenda.dostepny[data-v-07242b5e] {\n  background: rgba(188, 255, 197, 0.5);\n}\n.kalendarz .niedostepny.selected[data-v-07242b5e], .kalendarz .niedostepny[data-v-07242b5e], .legenda.niedostepny[data-v-07242b5e] {\n  background: rgba(255, 195, 195, 0.5);\n}\n.kalendarz td.today[data-v-07242b5e],\n.kalendarz .divTableCell.today[data-v-07242b5e], .legenda.today[data-v-07242b5e] {\n  border: 3px solid #080;\n  padding: 13px;\n  color: #080;\n  font-weight: bold;\n}\n.kalendarz td.selected[data-v-07242b5e]:not(.niedostepny),\n.kalendarz .divTableCell.selected[data-v-07242b5e]:not(.niedostepny), .legenda.selected[data-v-07242b5e] {\n  border: 5px solid #0a0;\n  padding: 11px;\n  font-weight: bold;\n  color: #080;\n  background: rgba(0, 222, 0, 0.5);\n}\n.kalendarz .day[data-v-07242b5e], .legenda[data-v-07242b5e] {\n  border: 1px solid #ccc;\n}\n.legendaOpis[data-v-07242b5e] {\n  display: inline-block;\n  padding: 10px 0 10px 10px;\n  width: calc(100% - 56px);\n  vertical-align: middle;\n}\n.legenda[data-v-07242b5e] {\n  padding: 10px;\n  margin-top: 5px;\n  display: inline-block;\n  width: 45px;\n  border: 1px solid #888;\n  text-align: center;\n}\n.kalendarz[data-v-07242b5e] {\n  table-layout: fixed;\n  width: 100%;\n  border-collapse: separate;\n}\n.kalendarz td[data-v-07242b5e],\n.kalendarz th[data-v-07242b5e],\n.kalendarz .divTableCell[data-v-07242b5e],\n.kalendarz .divTableHeading[data-v-07242b5e] {\n  text-align: center;\n  vertical-align: middle;\n}\n.kalendarz td[data-v-07242b5e],\n.kalendarz .divTableCell[data-v-07242b5e] {\n  padding: 15px;\n  height: 75px;\n}\n.kalendarz .divTableHead[data-v-07242b5e] {\n  padding: 5px 0;\n}\n.kalendarz .gray[data-v-07242b5e] {\n  color: #c9c9c9;\n  background: rgba(240, 240, 240, 0.3);\n  border: 1px solid #ccc;\n}\n.kalendarz .dostepny[data-v-07242b5e] {\n  cursor: pointer;\n  cursor: hand;\n}\n.kalendarz .niedostepny.selected[data-v-07242b5e] {\n  border: 5px solid #a00;\n  padding: 11px;\n  font-weight: bold;\n  color: #800;\n}\n.nazwaMiesiaca[data-v-07242b5e] {\n  font-size: 1.3em;\n  font-weight: bold;\n}\n.xsmall[data-v-07242b5e] {\n  font-size: 0.6em;\n  font-weight: normal;\n}\n\n/* DivTable.com */\n.divTable[data-v-07242b5e] {\n  display: table;\n  width: 100%;\n}\n.divTableRow[data-v-07242b5e] {\n  display: table-row;\n}\n.divTableHeading[data-v-07242b5e] {\n  background-color: #eee;\n  display: table-header-group;\n}\n.divTableCell[data-v-07242b5e],\n.divTableHead[data-v-07242b5e] {\n  border: 1px solid #cecece;\n  display: table-cell;\n}\n.divTableHeading[data-v-07242b5e] {\n  background-color: #eee;\n  display: table-header-group;\n  font-weight: bold;\n}\n.divTableFoot[data-v-07242b5e] {\n  background-color: #eee;\n  display: table-footer-group;\n  font-weight: bold;\n}\n.divTableBody[data-v-07242b5e] {\n  display: table-row-group;\n}\n.kalendarz[data-v-07242b5e] {\n  position: relative;\n}\n.kalendarz .loadingBox[data-v-07242b5e] {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(255, 255, 255, 0.8);\n  font-size: 10em;\n  color: #777;\n  vertical-align: middle;\n  text-align: center;\n}\n.kalendarz .loading[data-v-07242b5e] {\n  -webkit-filter: blur(4px);\n          filter: blur(4px);\n}\n.weekend[data-v-07242b5e] {\n  color: #c00;\n}\n.errorBox[data-v-07242b5e] {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(255, 255, 255, 0.8);\n  font-size: 2em;\n  padding-top: 80px;\n  vertical-align: middle;\n  text-align: center;\n  z-index: 1;\n  color: #c00;\n}", ""])
-    },
-    bVVy: function(e, t, n) {
-        var r = n("+JoC");
-        "string" == typeof r && (r = [[e.i, r, ""]]);
-        var a = {
-            hmr: !0,
-            transform: void 0,
-            insertInto: void 0
-        };
-        n("aET+")(r, a);
-        r.locals && (e.exports = r.locals)
     },
     bWfx: function(e, t, n) {
         "use strict";
@@ -43682,7 +43671,7 @@
                     return this.produkt.limit_dzienny > 0 ? this.produkt.limit_dzienny : this.ilosc_na_zamowienie
                 },
                 blokadaPrzyciskow: function() {
-                    return this.sprzedaz_luz_ilosc > 0 && "luz" == this.produkt.opakowanie.kod
+                    return this.sprzedaz_luz_ilosc > 0
                 },
                 czyProduktLuzem: function() {
                     return "luz" == this.produkt.opakowanie.kod
@@ -43775,7 +43764,7 @@
                 null != this.sklad_id_ins && (this.sklad_id = this.sklad_id_ins)
             }
         }
-          , i = (n("ErzE"),
+          , i = (n("NmUX"),
         n("KHd+"))
           , o = Object(i.a)(a, (function() {
             var e = this
@@ -43836,7 +43825,7 @@
                 attrs: {
                     href: "/produkty/" + e.produkt.id + "/" + e.sklad_id + "/" + e.produkt.slug
                 }
-            }, [e._v("\n                    Więcej o produkcie\n                ")]), e._v(" "), n("meta", {
+            }, [e._v("\n          Więcej o produkcie\n        ")]), e._v(" "), n("meta", {
                 attrs: {
                     itemprop: "url",
                     content: "https://sklep.pgg.pl/produkty/" + e.produkt.id + "/" + e.sklad_id + "/" + e.produkt.slug
@@ -43854,7 +43843,7 @@
                 attrs: {
                     href: "/produkty/" + e.produkt.id + "/" + e.sklad_id + "/" + e.produkt.slug
                 }
-            }, [e._v("\n                            " + e._s(e.produkt.sortyment.nazwa) + "\n                        ")])])]), e._v(" "), n("div", {
+            }, [e._v("\n              " + e._s(e.produkt.sortyment.nazwa) + "\n            ")])])]), e._v(" "), n("div", {
                 staticClass: "product-category"
             }, [e._v(e._s(e.produkt.opakowanie.nazwa))]), e._v(" "), n("div", {
                 staticClass: "mt-3 d-none d-md-block"
@@ -43886,7 +43875,7 @@
                     itemprop: "url",
                     content: "/produkty/" + e.produkt.id + "/" + e.sklad_id + "/" + e.produkt.slug
                 }
-            }), e._v(" "), 0 == e.akcyza ? n("div", [n("ins", [e._v("Cena brutto za opakowanie: " + e._s(e._f("currency")(e.ps.cena_opakowanie)))]), e._v(" "), n("meta", {
+            }), e._v(" "), 0 == e.akcyza ? n("div", [n("ins", [e._v("Cena brutto za opakowanie:\n              " + e._s(e._f("currency")(e.ps.cena_opakowanie)))]), e._v(" "), n("meta", {
                 attrs: {
                     itemprop: "price",
                     content: e.ps.cena_opakowanie
@@ -43896,14 +43885,14 @@
                     itemprop: "priceCurrency",
                     content: "PLN"
                 }
-            })]) : n("div", [n("ins", [e._v("Cena brutto za opakowanie: " + e._s(e._f("currency")(e.ps.cena_opakowanieA)))])])]) : n("div", {
+            })]) : n("div", [n("ins", [e._v("Cena brutto za opakowanie:\n              " + e._s(e._f("currency")(e.ps.cena_opakowanieA)))])])]) : n("div", {
                 staticClass: "mt-2 d-none d-md-block",
                 attrs: {
                     itemprop: "offers",
                     itemscope: "",
                     itemtype: "http://schema.org/Offer"
                 }
-            }, [0 == e.akcyza ? n("div", [n("ins", [e._v("Cena brutto za opakowanie: " + e._s(e._f("currency")(e.ps.cena_opakowanieP)))]), e._v(" "), n("del", {
+            }, [0 == e.akcyza ? n("div", [n("ins", [e._v("Cena brutto za opakowanie:\n              " + e._s(e._f("currency")(e.ps.cena_opakowanieP)))]), e._v(" "), n("del", {
                 staticClass: "ml-2"
             }, [e._v(e._s(e._f("currency")(e.ps.cena_opakowanie)))]), e._v(" "), n("meta", {
                 attrs: {
@@ -43915,7 +43904,7 @@
                     itemprop: "priceCurrency",
                     content: "PLN"
                 }
-            })]) : n("div", [n("ins", [e._v("Cena brutto za opakowanie: " + e._s(e._f("currency")(e.ps.cena_opakowanieAP)))]), e._v(" "), n("del", {
+            })]) : n("div", [n("ins", [e._v("Cena brutto za opakowanie:\n              " + e._s(e._f("currency")(e.ps.cena_opakowanieAP)))]), e._v(" "), n("del", {
                 staticClass: "ml-2"
             }, [e._v(e._s(e._f("currency")(e.ps.cena_opakowanieA)))])])]), e._v(" "), null == e.ps.cena_opakowanieP && 0 == e.akcyza || null == e.ps.cena_opakowanieAP && 1 == e.akcyza ? n("div", {
                 staticClass: "mt-3 d-block d-md-none"
@@ -44021,7 +44010,7 @@
                 attrs: {
                     abt: "Produkt jest dostępny"
                 }
-            }, [e._v("\n                        Chwilowy "), n("span", {
+            }, [e._v("\n            Chwilowy "), n("span", {
                 staticClass: "d-none"
             }, [e._v(e._s(Math.random()))]), e._v("brak towaru"), n("span", {
                 staticClass: "d-none"
@@ -44030,7 +44019,7 @@
                 attrs: {
                     abt: "Chwilowy brak towaru"
                 }
-            }, [e._v("Produkt jest dostępny")]), e._v(" "), 1 == e.ps.czy_dostepny ? n("link", {
+            }, [e._v("\n            Produkt jest dostępny\n          ")]), e._v(" "), 1 == e.ps.czy_dostepny ? n("link", {
                 attrs: {
                     itemprop: "availability",
                     href: "https://schema.org/InStock"
@@ -44052,7 +44041,7 @@
                     attrs: {
                         for: "sklad" + t.sklad.id + "_" + t.id
                     }
-                }, [e._v("\n                                " + e._s(t.sklad.nazwa) + "\n                            ")])]), e._v(" "), n("div", {
+                }, [e._v("\n                " + e._s(t.sklad.nazwa) + "\n              ")])]), e._v(" "), n("div", {
                     staticClass: "col-2"
                 }, [n("div", {
                     staticClass: "pretty p-icon p-round"
@@ -44100,7 +44089,7 @@
                     class: {
                         "font-weight-bold": 1 == e.czyTrnasportDostepny(t.id)
                     }
-                }, [e._v("\n                                        " + e._s(t.nazwa) + "\n                                    ")]), e._v(" "), n("div", {
+                }, [e._v("\n                  " + e._s(t.nazwa) + "\n                ")]), e._v(" "), n("div", {
                     staticClass: "col-2"
                 }, [n("i", {
                     class: t.icon
@@ -44108,7 +44097,7 @@
                     staticClass: "row"
                 }, [n("div", {
                     staticClass: "col-10 font-weight-bold"
-                }, [e._v("\n                                        Transport do KDW\n                                    ")]), e._v(" "), e._m(9, !0)]) : e._e()])
+                }, [e._v("Transport do KDW")]), e._v(" "), e._m(9, !0)]) : e._e()])
             }
             )), 0)]), e._v(" "), n("div", {
                 staticClass: "mt-3 mb-0 d-block d-md-none"
@@ -44127,7 +44116,7 @@
                 class: {
                     "pt-4": null != e.sklad_id_ins
                 }
-            }, [e._v("Wybierz ilość")]), e._v(" "), n("div", {
+            }, [e._v("\n            Wybierz ilość\n          ")]), e._v(" "), n("div", {
                 staticClass: "cart-product-quantity"
             }, [n("div", {
                 staticClass: "quantity m-l-5 row"
@@ -44206,9 +44195,9 @@
                 }
             }) : e._e(), e._v(" "), e.error_ilosc ? n("div", {
                 staticClass: "alert alert-danger rounded-0"
-            }, [e._v("\n                        Zamówienie może składać się maksymalnie z " + e._s(e.maxNaZamowienie) + " sztuk produktu.\n                    ")]) : e._e(), e._v(" "), e.connection_error ? n("div", {
+            }, [e._v("\n            Zamówienie może składać się maksymalnie z\n            " + e._s(e.maxNaZamowienie) + " sztuk produktu.\n          ")]) : e._e(), e._v(" "), e.connection_error ? n("div", {
                 staticClass: "alert alert-danger-outline rounded-0 mt-2"
-            }, [e._m(10), e._v("\n                        Podczas dodawania produktu do koszyka nie udało się nawiązać połączenia z serwerem."), n("br"), e._v(" "), n("button", {
+            }, [e._m(10), e._v("\n            Podczas dodawania produktu do koszyka nie udało się nawiązać\n            połączenia z serwerem."), n("br"), e._v(" "), n("button", {
                 staticClass: "btn btn-sm mt-2",
                 attrs: {
                     type: "button"
@@ -44218,7 +44207,7 @@
                         return e.dodajDoKoszyka(e.wybrany_transport)
                     }
                 }
-            }, [e._v("Ponów próbę")])]) : e._e(), e._v(" "), 1 == e.ps.czy_dostepny ? n("div", [e.loading ? e._e() : n("button", {
+            }, [e._v("\n              Ponów próbę\n            ")])]) : e._e(), e._v(" "), 1 == e.ps.czy_dostepny ? n("div", [e.loading ? e._e() : n("button", {
                 staticClass: "btn btn-primary btn-block py-4 mt-3",
                 attrs: {
                     type: "button",
@@ -44229,7 +44218,7 @@
                 }
             }, [n("i", {
                 staticClass: "fas fa-shopping-cart"
-            }), e._v(" Dodaj do koszyka\n                        ")]), e._v(" "), e.loading ? n("button", {
+            }), e._v(" Dodaj do koszyka\n            ")]), e._v(" "), e.loading ? n("button", {
                 staticClass: "btn btn-primary btn-block py-4 mt-3",
                 attrs: {
                     type: "button"
@@ -44240,7 +44229,7 @@
                     role: "status",
                     "aria-hidden": "true"
                 }
-            }), e._v(" Ładowanie...\n                        ")]) : e._e()]) : e._e(), e._v(" "), 0 == e.ps.czy_dostepny ? n("button", {
+            }), e._v("\n              Ładowanie...\n            ")]) : e._e()]) : e._e(), e._v(" "), 0 == e.ps.czy_dostepny ? n("button", {
                 staticClass: "btn btn-primary btn-block py-4 mt-3",
                 attrs: {
                     type: "button",
@@ -44249,7 +44238,7 @@
                 }
             }, [n("i", {
                 staticClass: "fas fa-shopping-cart"
-            }), e._v(" Dodaj do koszyka\n                    ")]) : e._e()]) : e._e()])])])]) : e._e()
+            }), e._v(" Dodaj do koszyka\n          ")]) : e._e()]) : e._e()])])])]) : e._e()
         }
         ), [function() {
             var e = this.$createElement
@@ -44310,7 +44299,7 @@
                     "data-toggle": "modal",
                     href: "#"
                 }
-            }, [this._v("\n                            Więcej informacji o akcyzie\n                        ")])])
+            }, [this._v("\n              Więcej informacji o akcyzie\n            ")])])
         }
         , function() {
             var e = this.$createElement
@@ -44364,7 +44353,7 @@
                 staticClass: "font-weight-bold text-4 ml-2"
             }, [this._v("BŁĄD POŁĄCZENIA")])])
         }
-        ], !1, null, "3573ec74", null);
+        ], !1, null, "e37d561a", null);
         t.default = o.exports
     },
     gjCT: function(e, t, n) {
@@ -50402,6 +50391,17 @@
         e.exports = function(e) {
             return !r(e) && isFinite(e) && a(e) === e
         }
+    },
+    nBtg: function(e, t, n) {
+        var r = n("Z1wA");
+        "string" == typeof r && (r = [[e.i, r, ""]]);
+        var a = {
+            hmr: !0,
+            transform: void 0,
+            insertInto: void 0
+        };
+        n("aET+")(r, a);
+        r.locals && (e.exports = r.locals)
     },
     nCnK: function(e, t, n) {
         n("7DDg")("Uint32", 4, (function(e) {
