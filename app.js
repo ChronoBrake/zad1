@@ -3370,6 +3370,12 @@
                 )))
             }(e)
         }
+        ,
+        t.noLeadingZeros = function(e) {
+            return void 0 === e || (e = Array.from(e),
+            console.log(e),
+            !(e.length > 0 && 0 == e[0]))
+        }
     },
     "8L3F": function(e, t, n) {
         "use strict";
@@ -13362,7 +13368,8 @@
                     required: r.required,
                     numeric: r.numeric,
                     minLength: Object(r.minLength)(9),
-                    maxLength: Object(r.maxLength)(9)
+                    maxLength: Object(r.maxLength)(9),
+                    noLeadingZeros: a.noLeadingZeros
                 },
                 pesel: {
                     required: r.required,
@@ -13538,7 +13545,9 @@
                 staticClass: "error"
             }, [e._v("\n                        Numer telefonu musi składać się z 9 cyfr\n                    ")]), e._v(" "), e.$v.telefon.maxLength ? e._e() : n("div", {
                 staticClass: "error"
-            }, [e._v("\n                        Numer telefonu musi składać się z 9 cyfr\n                    ")])]) : e._e()]), e._v(" "), n("div", {
+            }, [e._v("\n                        Numer telefonu musi składać się z 9 cyfr\n                    ")]), e._v(" "), e.$v.telefon.noLeadingZeros ? e._e() : n("div", {
+                staticClass: "error"
+            }, [e._v("\n                        Proszę podać poprawny numer telefonu\n                    ")])]) : e._e()]), e._v(" "), n("div", {
                 staticClass: "col-md-6 mb-2"
             }, [e._m(5), e._v(" "), n("input", {
                 directives: [{
@@ -14508,7 +14517,7 @@
                 staticClass: "fas fa-save"
             }), this._v(" Zapisz zmiany\n                ")])])
         }
-        ], !1, null, "4583bcf1", null);
+        ], !1, null, "424ea97c", null);
         t.default = s.exports
     },
     GNAe: function(e, t, n) {
@@ -48349,7 +48358,8 @@
                     required: r.required,
                     numeric: r.numeric,
                     minLength: Object(r.minLength)(9),
-                    maxLength: Object(r.maxLength)(9)
+                    maxLength: Object(r.maxLength)(9),
+                    noLeadingZeros: a.noLeadingZeros
                 },
                 iban: {
                     required: r.required,
@@ -48564,7 +48574,9 @@
                 staticClass: "error"
             }, [e._v("\n            Numer telefonu musi składać się z 9 cyfr\n          ")]), e._v(" "), e.$v.telefon.maxLength ? e._e() : n("div", {
                 staticClass: "error"
-            }, [e._v("\n            Numer telefonu musi składać się z 9 cyfr\n          ")])]) : e._e()]), e._v(" "), n("div", {
+            }, [e._v("\n            Numer telefonu musi składać się z 9 cyfr\n          ")]), e._v(" "), e.$v.telefon.noLeadingZeros ? e._e() : n("div", {
+                staticClass: "error"
+            }, [e._v("\n            Proszę podać poprawny numer telefonu\n          ")])]) : e._e()]), e._v(" "), n("div", {
                 staticClass: "col-md-6 mb-2"
             }, [e._m(6), e._v(" "), n("input", {
                 directives: [{
@@ -49415,7 +49427,7 @@
                 staticClass: "fas fa-save"
             }), this._v(" Zapisz zmiany\n        ")])])
         }
-        ], !1, null, "bdbe147c", null);
+        ], !1, null, "7f0801ed", null);
         t.default = s.exports
     },
     lLAL: function(e, t, n) {
