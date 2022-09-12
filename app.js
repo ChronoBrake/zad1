@@ -823,9 +823,6 @@
             }
         }
     },
-    "1mwD": function(e, t, n) {
-        (e.exports = n("I1BE")(!1)).push([e.i, "\n.error[data-v-5a616006] {\r\n  font-size: 0.8em;\r\n  color: #d9534f;\n}\n.fade-enter-active[data-v-5a616006],\r\n.fade-leave-active[data-v-5a616006] {\r\n  transition: opacity 0.8s;\n}\n.fade-enter[data-v-5a616006], .fade-leave-to[data-v-5a616006] /* .fade-leave-active below version 2.1.8 */ {\r\n  opacity: 0;\n}\r\n", ""])
-    },
     "1ppg": function(e, t, n) {
         !function(e) {
             "use strict";
@@ -15753,6 +15750,11 @@
                 } catch (e) {}
             }(t = Object(e), a)) ? n : i ? r(t) : "Object" == (o = r(t)) && "function" == typeof t.callee ? "Arguments" : o
         }
+    },
+    IAxw: function(e, t, n) {
+        "use strict";
+        var r = n("yYhr");
+        n.n(r).a
     },
     IBtZ: function(e, t, n) {
         !function(e) {
@@ -42142,7 +42144,10 @@
                     this.pushAdres(),
                     this.checkAdresAndObliczOdleglosc()
                 },
-                odbior_osobisty_rodzaj: function() {
+                odbior_osobisty_rodzaj: function(e) {
+                    "KWK" == e && (this.wybrany_kdw = null,
+                    this.kdw_wojewodztwo = null,
+                    this.koszt_dostawy = 0),
                     this.$emit("odbior_osobisty_rodzaj", this.odbior_osobisty_rodzaj)
                 },
                 wybrany_kdw: function() {
@@ -42389,7 +42394,7 @@
                 }
             }
         }
-          , l = (n("vf2H"),
+          , l = (n("IAxw"),
         n("KHd+"))
           , u = Object(l.a)(s, (function() {
             var e = this
@@ -42487,7 +42492,7 @@
                 }],
                 staticClass: "form-control",
                 attrs: {
-                    name: "kdw_wojewodztwo",
+                    name: "odbior_osobisty_rodzaj",
                     id: "kdw_wojewodztwo"
                 },
                 on: {
@@ -43037,7 +43042,7 @@
                 staticClass: "fas fa-info-circle"
             })])
         }
-        ], !1, null, "5a616006", null);
+        ], !1, null, "6a931757", null);
         t.default = u.exports
     },
     fyDq: function(e, t, n) {
@@ -50332,17 +50337,6 @@
         var r = n("KT+E");
         n.n(r).a
     },
-    mD2L: function(e, t, n) {
-        var r = n("1mwD");
-        "string" == typeof r && (r = [[e.i, r, ""]]);
-        var a = {
-            hmr: !0,
-            transform: void 0,
-            insertInto: void 0
-        };
-        n("aET+")(r, a);
-        r.locals && (e.exports = r.locals)
-    },
     mGWK: function(e, t, n) {
         "use strict";
         var r = n("XKFU")
@@ -53583,10 +53577,8 @@
             n.promise
         }
     },
-    vf2H: function(e, t, n) {
-        "use strict";
-        var r = n("mD2L");
-        n.n(r).a
+    vMlO: function(e, t, n) {
+        (e.exports = n("I1BE")(!1)).push([e.i, "\n.error[data-v-6a931757] {\r\n  font-size: 0.8em;\r\n  color: #d9534f;\n}\n.fade-enter-active[data-v-6a931757],\r\n.fade-leave-active[data-v-6a931757] {\r\n  transition: opacity 0.8s;\n}\n.fade-enter[data-v-6a931757], .fade-leave-to[data-v-6a931757] /* .fade-leave-active below version 2.1.8 */ {\r\n  opacity: 0;\n}\r\n", ""])
     },
     vhPU: function(e, t) {
         e.exports = function(e) {
@@ -57148,6 +57140,17 @@
                 }
             })
         }(n("wd/R"))
+    },
+    yYhr: function(e, t, n) {
+        var r = n("vMlO");
+        "string" == typeof r && (r = [[e.i, r, ""]]);
+        var a = {
+            hmr: !0,
+            transform: void 0,
+            insertInto: void 0
+        };
+        n("aET+")(r, a);
+        r.locals && (e.exports = r.locals)
     },
     yZ1b: function(e, t, n) {
         "use strict";
