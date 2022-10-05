@@ -1234,11 +1234,6 @@
             })
         }(n("wd/R"))
     },
-    "33dH": function(e, t, n) {
-        "use strict";
-        var r = n("RPB/");
-        n.n(r).a
-    },
     "3E1r": function(e, t, n) {
         !function(e) {
             "use strict";
@@ -11593,6 +11588,7 @@
                     koszykErrors: 0,
                     reset_obliczen_transportu: 0,
                     obliczenia_w_trakcie: !1,
+                    usuwanie_produktu: !1,
                     zablokuj_kod_rabatowy: !1,
                     pokaz_kod_rabatowy: !1,
                     blockade: !1,
@@ -11762,17 +11758,21 @@
                     ))
                 },
                 deleteProduct: function(e) {
-                    var t = this;
-                    axios.delete("/koszyk/usun-produkt", {
-                        data: {
-                            produkt_id: e
+                    if (!this.usuwanie_produktu) {
+                        var t = this;
+                        this.usuwanie_produktu = !0,
+                        axios.delete("/koszyk/usun-produkt", {
+                            data: {
+                                produkt_id: e
+                            }
+                        }).then((function(e) {
+                            t.koszyk = e.data.koszyk,
+                            t.msg = e.data.msg,
+                            t.usuwanie_produktu = !1
                         }
-                    }).then((function(e) {
-                        t.koszyk = e.data.koszyk,
-                        t.msg = e.data.msg
+                        )).catch((function(e) {}
+                        ))
                     }
-                    )).catch((function(e) {}
-                    ))
                 },
                 akcyza: function(e) {
                     var t = arguments.length > 1 && void 0 !== arguments[1] && arguments[1]
@@ -11919,7 +11919,7 @@
                 }
             }
         }
-          , i = (n("33dH"),
+          , i = (n("ullJ"),
         n("KHd+"))
           , a = Object(i.a)(r, (function() {
             var e = this
@@ -12085,6 +12085,9 @@
                     staticClass: "cart-product-remove"
                 }, [n("span", {
                     staticClass: "font-weight-bold",
+                    class: {
+                        "text-gray": e.usuwanie_produktu
+                    },
                     on: {
                         click: function(n) {
                             return e.deleteProduct(t.produkt_id)
@@ -12095,12 +12098,18 @@
                     staticStyle: {
                         cursor: "pointer"
                     }
-                }, [e._v("USUŃ  ")]), e._v(" "), n("i", {
+                }, [e._v("USUŃ  ")]), e._v(" "), e.usuwanie_produktu ? e._e() : n("i", {
                     staticClass: "fa fa-times",
                     staticStyle: {
                         cursor: "pointer"
                     }
-                })])])])
+                }), e._v(" "), e.usuwanie_produktu ? n("span", {
+                    staticClass: "spinner-border spinner-border-sm",
+                    attrs: {
+                        role: "status",
+                        "aria-hidden": "true"
+                    }
+                }) : e._e()])])])
             }
             )), 0)])]) : n("div", [n("h4", {
                 staticClass: "empty-cart"
@@ -12674,7 +12683,7 @@
                 staticClass: "col-12 mt-3"
             }, [t("h4", [this._v("PODSUMOWANIE")])])
         }
-        ], !1, null, "0c4a0e4d", null);
+        ], !1, null, "1a200220", null);
         t.default = a.exports
     },
     Faw5: function(e, t, n) {
@@ -32002,17 +32011,6 @@
             })
         }(n("wd/R"))
     },
-    "RPB/": function(e, t, n) {
-        var r = n("qTsK");
-        "string" == typeof r && (r = [[e.i, r, ""]]);
-        var i = {
-            hmr: !0,
-            transform: void 0,
-            insertInto: void 0
-        };
-        n("aET+")(r, i);
-        r.locals && (e.exports = r.locals)
-    },
     RW0V: function(e, t, n) {
         var r = n("S/j/")
           , i = n("DVgA");
@@ -37615,6 +37613,9 @@
         e.exports = function(e) {
             return r[e] || (r[e] = i(e))
         }
+    },
+    YYY0: function(e, t, n) {
+        (e.exports = n("I1BE")(!1)).push([e.i, '\n.show-for-mobile[data-v-1a200220] {\r\n  display: none;\n}\nth[data-v-1a200220] {\r\n  color: #5c5c5c;\r\n  border: 0;\r\n  text-align: center;\n}\ntd[data-v-1a200220],\r\nth[data-v-1a200220] {\r\n  text-align: center;\r\n  padding: 0;\n}\n.table thead th[data-v-1a200220] {\r\n  border: 0;\n}\n.table td[data-v-1a200220] {\r\n  border-top: 0;\n}\ninput[data-v-1a200220]:not([type="checkbox"]):not([type="radio"]) {\r\n  font-size: 1.2em;\n}\n@media only screen and (max-width: 40em) {\nthead th[data-v-1a200220]:not(:first-child) {\r\n    display: none;\n}\n.cart-product-thumbnail[data-v-1a200220] {\r\n    display: none;\n}\ntd[data-v-1a200220],\r\n  th[data-v-1a200220] {\r\n    display: block;\r\n    text-align: center;\r\n    border: 0;\n}\ntd[data-th][data-v-1a200220]:before {\r\n    content: attr(data-th);\n}\n.show-for-mobile[data-v-1a200220] {\r\n    display: flex;\n}\ntr[data-v-1a200220] {\r\n    margin-bottom: 10em;\n}\n.table-label[data-v-1a200220] {\r\n    display: block;\r\n    margin-bottom: 1em;\n}\n.cart-product-thumbnail[data-v-1a200220] {\r\n    padding-top: 2em;\n}\n}\r\n', ""])
     },
     YjXl: function(e, t, n) {
         "use strict";
@@ -50630,9 +50631,6 @@
         })
     },
     pyCd: function(e, t) {},
-    qTsK: function(e, t, n) {
-        (e.exports = n("I1BE")(!1)).push([e.i, '\n.show-for-mobile[data-v-0c4a0e4d] {\r\n  display: none;\n}\nth[data-v-0c4a0e4d] {\r\n  color: #5c5c5c;\r\n  border: 0;\r\n  text-align: center;\n}\ntd[data-v-0c4a0e4d],\r\nth[data-v-0c4a0e4d] {\r\n  text-align: center;\r\n  padding: 0;\n}\n.table thead th[data-v-0c4a0e4d] {\r\n  border: 0;\n}\n.table td[data-v-0c4a0e4d] {\r\n  border-top: 0;\n}\ninput[data-v-0c4a0e4d]:not([type="checkbox"]):not([type="radio"]) {\r\n  font-size: 1.2em;\n}\n@media only screen and (max-width: 40em) {\nthead th[data-v-0c4a0e4d]:not(:first-child) {\r\n    display: none;\n}\n.cart-product-thumbnail[data-v-0c4a0e4d] {\r\n    display: none;\n}\ntd[data-v-0c4a0e4d],\r\n  th[data-v-0c4a0e4d] {\r\n    display: block;\r\n    text-align: center;\r\n    border: 0;\n}\ntd[data-th][data-v-0c4a0e4d]:before {\r\n    content: attr(data-th);\n}\n.show-for-mobile[data-v-0c4a0e4d] {\r\n    display: flex;\n}\ntr[data-v-0c4a0e4d] {\r\n    margin-bottom: 10em;\n}\n.table-label[data-v-0c4a0e4d] {\r\n    display: block;\r\n    margin-bottom: 1em;\n}\n.cart-product-thumbnail[data-v-0c4a0e4d] {\r\n    padding-top: 2em;\n}\n}\r\n', ""])
-    },
     qncB: function(e, t, n) {
         var r = n("XKFU")
           , i = n("vhPU")
@@ -52451,6 +52449,17 @@
             }
         })
     },
+    smNa: function(e, t, n) {
+        var r = n("YYY0");
+        "string" == typeof r && (r = [[e.i, r, ""]]);
+        var i = {
+            hmr: !0,
+            transform: void 0,
+            insertInto: void 0
+        };
+        n("aET+")(r, i);
+        r.locals && (e.exports = r.locals)
+    },
     sp3z: function(e, t, n) {
         !function(e) {
             "use strict";
@@ -53337,6 +53346,11 @@
                 return !(n && !n.configurable) && delete e[t]
             }
         })
+    },
+    ullJ: function(e, t, n) {
+        "use strict";
+        var r = n("smNa");
+        n.n(r).a
     },
     upKx: function(e, t, n) {
         "use strict";
