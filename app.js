@@ -1235,7 +1235,7 @@
         }(n("wd/R"))
     },
     "3B0S": function(e, t, n) {
-        (e.exports = n("I1BE")(!1)).push([e.i, '\n.input_file {\r\n  position: absolute;\r\n  z-index: 2;\r\n  top: 0;\r\n  left: 0;\r\n  filter: alpha(opacity=0);\r\n  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";\r\n  opacity: 0;\r\n  background-color: transparent;\r\n  color: transparent;\r\n  /* width: 51px; */\r\n  width: 100%;\n}\r\n', ""])
+        (e.exports = n("I1BE")(!1)).push([e.i, '\n.input_file {\n  position: absolute;\n  z-index: 2;\n  top: 0;\n  left: 0;\n  filter: alpha(opacity=0);\n  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";\n  opacity: 0;\n  background-color: transparent;\n  color: transparent;\n  /* width: 51px; */\n  width: 100%;\n}\n', ""])
     },
     "3E1r": function(e, t, n) {
         !function(e) {
@@ -21986,7 +21986,8 @@
                     fileName_3: "",
                     recaptcha_v2_ok: !1,
                     recaptcha_v2: null,
-                    recaptcha_v2_error: !1
+                    recaptcha_v2_error: !1,
+                    zamkinijWatekOdp: ""
                 }
             },
             validations: {
@@ -21996,6 +21997,9 @@
                 }
             },
             methods: {
+                infoModal: function() {
+                    this.zamkinijWatekOdp
+                },
                 g_recaptcha_v2: function(e) {
                     this.recaptcha_v2_ok = !0,
                     this.recaptcha_v2_error = !1,
@@ -22356,7 +22360,49 @@
                 staticClass: "error-form"
             }, [n("i", {
                 staticClass: "fas fa-info-circle"
-            }), e._v(" Proszę dokonać weryfikacji\n    ")]) : e._e()]), e._v(" "), e._m(2), e._v(" "), e._m(3), e._v(" "), e._m(4)])
+            }), e._v(" Proszę dokonać weryfikacji\n    ")]) : e._e()]), e._v(" "), n("div", {
+                staticClass: "row justify-content-md-center mt-2"
+            }, [n("div", {
+                staticClass: "form-check form-switch"
+            }, [n("input", {
+                directives: [{
+                    name: "model",
+                    rawName: "v-model",
+                    value: e.zamkinijWatekOdp,
+                    expression: "zamkinijWatekOdp"
+                }],
+                staticClass: "form-check-input",
+                attrs: {
+                    type: "checkbox",
+                    name: "zamknijWatek",
+                    id: "zamknijWatekPoOdpowiedzi",
+                    "data-toggle": "modal",
+                    "data-target": e.zamkinijWatekOdp ? "" : "#infoZamknijWatekModal"
+                },
+                domProps: {
+                    checked: Array.isArray(e.zamkinijWatekOdp) ? e._i(e.zamkinijWatekOdp, null) > -1 : e.zamkinijWatekOdp
+                },
+                on: {
+                    click: function(t) {
+                        return e.infoModal()
+                    },
+                    change: function(t) {
+                        var n = e.zamkinijWatekOdp
+                          , r = t.target
+                          , a = !!r.checked;
+                        if (Array.isArray(n)) {
+                            var i = e._i(n, null);
+                            r.checked ? i < 0 && (e.zamkinijWatekOdp = n.concat([null])) : i > -1 && (e.zamkinijWatekOdp = n.slice(0, i).concat(n.slice(i + 1)))
+                        } else
+                            e.zamkinijWatekOdp = a
+                    }
+                }
+            }), e._v(" "), n("label", {
+                staticClass: "form-check-label",
+                attrs: {
+                    for: "zamknijWatekPoOdpowiedzi"
+                }
+            }, [e._v("Zamknij wątek po udzieleniu odpowiedzi")])])]), e._v(" "), e._m(2), e._v(" "), e._m(3)])
         }
         ), [function() {
             var e = this.$createElement
@@ -22387,27 +22433,6 @@
             }, [t("i", {
                 staticClass: "fas fa-info-circle"
             }), this._v(" Maksymalnie można przesłać 3 pliki.\n        Maksymalny rozmiar pliku to 2 MB. Dopuszczalne rozszerzenia: JPG, PDF.\n      ")])])])
-        }
-        , function() {
-            var e = this.$createElement
-              , t = this._self._c || e;
-            return t("div", {
-                staticClass: "row justify-content-md-center mt-2"
-            }, [t("div", {
-                staticClass: "form-check form-switch"
-            }, [t("input", {
-                staticClass: "form-check-input",
-                attrs: {
-                    type: "checkbox",
-                    name: "zamknijWatek",
-                    id: "zamknijWatekPoOdpowiedzi"
-                }
-            }), this._v(" "), t("label", {
-                staticClass: "form-check-label",
-                attrs: {
-                    for: "zamknijWatekPoOdpowiedzi"
-                }
-            }, [this._v("Zamknij wątek po udzieleniu odpowiedzi")])])])
         }
         , function() {
             var e = this.$createElement
