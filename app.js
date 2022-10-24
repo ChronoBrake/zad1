@@ -1235,7 +1235,7 @@
         }(n("wd/R"))
     },
     "3B0S": function(e, t, n) {
-        (e.exports = n("I1BE")(!1)).push([e.i, '\n.input_file {\n  position: absolute;\n  z-index: 2;\n  top: 0;\n  left: 0;\n  filter: alpha(opacity=0);\n  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";\n  opacity: 0;\n  background-color: transparent;\n  color: transparent;\n  /* width: 51px; */\n  width: 100%;\n}\n', ""])
+        (e.exports = n("I1BE")(!1)).push([e.i, '\n.input_file {\r\n  position: absolute;\r\n  z-index: 2;\r\n  top: 0;\r\n  left: 0;\r\n  filter: alpha(opacity=0);\r\n  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";\r\n  opacity: 0;\r\n  background-color: transparent;\r\n  color: transparent;\r\n  /* width: 51px; */\r\n  width: 100%;\n}\r\n', ""])
     },
     "3E1r": function(e, t, n) {
         !function(e) {
@@ -5981,7 +5981,7 @@
         }
     },
     B3oq: function(e, t, n) {
-        (e.exports = n("I1BE")(!1)).push([e.i, '\n.trash {\r\n  cursor: pointer;\n}\n.trash:hover {\r\n  color: #d71920;\n}\n.input_file {\r\n  position: absolute;\r\n  z-index: 2;\r\n  top: 0;\r\n  left: 0;\r\n  filter: alpha(opacity=0);\r\n  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";\r\n  opacity: 0;\r\n  background-color: transparent;\r\n  color: transparent;\r\n  /* width: 141px; */\r\n  width: 100%;\n}\r\n', ""])
+        (e.exports = n("I1BE")(!1)).push([e.i, '\n.trash {\n  cursor: pointer;\n}\n.trash:hover {\n  color: #d71920;\n}\n.input_file {\n  position: absolute;\n  z-index: 2;\n  top: 0;\n  left: 0;\n  filter: alpha(opacity=0);\n  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";\n  opacity: 0;\n  background-color: transparent;\n  color: transparent;\n  /* width: 141px; */\n  width: 100%;\n}\n', ""])
     },
     B55N: function(e, t, n) {
         !function(e) {
@@ -50771,6 +50771,12 @@
             },
             methods: {
                 kategoriaSzczegolowa: function(e) {
+                    2 == this.kat || 1 == this.kat && 2 == this.kat_sz ? (this.realizacja_zamowienia = !0,
+                    this.zamowieniaNiezrealizowane()) : (this.realizacja_zamowienia = !1,
+                    this.niezrealizowane_zamowienia = "",
+                    this.sklady = "",
+                    this.skladReadonly = !1,
+                    this.zamowienie = ""),
                     "1" == e.target.options[e.target.options.selectedIndex].dataset.file ? (this.fileRequired = !0,
                     this.fileValidationRequired = !0) : (this.fileRequired = !1,
                     this.fileValidationRequired = !1)
