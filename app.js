@@ -5981,7 +5981,7 @@
         }
     },
     B3oq: function(e, t, n) {
-        (e.exports = n("I1BE")(!1)).push([e.i, '\n.trash {\n  cursor: pointer;\n}\n.trash:hover {\n  color: #d71920;\n}\n.input_file {\n  position: absolute;\n  z-index: 2;\n  top: 0;\n  left: 0;\n  filter: alpha(opacity=0);\n  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";\n  opacity: 0;\n  background-color: transparent;\n  color: transparent;\n  /* width: 141px; */\n  width: 100%;\n}\n', ""])
+        (e.exports = n("I1BE")(!1)).push([e.i, '\n.trash {\r\n  cursor: pointer;\n}\n.trash:hover {\r\n  color: #d71920;\n}\n.input_file {\r\n  position: absolute;\r\n  z-index: 2;\r\n  top: 0;\r\n  left: 0;\r\n  filter: alpha(opacity=0);\r\n  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";\r\n  opacity: 0;\r\n  background-color: transparent;\r\n  color: transparent;\r\n  /* width: 141px; */\r\n  width: 100%;\n}\r\n', ""])
     },
     B55N: function(e, t, n) {
         !function(e) {
@@ -14429,17 +14429,13 @@
                 staticClass: "col-sm-12 text-center mt-3"
             }, [n("p", [n("i", {
                 staticClass: "fas fa-exclamation-triangle text-danger"
-            }), e._v("\n                Aktualizacja wprowadzonych danych możliwa jest za\n                pośrednictwem dedykowanego\n                "), n("a", {
+            }), e._v(" Aktualizacja wprowadzonych danych możliwa jest za pośrednictwem dedykowanego\n                "), n("a", {
                 attrs: {
                     href: e.formularz_url
                 }
-            }, [e._v("formularza")]), e._v(", dostępnego na\n                stronie e-Sklepu. Formularz po jego wypełnieniu powinien\n                zostać przesłany na adres email\n                "), n("a", {
-                attrs: {
-                    href: "mailto:sklep@pgg.pl"
-                }
-            }, [e._v("sklep@pgg.pl")]), e._v(".\n            ")])]) : e._e(), e._v(" "), e.blokada && e.adres_spalania ? e._e() : n("div", {
+            }, [e._v("formularza")]), e._v(", dostępnego na stronie e-Sklepu. Formularz po jego wypełnieniu powinien zostać dołączony do zgłoszenia poprzez formularz kontaktowy na profilu klienta "), e._m(24), e._v(".\n            ")])]) : e._e(), e._v(" "), e.blokada && e.adres_spalania ? e._e() : n("div", {
                 staticClass: "row justify-content-md-center"
-            }, [e._m(24)])])])
+            }, [e._m(25)])])])
         }
         ), [function() {
             var e = this.$createElement
@@ -14671,6 +14667,13 @@
         , function() {
             var e = this.$createElement
               , t = this._self._c || e;
+            return t("b", [this._v("(Kategoria: Obsługa konta "), t("i", {
+                staticClass: "fas fa-arrow-right"
+            }), this._v(" Zmiana danych osobowych)")])
+        }
+        , function() {
+            var e = this.$createElement
+              , t = this._self._c || e;
             return t("div", {
                 staticClass: "col-md-5 mt-3"
             }, [t("button", {
@@ -14682,7 +14685,7 @@
                 staticClass: "fas fa-save"
             }), this._v(" Zapisz zmiany\n                ")])])
         }
-        ], !1, null, "486fe9c0", null);
+        ], !1, null, "aa75040c", null);
         t.default = s.exports
     },
     GNAe: function(e, t, n) {
@@ -49556,17 +49559,13 @@
                 staticClass: "col-sm-12 text-center mt-3"
             }, [n("p", [n("i", {
                 staticClass: "fas fa-exclamation-triangle text-danger"
-            }), e._v(" Aktualizacja\n        wprowadzonych danych możliwa jest za pośrednictwem dedykowanego\n        "), n("a", {
+            }), e._v(" Aktualizacja wprowadzonych danych możliwa jest za pośrednictwem dedykowanego\n        "), n("a", {
                 attrs: {
                     href: e.formularz_url
                 }
-            }, [e._v("formularza")]), e._v(", dostępnego na stronie\n        e-Sklepu. Formularz po jego wypełnieniu powinien zostać przesłany na\n        adres email "), n("a", {
-                attrs: {
-                    href: "mailto:sklep@pgg.pl"
-                }
-            }, [e._v("sklep@pgg.pl")]), e._v(".\n      ")])]) : e._e(), e._v(" "), e.blokada && e.adres_spalania ? e._e() : n("div", {
+            }, [e._v("formularza")]), e._v(", dostępnego na stronie e-Sklepu. Formularz po jego wypełnieniu powinien zostać dołączony do zgłoszenia poprzez formularz kontaktowy na profilu klienta "), e._m(22), e._v(".\n      ")])]) : e._e(), e._v(" "), e.blokada && e.adres_spalania ? e._e() : n("div", {
                 staticClass: "row justify-content-md-center"
-            }, [e._m(22)])])])
+            }, [e._m(23)])])])
         }
         ), [function() {
             var e = this.$createElement
@@ -49777,6 +49776,13 @@
         , function() {
             var e = this.$createElement
               , t = this._self._c || e;
+            return t("b", [this._v("(Kategoria: Obsługa konta "), t("i", {
+                staticClass: "fas fa-arrow-right"
+            }), this._v(" Zmiana danych osobowych)")])
+        }
+        , function() {
+            var e = this.$createElement
+              , t = this._self._c || e;
             return t("div", {
                 staticClass: "col-md-5 mt-3"
             }, [t("button", {
@@ -49788,7 +49794,7 @@
                 staticClass: "fas fa-save"
             }), this._v(" Zapisz zmiany\n        ")])])
         }
-        ], !1, null, "363d2926", null);
+        ], !1, null, "e088b8e6", null);
         t.default = s.exports
     },
     lXzo: function(e, t, n) {
