@@ -1,9 +1,9 @@
 .pretty * {
-    box-sizing: border-box;
+    box-sizing: border-box
 }
 
 .pretty input:not([type=checkbox]):not([type=radio]) {
-    display: none;
+    display: none
 }
 
 .pretty {
@@ -11,7 +11,7 @@
     display: inline-block;
     margin-right: 1em;
     white-space: nowrap;
-    line-height: 1;
+    line-height: 1
 }
 
 .pretty input {
@@ -25,19 +25,19 @@
     opacity: 0;
     margin: 0;
     padding: 0;
-    cursor: pointer;
+    cursor: pointer
 }
 
 .pretty .state label {
-    position: initial;
+    position: static;
     display: inline-block;
-    font-weight: normal;
+    font-weight: 400;
     margin: 0;
     text-indent: 1.5em;
-    min-width: calc(1em + 2px);
+    min-width: calc(1em + 2px)
 }
 
-.pretty .state label:before, .pretty .state label:after {
+.pretty .state label:after,.pretty .state label:before {
     content: "";
     width: calc(1em + 2px);
     height: calc(1em + 2px);
@@ -48,29 +48,29 @@
     z-index: 0;
     position: absolute;
     left: 0;
-    top: calc((0% - (100% - 1em)) - 8%);
-    background-color: transparent;
+    top: calc(-108% - -1em);
+    background-color: transparent
 }
 
 .pretty .state label:before {
-    border-color: #bdc3c7;
+    border-color: #bdc3c7
 }
 
-.pretty .state.p-is-hover, .pretty .state.p-is-indeterminate {
-    display: none;
+.pretty .state.p-is-hover,.pretty .state.p-is-indeterminate {
+    display: none
 }
 
 @-webkit-keyframes zoom {
     0% {
         opacity: 0;
-        transform: scale(0);
+        transform: scale(0)
     }
 }
 
 @keyframes zoom {
     0% {
         opacity: 0;
-        transform: scale(0);
+        transform: scale(0)
     }
 }
 
@@ -79,50 +79,50 @@
         -webkit-animation-timing-function: ease-in;
         animation-timing-function: ease-in;
         opacity: 0;
-        transform: scale(7);
+        transform: scale(7)
     }
 
     38% {
         -webkit-animation-timing-function: ease-out;
         animation-timing-function: ease-out;
         opacity: 1;
-        transform: scale(1);
+        transform: scale(1)
     }
 
     55% {
         -webkit-animation-timing-function: ease-in;
         animation-timing-function: ease-in;
-        transform: scale(1.5);
+        transform: scale(1.5)
     }
 
     72% {
         -webkit-animation-timing-function: ease-out;
         animation-timing-function: ease-out;
-        transform: scale(1);
+        transform: scale(1)
     }
 
     81% {
         -webkit-animation-timing-function: ease-in;
         animation-timing-function: ease-in;
-        transform: scale(1.24);
+        transform: scale(1.24)
     }
 
     89% {
         -webkit-animation-timing-function: ease-out;
         animation-timing-function: ease-out;
-        transform: scale(1);
+        transform: scale(1)
     }
 
     95% {
         -webkit-animation-timing-function: ease-in;
         animation-timing-function: ease-in;
-        transform: scale(1.04);
+        transform: scale(1.04)
     }
 
-    100% {
+    to {
         -webkit-animation-timing-function: ease-out;
         animation-timing-function: ease-out;
-        transform: scale(1);
+        transform: scale(1)
     }
 }
 
@@ -131,175 +131,175 @@
         -webkit-animation-timing-function: ease-in;
         animation-timing-function: ease-in;
         opacity: 0;
-        transform: scale(7);
+        transform: scale(7)
     }
 
     38% {
         -webkit-animation-timing-function: ease-out;
         animation-timing-function: ease-out;
         opacity: 1;
-        transform: scale(1);
+        transform: scale(1)
     }
 
     55% {
         -webkit-animation-timing-function: ease-in;
         animation-timing-function: ease-in;
-        transform: scale(1.5);
+        transform: scale(1.5)
     }
 
     72% {
         -webkit-animation-timing-function: ease-out;
         animation-timing-function: ease-out;
-        transform: scale(1);
+        transform: scale(1)
     }
 
     81% {
         -webkit-animation-timing-function: ease-in;
         animation-timing-function: ease-in;
-        transform: scale(1.24);
+        transform: scale(1.24)
     }
 
     89% {
         -webkit-animation-timing-function: ease-out;
         animation-timing-function: ease-out;
-        transform: scale(1);
+        transform: scale(1)
     }
 
     95% {
         -webkit-animation-timing-function: ease-in;
         animation-timing-function: ease-in;
-        transform: scale(1.04);
+        transform: scale(1.04)
     }
 
-    100% {
+    to {
         -webkit-animation-timing-function: ease-out;
         animation-timing-function: ease-out;
-        transform: scale(1);
+        transform: scale(1)
     }
 }
 
 @-webkit-keyframes jelly {
     0% {
-        transform: scale3d(1, 1, 1);
+        transform: scaleX(1)
     }
 
     30% {
-        transform: scale3d(0.75, 1.25, 1);
+        transform: scale3d(.75,1.25,1)
     }
 
     40% {
-        transform: scale3d(1.25, 0.75, 1);
+        transform: scale3d(1.25,.75,1)
     }
 
     50% {
-        transform: scale3d(0.85, 1.15, 1);
+        transform: scale3d(.85,1.15,1)
     }
 
     65% {
-        transform: scale3d(1.05, 0.95, 1);
+        transform: scale3d(1.05,.95,1)
     }
 
     75% {
-        transform: scale3d(0.95, 1.05, 1);
+        transform: scale3d(.95,1.05,1)
     }
 
-    100% {
-        transform: scale3d(1, 1, 1);
+    to {
+        transform: scaleX(1)
     }
 }
 
 @keyframes jelly {
     0% {
-        transform: scale3d(1, 1, 1);
+        transform: scaleX(1)
     }
 
     30% {
-        transform: scale3d(0.75, 1.25, 1);
+        transform: scale3d(.75,1.25,1)
     }
 
     40% {
-        transform: scale3d(1.25, 0.75, 1);
+        transform: scale3d(1.25,.75,1)
     }
 
     50% {
-        transform: scale3d(0.85, 1.15, 1);
+        transform: scale3d(.85,1.15,1)
     }
 
     65% {
-        transform: scale3d(1.05, 0.95, 1);
+        transform: scale3d(1.05,.95,1)
     }
 
     75% {
-        transform: scale3d(0.95, 1.05, 1);
+        transform: scale3d(.95,1.05,1)
     }
 
-    100% {
-        transform: scale3d(1, 1, 1);
+    to {
+        transform: scaleX(1)
     }
 }
 
 @-webkit-keyframes rotate {
     0% {
         opacity: 0;
-        transform: translateZ(-200px) rotate(-45deg);
+        transform: translateZ(-200px) rotate(-45deg)
     }
 
-    100% {
+    to {
         opacity: 1;
-        transform: translateZ(0) rotate(0);
+        transform: translateZ(0) rotate(0)
     }
 }
 
 @keyframes rotate {
     0% {
         opacity: 0;
-        transform: translateZ(-200px) rotate(-45deg);
+        transform: translateZ(-200px) rotate(-45deg)
     }
 
-    100% {
+    to {
         opacity: 1;
-        transform: translateZ(0) rotate(0);
+        transform: translateZ(0) rotate(0)
     }
 }
 
 @-webkit-keyframes pulse {
     0% {
-        box-shadow: 0px 0px 0px 0px #bdc3c7;
+        box-shadow: 0 0 0 0 #bdc3c7
     }
 
-    100% {
-        box-shadow: 0px 0px 0px 1.5em rgba(189, 195, 199, 0);
+    to {
+        box-shadow: 0 0 0 1.5em rgba(189,195,199,0)
     }
 }
 
 @keyframes pulse {
     0% {
-        box-shadow: 0px 0px 0px 0px #bdc3c7;
+        box-shadow: 0 0 0 0 #bdc3c7
     }
 
-    100% {
-        box-shadow: 0px 0px 0px 1.5em rgba(189, 195, 199, 0);
+    to {
+        box-shadow: 0 0 0 1.5em rgba(189,195,199,0)
     }
 }
 
 .pretty.p-default.p-fill .state label:after {
-    transform: scale(1);
+    transform: scale(1)
 }
 
 .pretty.p-default .state label:after {
-    transform: scale(0.6);
+    transform: scale(.6)
 }
 
-.pretty.p-default input:checked ~ .state label:after {
-    background-color: #bdc3c7 !important;
+.pretty.p-default input:checked~.state label:after {
+    background-color: #bdc3c7!important
 }
 
-.pretty.p-default.p-thick .state label:before, .pretty.p-default.p-thick .state label:after {
-    border-width: calc(1em / 7);
+.pretty.p-default.p-thick .state label:after,.pretty.p-default.p-thick .state label:before {
+    border-width: .14286em
 }
 
 .pretty.p-default.p-thick .state label:after {
-    transform: scale(0.4) !important;
+    transform: scale(.4)!important
 }
 
 .pretty.p-icon .state .icon {
@@ -311,9 +311,9 @@
     z-index: 1;
     text-align: center;
     line-height: normal;
-    top: calc((0% - (100% - 1em)) - 8%);
+    top: calc(-108% - -1em);
     border: 1px solid transparent;
-    opacity: 0;
+    opacity: 0
 }
 
 .pretty.p-icon .state .icon:before {
@@ -325,15 +325,15 @@
     flex: 1;
     justify-content: center;
     align-items: center;
-    line-height: 1;
+    line-height: 1
 }
 
-.pretty.p-icon input:checked ~ .state .icon {
-    opacity: 1;
+.pretty.p-icon input:checked~.state .icon {
+    opacity: 1
 }
 
-.pretty.p-icon input:checked ~ .state label:before {
-    border-color: #5a656b;
+.pretty.p-icon input:checked~.state label:before {
+    border-color: #5a656b
 }
 
 .pretty.p-svg .state .svg {
@@ -345,9 +345,9 @@
     z-index: 1;
     text-align: center;
     line-height: normal;
-    top: calc((0% - (100% - 1em)) - 8%);
+    top: calc(-108% - -1em);
     border: 1px solid transparent;
-    opacity: 0;
+    opacity: 0
 }
 
 .pretty.p-svg .state svg {
@@ -359,11 +359,11 @@
     flex: 1;
     justify-content: center;
     align-items: center;
-    line-height: 1;
+    line-height: 1
 }
 
-.pretty.p-svg input:checked ~ .state .svg {
-    opacity: 1;
+.pretty.p-svg input:checked~.state .svg {
+    opacity: 1
 }
 
 .pretty.p-image .state img {
@@ -372,24 +372,24 @@
     width: calc(1em + 2px);
     height: calc(1em + 2px);
     top: 0;
-    top: calc((0% - (100% - 1em)) - 8%);
+    top: calc(-108% - -1em);
     left: 0;
     z-index: 0;
     text-align: center;
     line-height: normal;
-    transform: scale(0.8);
+    transform: scale(.8)
 }
 
-.pretty.p-image input:checked ~ .state img {
-    opacity: 1;
+.pretty.p-image input:checked~.state img {
+    opacity: 1
 }
 
 .pretty.p-switch input {
-    min-width: 2em;
+    min-width: 2em
 }
 
 .pretty.p-switch .state {
-    position: relative;
+    position: relative
 }
 
 .pretty.p-switch .state:before {
@@ -401,484 +401,470 @@
     height: calc(1em + 2px);
     position: absolute;
     top: 0;
-    top: calc((0% - (100% - 1em)) - 16%);
+    top: calc(-116% - -1em);
     z-index: 0;
-    transition: all 0.5s ease;
+    transition: all .5s ease
 }
 
 .pretty.p-switch .state label {
-    text-indent: 2.5em;
+    text-indent: 2.5em
 }
 
-.pretty.p-switch .state label:before, .pretty.p-switch .state label:after {
-    transition: all 0.5s ease;
+.pretty.p-switch .state label:after,.pretty.p-switch .state label:before {
+    transition: all .5s ease;
     border-radius: 100%;
     left: 0;
     border-color: transparent;
-    transform: scale(0.8);
+    transform: scale(.8)
 }
 
 .pretty.p-switch .state label:after {
-    background-color: #bdc3c7 !important;
+    background-color: #bdc3c7!important
 }
 
-.pretty.p-switch input:checked ~ .state:before {
+.pretty.p-switch input:checked~.state:before {
+    border-color: #5a656b
+}
+
+.pretty.p-switch input:checked~.state label:before {
+    opacity: 0
+}
+
+.pretty.p-switch input:checked~.state label:after {
+    background-color: #5a656b!important;
+    left: 1em
+}
+
+.pretty.p-switch.p-fill input:checked~.state:before {
     border-color: #5a656b;
+    background-color: #5a656b!important
 }
 
-.pretty.p-switch input:checked ~ .state label:before {
-    opacity: 0;
+.pretty.p-switch.p-fill input:checked~.state label:before {
+    opacity: 0
 }
 
-.pretty.p-switch input:checked ~ .state label:after {
-    background-color: #5a656b !important;
-    left: 1em;
-}
-
-.pretty.p-switch.p-fill input:checked ~ .state:before {
-    border-color: #5a656b;
-    background-color: #5a656b !important;
-}
-
-.pretty.p-switch.p-fill input:checked ~ .state label:before {
-    opacity: 0;
-}
-
-.pretty.p-switch.p-fill input:checked ~ .state label:after {
-    background-color: #fff !important;
-    left: 1em;
+.pretty.p-switch.p-fill input:checked~.state label:after {
+    background-color: #fff!important;
+    left: 1em
 }
 
 .pretty.p-switch.p-slim .state:before {
-    height: 0.1em;
-    background: #bdc3c7 !important;
-    top: calc(50% - 0.1em);
+    height: .1em;
+    background: #bdc3c7!important;
+    top: calc(50% - .1em)
 }
 
-.pretty.p-switch.p-slim input:checked ~ .state:before {
+.pretty.p-switch.p-slim input:checked~.state:before {
     border-color: #5a656b;
-    background-color: #5a656b !important;
+    background-color: #5a656b!important
 }
 
-.pretty.p-has-hover input:hover ~ .state:not(.p-is-hover) {
-    display: none;
+.pretty.p-has-hover input:hover~.state:not(.p-is-hover) {
+    display: none
 }
 
-.pretty.p-has-hover input:hover ~ .state.p-is-hover {
+.pretty.p-has-hover input:hover~.state.p-is-hover,.pretty.p-has-hover input:hover~.state.p-is-hover .icon {
+    display: block
+}
+
+.pretty.p-has-focus input:focus~.state label:before {
+    box-shadow: 0 0 3px 0 #bdc3c7
+}
+
+.pretty.p-has-indeterminate input[type=checkbox]:indeterminate~.state:not(.p-is-indeterminate) {
+    display: none
+}
+
+.pretty.p-has-indeterminate input[type=checkbox]:indeterminate~.state.p-is-indeterminate {
+    display: block
+}
+
+.pretty.p-has-indeterminate input[type=checkbox]:indeterminate~.state.p-is-indeterminate .icon {
     display: block;
-}
-
-.pretty.p-has-hover input:hover ~ .state.p-is-hover .icon {
-    display: block;
-}
-
-.pretty.p-has-focus input:focus ~ .state label:before {
-    box-shadow: 0px 0px 3px 0px #bdc3c7;
-}
-
-.pretty.p-has-indeterminate input[type=checkbox]:indeterminate ~ .state:not(.p-is-indeterminate) {
-    display: none;
-}
-
-.pretty.p-has-indeterminate input[type=checkbox]:indeterminate ~ .state.p-is-indeterminate {
-    display: block;
-}
-
-.pretty.p-has-indeterminate input[type=checkbox]:indeterminate ~ .state.p-is-indeterminate .icon {
-    display: block;
-    opacity: 1;
+    opacity: 1
 }
 
 .pretty.p-toggle .state.p-on {
     opacity: 0;
-    display: none;
+    display: none
 }
 
-.pretty.p-toggle .state.p-off, .pretty.p-toggle .state .icon, .pretty.p-toggle .state .svg, .pretty.p-toggle .state img {
+.pretty.p-toggle .state .icon,.pretty.p-toggle .state.p-off,.pretty.p-toggle .state .svg,.pretty.p-toggle .state img {
     opacity: 1;
-    display: inherit;
+    display: inherit
 }
 
 .pretty.p-toggle .state.p-off .icon {
-    color: #bdc3c7;
+    color: #bdc3c7
 }
 
-.pretty.p-toggle input:checked ~ .state.p-on {
+.pretty.p-toggle input:checked~.state.p-on {
     opacity: 1;
-    display: inherit;
+    display: inherit
 }
 
-.pretty.p-toggle input:checked ~ .state.p-off {
+.pretty.p-toggle input:checked~.state.p-off {
     opacity: 0;
-    display: none;
+    display: none
 }
 
-.pretty.p-plain input:checked ~ .state label:before, .pretty.p-plain.p-toggle .state label:before {
-    content: none;
+.pretty.p-plain.p-toggle .state label:before,.pretty.p-plain input:checked~.state label:before {
+    content: none
 }
 
 .pretty.p-plain.p-plain .icon {
-    transform: scale(1.1);
+    transform: scale(1.1)
 }
 
-.pretty.p-round .state label:before, .pretty.p-round .state label:after {
-    border-radius: 100%;
+.pretty.p-round .state label:after,.pretty.p-round .state label:before {
+    border-radius: 100%
 }
 
 .pretty.p-round.p-icon .state .icon {
     border-radius: 100%;
-    overflow: hidden;
+    overflow: hidden
 }
 
 .pretty.p-round.p-icon .state .icon:before {
-    transform: scale(0.8);
+    transform: scale(.8)
 }
 
-.pretty.p-curve .state label:before, .pretty.p-curve .state label:after {
-    border-radius: 20%;
+.pretty.p-curve .state label:after,.pretty.p-curve .state label:before {
+    border-radius: 20%
 }
 
-.pretty.p-smooth label:before, .pretty.p-smooth label:after, .pretty.p-smooth .icon, .pretty.p-smooth .svg {
-    transition: all 0.5s ease;
+.pretty.p-smooth .icon,.pretty.p-smooth .svg,.pretty.p-smooth label:after,.pretty.p-smooth label:before {
+    transition: all .5s ease
 }
 
-.pretty.p-smooth input:checked + .state label:after {
-    transition: all 0.3s ease;
+.pretty.p-smooth input:checked+.state label:after {
+    transition: all .3s ease
 }
 
-.pretty.p-smooth input:checked + .state .icon, .pretty.p-smooth input:checked + .state .svg, .pretty.p-smooth input:checked + .state img {
-    -webkit-animation: zoom 0.2s ease;
-    animation: zoom 0.2s ease;
+.pretty.p-smooth.p-default input:checked+.state label:after,.pretty.p-smooth input:checked+.state .icon,.pretty.p-smooth input:checked+.state .svg,.pretty.p-smooth input:checked+.state img {
+    -webkit-animation: zoom .2s ease;
+    animation: zoom .2s ease
 }
 
-.pretty.p-smooth.p-default input:checked + .state label:after {
-    -webkit-animation: zoom 0.2s ease;
-    animation: zoom 0.2s ease;
-}
-
-.pretty.p-smooth.p-plain input:checked + .state label:before {
+.pretty.p-smooth.p-plain input:checked+.state label:before {
     content: "";
     transform: scale(0);
-    transition: all 0.5s ease;
+    transition: all .5s ease
 }
 
-.pretty.p-tada:not(.p-default) input:checked + .state .icon, .pretty.p-tada:not(.p-default) input:checked + .state .svg, .pretty.p-tada:not(.p-default) input:checked + .state img, .pretty.p-tada:not(.p-default) input:checked + .state label:before, .pretty.p-tada:not(.p-default) input:checked + .state label:after {
-    -webkit-animation: tada 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1 alternate;
-    animation: tada 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1 alternate;
-    opacity: 1;
+.pretty.p-tada:not(.p-default) input:checked+.state .icon,.pretty.p-tada:not(.p-default) input:checked+.state .svg,.pretty.p-tada:not(.p-default) input:checked+.state img,.pretty.p-tada:not(.p-default) input:checked+.state label:after,.pretty.p-tada:not(.p-default) input:checked+.state label:before {
+    -webkit-animation: tada .7s cubic-bezier(.25,.46,.45,.94) 1 alternate;
+    animation: tada .7s cubic-bezier(.25,.46,.45,.94) 1 alternate;
+    opacity: 1
 }
 
-.pretty.p-jelly:not(.p-default) input:checked + .state .icon, .pretty.p-jelly:not(.p-default) input:checked + .state .svg, .pretty.p-jelly:not(.p-default) input:checked + .state img, .pretty.p-jelly:not(.p-default) input:checked + .state label:before, .pretty.p-jelly:not(.p-default) input:checked + .state label:after {
-    -webkit-animation: jelly 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    animation: jelly 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    opacity: 1;
+.pretty.p-jelly:not(.p-default) input:checked+.state .icon,.pretty.p-jelly:not(.p-default) input:checked+.state .svg,.pretty.p-jelly:not(.p-default) input:checked+.state img,.pretty.p-jelly:not(.p-default) input:checked+.state label:after,.pretty.p-jelly:not(.p-default) input:checked+.state label:before {
+    -webkit-animation: jelly .7s cubic-bezier(.25,.46,.45,.94);
+    animation: jelly .7s cubic-bezier(.25,.46,.45,.94);
+    opacity: 1
 }
 
-.pretty.p-jelly:not(.p-default) input:checked + .state label:before {
-    border-color: transparent;
+.pretty.p-jelly:not(.p-default) input:checked+.state label:before {
+    border-color: transparent
 }
 
-.pretty.p-rotate:not(.p-default) input:checked ~ .state .icon, .pretty.p-rotate:not(.p-default) input:checked ~ .state .svg, .pretty.p-rotate:not(.p-default) input:checked ~ .state img, .pretty.p-rotate:not(.p-default) input:checked ~ .state label:before, .pretty.p-rotate:not(.p-default) input:checked ~ .state label:after {
-    -webkit-animation: rotate 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    animation: rotate 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    opacity: 1;
+.pretty.p-rotate:not(.p-default) input:checked~.state .icon,.pretty.p-rotate:not(.p-default) input:checked~.state .svg,.pretty.p-rotate:not(.p-default) input:checked~.state img,.pretty.p-rotate:not(.p-default) input:checked~.state label:after,.pretty.p-rotate:not(.p-default) input:checked~.state label:before {
+    -webkit-animation: rotate .7s cubic-bezier(.25,.46,.45,.94);
+    animation: rotate .7s cubic-bezier(.25,.46,.45,.94);
+    opacity: 1
 }
 
-.pretty.p-rotate:not(.p-default) input:checked ~ .state label:before {
-    border-color: transparent;
+.pretty.p-rotate:not(.p-default) input:checked~.state label:before {
+    border-color: transparent
 }
 
-.pretty.p-pulse:not(.p-switch) input:checked ~ .state label:before {
+.pretty.p-pulse:not(.p-switch) input:checked~.state label:before {
     -webkit-animation: pulse 1s;
-    animation: pulse 1s;
+    animation: pulse 1s
 }
 
 .pretty input[disabled] {
     cursor: not-allowed;
-    display: none;
+    display: none
 }
 
-.pretty input[disabled] ~ * {
-    opacity: 0.5;
+.pretty input[disabled]~* {
+    opacity: .5
 }
 
 .pretty.p-locked input {
     display: none;
-    cursor: not-allowed;
+    cursor: not-allowed
 }
 
-.pretty input:checked ~ .state.p-primary label:after, .pretty.p-toggle .state.p-primary label:after {
-    background-color: #428bca !important;
+.pretty.p-toggle .state.p-primary label:after,.pretty input:checked~.state.p-primary label:after {
+    background-color: #428bca!important
 }
 
-.pretty input:checked ~ .state.p-primary .icon, .pretty input:checked ~ .state.p-primary .svg, .pretty.p-toggle .state.p-primary .icon, .pretty.p-toggle .state.p-primary .svg {
+.pretty.p-toggle .state.p-primary .icon,.pretty.p-toggle .state.p-primary .svg,.pretty input:checked~.state.p-primary .icon,.pretty input:checked~.state.p-primary .svg {
     color: #fff;
-    stroke: #fff;
+    stroke: #fff
 }
 
-.pretty input:checked ~ .state.p-primary-o label:before, .pretty.p-toggle .state.p-primary-o label:before {
-    border-color: #428bca;
+.pretty.p-toggle .state.p-primary-o label:before,.pretty input:checked~.state.p-primary-o label:before {
+    border-color: #428bca
 }
 
-.pretty input:checked ~ .state.p-primary-o label:after, .pretty.p-toggle .state.p-primary-o label:after {
-    background-color: transparent;
+.pretty.p-toggle .state.p-primary-o label:after,.pretty input:checked~.state.p-primary-o label:after {
+    background-color: transparent
 }
 
-.pretty input:checked ~ .state.p-primary-o .icon, .pretty input:checked ~ .state.p-primary-o .svg, .pretty input:checked ~ .state.p-primary-o svg, .pretty.p-toggle .state.p-primary-o .icon, .pretty.p-toggle .state.p-primary-o .svg, .pretty.p-toggle .state.p-primary-o svg {
+.pretty.p-toggle .state.p-primary-o .icon,.pretty.p-toggle .state.p-primary-o .svg,.pretty.p-toggle .state.p-primary-o svg,.pretty input:checked~.state.p-primary-o .icon,.pretty input:checked~.state.p-primary-o .svg,.pretty input:checked~.state.p-primary-o svg {
     color: #428bca;
-    stroke: #428bca;
+    stroke: #428bca
 }
 
-.pretty.p-default:not(.p-fill) input:checked ~ .state.p-primary-o label:after {
-    background-color: #428bca !important;
+.pretty.p-default:not(.p-fill) input:checked~.state.p-primary-o label:after {
+    background-color: #428bca!important
 }
 
-.pretty.p-switch input:checked ~ .state.p-primary:before {
-    border-color: #428bca;
+.pretty.p-switch input:checked~.state.p-primary:before {
+    border-color: #428bca
 }
 
-.pretty.p-switch.p-fill input:checked ~ .state.p-primary:before {
-    background-color: #428bca !important;
+.pretty.p-switch.p-fill input:checked~.state.p-primary:before {
+    background-color: #428bca!important
 }
 
-.pretty.p-switch.p-slim input:checked ~ .state.p-primary:before {
+.pretty.p-switch.p-slim input:checked~.state.p-primary:before {
     border-color: #245682;
-    background-color: #245682 !important;
+    background-color: #245682!important
 }
 
-.pretty input:checked ~ .state.p-info label:after, .pretty.p-toggle .state.p-info label:after {
-    background-color: #5bc0de !important;
+.pretty.p-toggle .state.p-info label:after,.pretty input:checked~.state.p-info label:after {
+    background-color: #5bc0de!important
 }
 
-.pretty input:checked ~ .state.p-info .icon, .pretty input:checked ~ .state.p-info .svg, .pretty.p-toggle .state.p-info .icon, .pretty.p-toggle .state.p-info .svg {
+.pretty.p-toggle .state.p-info .icon,.pretty.p-toggle .state.p-info .svg,.pretty input:checked~.state.p-info .icon,.pretty input:checked~.state.p-info .svg {
     color: #fff;
-    stroke: #fff;
+    stroke: #fff
 }
 
-.pretty input:checked ~ .state.p-info-o label:before, .pretty.p-toggle .state.p-info-o label:before {
-    border-color: #5bc0de;
+.pretty.p-toggle .state.p-info-o label:before,.pretty input:checked~.state.p-info-o label:before {
+    border-color: #5bc0de
 }
 
-.pretty input:checked ~ .state.p-info-o label:after, .pretty.p-toggle .state.p-info-o label:after {
-    background-color: transparent;
+.pretty.p-toggle .state.p-info-o label:after,.pretty input:checked~.state.p-info-o label:after {
+    background-color: transparent
 }
 
-.pretty input:checked ~ .state.p-info-o .icon, .pretty input:checked ~ .state.p-info-o .svg, .pretty input:checked ~ .state.p-info-o svg, .pretty.p-toggle .state.p-info-o .icon, .pretty.p-toggle .state.p-info-o .svg, .pretty.p-toggle .state.p-info-o svg {
+.pretty.p-toggle .state.p-info-o .icon,.pretty.p-toggle .state.p-info-o .svg,.pretty.p-toggle .state.p-info-o svg,.pretty input:checked~.state.p-info-o .icon,.pretty input:checked~.state.p-info-o .svg,.pretty input:checked~.state.p-info-o svg {
     color: #5bc0de;
-    stroke: #5bc0de;
+    stroke: #5bc0de
 }
 
-.pretty.p-default:not(.p-fill) input:checked ~ .state.p-info-o label:after {
-    background-color: #5bc0de !important;
+.pretty.p-default:not(.p-fill) input:checked~.state.p-info-o label:after {
+    background-color: #5bc0de!important
 }
 
-.pretty.p-switch input:checked ~ .state.p-info:before {
-    border-color: #5bc0de;
+.pretty.p-switch input:checked~.state.p-info:before {
+    border-color: #5bc0de
 }
 
-.pretty.p-switch.p-fill input:checked ~ .state.p-info:before {
-    background-color: #5bc0de !important;
+.pretty.p-switch.p-fill input:checked~.state.p-info:before {
+    background-color: #5bc0de!important
 }
 
-.pretty.p-switch.p-slim input:checked ~ .state.p-info:before {
+.pretty.p-switch.p-slim input:checked~.state.p-info:before {
     border-color: #2390b0;
-    background-color: #2390b0 !important;
+    background-color: #2390b0!important
 }
 
-.pretty input:checked ~ .state.p-success label:after, .pretty.p-toggle .state.p-success label:after {
-    background-color: #5cb85c !important;
+.pretty.p-toggle .state.p-success label:after,.pretty input:checked~.state.p-success label:after {
+    background-color: #5cb85c!important
 }
 
-.pretty input:checked ~ .state.p-success .icon, .pretty input:checked ~ .state.p-success .svg, .pretty.p-toggle .state.p-success .icon, .pretty.p-toggle .state.p-success .svg {
+.pretty.p-toggle .state.p-success .icon,.pretty.p-toggle .state.p-success .svg,.pretty input:checked~.state.p-success .icon,.pretty input:checked~.state.p-success .svg {
     color: #fff;
-    stroke: #fff;
+    stroke: #fff
 }
 
-.pretty input:checked ~ .state.p-success-o label:before, .pretty.p-toggle .state.p-success-o label:before {
-    border-color: #5cb85c;
+.pretty.p-toggle .state.p-success-o label:before,.pretty input:checked~.state.p-success-o label:before {
+    border-color: #5cb85c
 }
 
-.pretty input:checked ~ .state.p-success-o label:after, .pretty.p-toggle .state.p-success-o label:after {
-    background-color: transparent;
+.pretty.p-toggle .state.p-success-o label:after,.pretty input:checked~.state.p-success-o label:after {
+    background-color: transparent
 }
 
-.pretty input:checked ~ .state.p-success-o .icon, .pretty input:checked ~ .state.p-success-o .svg, .pretty input:checked ~ .state.p-success-o svg, .pretty.p-toggle .state.p-success-o .icon, .pretty.p-toggle .state.p-success-o .svg, .pretty.p-toggle .state.p-success-o svg {
+.pretty.p-toggle .state.p-success-o .icon,.pretty.p-toggle .state.p-success-o .svg,.pretty.p-toggle .state.p-success-o svg,.pretty input:checked~.state.p-success-o .icon,.pretty input:checked~.state.p-success-o .svg,.pretty input:checked~.state.p-success-o svg {
     color: #5cb85c;
-    stroke: #5cb85c;
+    stroke: #5cb85c
 }
 
-.pretty.p-default:not(.p-fill) input:checked ~ .state.p-success-o label:after {
-    background-color: #5cb85c !important;
+.pretty.p-default:not(.p-fill) input:checked~.state.p-success-o label:after {
+    background-color: #5cb85c!important
 }
 
-.pretty.p-switch input:checked ~ .state.p-success:before {
-    border-color: #5cb85c;
+.pretty.p-switch input:checked~.state.p-success:before {
+    border-color: #5cb85c
 }
 
-.pretty.p-switch.p-fill input:checked ~ .state.p-success:before {
-    background-color: #5cb85c !important;
+.pretty.p-switch.p-fill input:checked~.state.p-success:before {
+    background-color: #5cb85c!important
 }
 
-.pretty.p-switch.p-slim input:checked ~ .state.p-success:before {
+.pretty.p-switch.p-slim input:checked~.state.p-success:before {
     border-color: #357935;
-    background-color: #357935 !important;
+    background-color: #357935!important
 }
 
-.pretty input:checked ~ .state.p-warning label:after, .pretty.p-toggle .state.p-warning label:after {
-    background-color: #f0ad4e !important;
+.pretty.p-toggle .state.p-warning label:after,.pretty input:checked~.state.p-warning label:after {
+    background-color: #f0ad4e!important
 }
 
-.pretty input:checked ~ .state.p-warning .icon, .pretty input:checked ~ .state.p-warning .svg, .pretty.p-toggle .state.p-warning .icon, .pretty.p-toggle .state.p-warning .svg {
+.pretty.p-toggle .state.p-warning .icon,.pretty.p-toggle .state.p-warning .svg,.pretty input:checked~.state.p-warning .icon,.pretty input:checked~.state.p-warning .svg {
     color: #fff;
-    stroke: #fff;
+    stroke: #fff
 }
 
-.pretty input:checked ~ .state.p-warning-o label:before, .pretty.p-toggle .state.p-warning-o label:before {
-    border-color: #f0ad4e;
+.pretty.p-toggle .state.p-warning-o label:before,.pretty input:checked~.state.p-warning-o label:before {
+    border-color: #f0ad4e
 }
 
-.pretty input:checked ~ .state.p-warning-o label:after, .pretty.p-toggle .state.p-warning-o label:after {
-    background-color: transparent;
+.pretty.p-toggle .state.p-warning-o label:after,.pretty input:checked~.state.p-warning-o label:after {
+    background-color: transparent
 }
 
-.pretty input:checked ~ .state.p-warning-o .icon, .pretty input:checked ~ .state.p-warning-o .svg, .pretty input:checked ~ .state.p-warning-o svg, .pretty.p-toggle .state.p-warning-o .icon, .pretty.p-toggle .state.p-warning-o .svg, .pretty.p-toggle .state.p-warning-o svg {
+.pretty.p-toggle .state.p-warning-o .icon,.pretty.p-toggle .state.p-warning-o .svg,.pretty.p-toggle .state.p-warning-o svg,.pretty input:checked~.state.p-warning-o .icon,.pretty input:checked~.state.p-warning-o .svg,.pretty input:checked~.state.p-warning-o svg {
     color: #f0ad4e;
-    stroke: #f0ad4e;
+    stroke: #f0ad4e
 }
 
-.pretty.p-default:not(.p-fill) input:checked ~ .state.p-warning-o label:after {
-    background-color: #f0ad4e !important;
+.pretty.p-default:not(.p-fill) input:checked~.state.p-warning-o label:after {
+    background-color: #f0ad4e!important
 }
 
-.pretty.p-switch input:checked ~ .state.p-warning:before {
-    border-color: #f0ad4e;
+.pretty.p-switch input:checked~.state.p-warning:before {
+    border-color: #f0ad4e
 }
 
-.pretty.p-switch.p-fill input:checked ~ .state.p-warning:before {
-    background-color: #f0ad4e !important;
+.pretty.p-switch.p-fill input:checked~.state.p-warning:before {
+    background-color: #f0ad4e!important
 }
 
-.pretty.p-switch.p-slim input:checked ~ .state.p-warning:before {
+.pretty.p-switch.p-slim input:checked~.state.p-warning:before {
     border-color: #c77c11;
-    background-color: #c77c11 !important;
+    background-color: #c77c11!important
 }
 
-.pretty input:checked ~ .state.p-danger label:after, .pretty.p-toggle .state.p-danger label:after {
-    background-color: #d9534f !important;
+.pretty.p-toggle .state.p-danger label:after,.pretty input:checked~.state.p-danger label:after {
+    background-color: #d9534f!important
 }
 
-.pretty input:checked ~ .state.p-danger .icon, .pretty input:checked ~ .state.p-danger .svg, .pretty.p-toggle .state.p-danger .icon, .pretty.p-toggle .state.p-danger .svg {
+.pretty.p-toggle .state.p-danger .icon,.pretty.p-toggle .state.p-danger .svg,.pretty input:checked~.state.p-danger .icon,.pretty input:checked~.state.p-danger .svg {
     color: #fff;
-    stroke: #fff;
+    stroke: #fff
 }
 
-.pretty input:checked ~ .state.p-danger-o label:before, .pretty.p-toggle .state.p-danger-o label:before {
-    border-color: #d9534f;
+.pretty.p-toggle .state.p-danger-o label:before,.pretty input:checked~.state.p-danger-o label:before {
+    border-color: #d9534f
 }
 
-.pretty input:checked ~ .state.p-danger-o label:after, .pretty.p-toggle .state.p-danger-o label:after {
-    background-color: transparent;
+.pretty.p-toggle .state.p-danger-o label:after,.pretty input:checked~.state.p-danger-o label:after {
+    background-color: transparent
 }
 
-.pretty input:checked ~ .state.p-danger-o .icon, .pretty input:checked ~ .state.p-danger-o .svg, .pretty input:checked ~ .state.p-danger-o svg, .pretty.p-toggle .state.p-danger-o .icon, .pretty.p-toggle .state.p-danger-o .svg, .pretty.p-toggle .state.p-danger-o svg {
+.pretty.p-toggle .state.p-danger-o .icon,.pretty.p-toggle .state.p-danger-o .svg,.pretty.p-toggle .state.p-danger-o svg,.pretty input:checked~.state.p-danger-o .icon,.pretty input:checked~.state.p-danger-o .svg,.pretty input:checked~.state.p-danger-o svg {
     color: #d9534f;
-    stroke: #d9534f;
+    stroke: #d9534f
 }
 
-.pretty.p-default:not(.p-fill) input:checked ~ .state.p-danger-o label:after {
-    background-color: #d9534f !important;
+.pretty.p-default:not(.p-fill) input:checked~.state.p-danger-o label:after {
+    background-color: #d9534f!important
 }
 
-.pretty.p-switch input:checked ~ .state.p-danger:before {
-    border-color: #d9534f;
+.pretty.p-switch input:checked~.state.p-danger:before {
+    border-color: #d9534f
 }
 
-.pretty.p-switch.p-fill input:checked ~ .state.p-danger:before {
-    background-color: #d9534f !important;
+.pretty.p-switch.p-fill input:checked~.state.p-danger:before {
+    background-color: #d9534f!important
 }
 
-.pretty.p-switch.p-slim input:checked ~ .state.p-danger:before {
+.pretty.p-switch.p-slim input:checked~.state.p-danger:before {
     border-color: #a02622;
-    background-color: #a02622 !important;
+    background-color: #a02622!important
 }
 
-.pretty.p-bigger label:before, .pretty.p-bigger label:after, .pretty.p-bigger .icon, .pretty.p-bigger .svg, .pretty.p-bigger .img {
-    font-size: 1.2em !important;
-    top: calc((0% - (100% - 1em)) - 35%) !important;
+.pretty.p-bigger .icon,.pretty.p-bigger .img,.pretty.p-bigger .svg,.pretty.p-bigger label:after,.pretty.p-bigger label:before {
+    font-size: 1.2em!important;
+    top: calc(-135% - -1em)!important
 }
 
 .pretty.p-bigger label {
-    text-indent: 1.7em;
+    text-indent: 1.7em
 }
 
 @media print {
-    .pretty .state:before, .pretty .state label:before, .pretty .state label:after, .pretty .state .icon {
+    .pretty .state .icon,.pretty .state:before,.pretty .state label:after,.pretty .state label:before {
         color-adjust: exact;
-        /* stylelint-disable */
         -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+        print-color-adjust: exact
     }
 }
 
 .ankiety-q-table {
-    margin-bottom: 1em;
+    margin-bottom: 1em
 }
 
-.ankiety-q-table > tbody > tr > td {
+.ankiety-q-table>tbody>tr>td {
     text-align: center;
-    padding: 5px 15px 5px 15px;
-    min-width: 5vw;
+    padding: 5px 15px;
+    min-width: 5vw
 }
 
-.ankiety-q-table > tbody > tr > td:not(:last-child) {
-    border-right: 0.5px solid #eaeaea;
+.ankiety-q-table>tbody>tr>td:not(:last-child) {
+    border-right: .5px solid #eaeaea
 }
 
 @media only screen and (max-width: 991px) {
-    .ankiety-q-table > tbody > tr > td {
-        text-align: left;
+    .ankiety-q-table>tbody>tr>td {
+        text-align:left
     }
 
-    .ankiety-q-table > tbody > tr > td:not(:last-child) {
-        border-right: none;
+    .ankiety-q-table>tbody>tr>td:not(:last-child) {
+        border-right: none
     }
 }
 
 .ankiety-pytanie-title {
     border-left: 3px solid #d71920;
-    background-color: #eaeaea;
+    background-color: #eaeaea
 }
 
 .ankiety-pytanie-title-center {
     text-align: center;
     background-color: #eaeaea;
-}
-
-.ankiety-pytanie-title-center {
-    border-top: 1px solid #d71920;
+    border-top: 1px solid #d71920
 }
 
 .ankiety-header {
-    color: white;
+    color: #fff;
     background-color: #d71920;
     border-bottom: 5px solid #bcbcbc;
     margin-bottom: 1em;
-    margin-top: 1em;
+    margin-top: 1em
 }
 
-.ankiety-header > h3 {
-    color: white;
+.ankiety-header>h3 {
+    color: #fff;
     text-align: center;
-    font-weight: bold;
+    font-weight: 700
 }
 
 .p-ankiety {
-    color: #484848;
-    margin-bottom: 0;
+    color: #484848
 }
 
-.ankiety-pytanie-2 > p {
-    margin-bottom: 0;
+.ankiety-pytanie-2>p,.p-ankiety {
+    margin-bottom: 0
 }
 
 .ankiety-divider {
@@ -886,22 +872,22 @@
     margin-bottom: 1.5em;
     padding-bottom: 0;
     height: 1px;
-    background-image: linear-gradient(to right, transparent, #d71920, transparent);
+    background-image: linear-gradient(90deg,transparent,#d71920,transparent)
 }
 
 .aktualnosci .post-item h2 a {
     color: #000;
-    text-align: left;
+    text-align: left
 }
 
 .aktualnosci .post-item {
-    background-color: white;
+    background-color: #fff;
     padding: 15px;
     margin-top: 10px;
     width: 100%;
     border: 1px solid #f2f2f2;
     text-align: justify;
-    text-justify: inter-word;
+    text-justify: inter-word
 }
 
 .aktualnosci .post-item .date {
@@ -911,656 +897,519 @@
     width: auto;
     position: absolute;
     margin-left: -65px;
-    margin-top: -5px;
+    margin-top: -5px
 }
 
 .aktualnosci .post-item .date * {
     display: block;
     margin: auto;
-    text-align: center;
+    text-align: center
 }
 
 .aktualnosci .post-item .date .day {
     font-size: 2.2em;
-    font-weight: 800;
+    font-weight: 800
 }
 
 .aktualnosci .post-item .date .month {
     font-size: 1em;
-    font-weight: 200;
+    font-weight: 200
 }
 
 .aktualnosci .post-item .date .year {
     font-size: 1.7em;
-    font-weight: 800;
+    font-weight: 800
 }
 
 .aktualnosci .post-item h2 {
     margin-left: 45px;
-    margin-bottom: 0;
+    margin-bottom: 0
 }
 
 .aktualnosci .post-item h4 {
     margin-left: 45px;
-    font-size: 0.8em;
-    margin-bottom: 20px;
+    font-size: .8em;
+    margin-bottom: 20px
 }
 
 .aktualnosci .post-item p {
-    text-indent: 10px;
+    text-indent: 10px
 }
 
 .aktualnosci .post-item .img {
     padding: 15px;
-    border: 1px solid #f2f2f2;
+    border: 1px solid #f2f2f2
 }
 
 .aktualnosci .post-item .more {
-    float: right;
+    float: right
 }
 
 @media only screen and (max-width: 768px) {
     .aktualnosci .post-item .date {
-        display: block;
+        display:block;
         margin-left: -25px;
         margin-top: -25px;
         display: inline-block;
-        position: relative;
+        position: relative
     }
 
     .aktualnosci .post-item h2 {
-        font-size: 1.4em;
+        font-size: 1.4em
     }
 
-    .aktualnosci .post-item h2, .aktualnosci .post-item h4 {
+    .aktualnosci .post-item h2,.aktualnosci .post-item h4 {
         margin-left: 5px;
-        display: block;
+        display: block
     }
 
     .aktualnosci .post-item {
-        text-align: left;
+        text-align: left
     }
 
     .aktualnosci .post-item .title {
         width: calc(100% - 100px);
         vertical-align: top;
         display: inline-block;
-        min-height: 100px;
+        min-height: 100px
     }
 }
 
 .aktualnosci .title.red {
-    color: #d71920;
+    color: #d71920
 }
 
 .aktualnosci .title.red:hover {
-    color: #c0161b;
+    color: #c0161b
 }
 
-.aktualnosci .title.red > h2 > a {
-    color: #d71920;
+.aktualnosci .title.red>h2>a {
+    color: #d71920
 }
 
-.aktualnosci .title.red:hover > h2 > a {
-    color: #c0161b;
+.aktualnosci .title.red:hover>h2>a {
+    color: #c0161b
 }
 
 @media only screen and (max-width: 768px) {
     #page-title {
-        padding: 40px 0;
+        padding:40px 0
     }
 }
 
 #page-title.banner {
-    padding: 0;
+    padding: 0
 }
 
 #page-title.banner img {
-    width: 100%;
+    width: 100%
 }
 
 a {
     color: #007bff;
     text-decoration: none;
-    background-color: transparent;
+    background-color: transparent
 }
 
 h1 {
-    font-size: 1.5rem;
+    font-size: 1.5rem
 }
 
 u {
-    text-decoration: underline;
+    text-decoration: underline
 }
 
 .text-1 {
-    font-size: 0.45rem;
+    font-size: .45rem
 }
 
 .text-2 {
-    font-size: 0.675rem;
+    font-size: .675rem
 }
 
 .text-3 {
-    font-size: 0.9rem;
+    font-size: .9rem
 }
 
 .text-4 {
-    font-size: 1.125rem;
+    font-size: 1.125rem
 }
 
 .text-5 {
-    font-size: 1.35rem;
+    font-size: 1.35rem
 }
 
 .text-6 {
-    font-size: 1.8rem;
+    font-size: 1.8rem
 }
 
 .text-bold {
-    font-weight: bold;
+    font-weight: 700
 }
 
 .text-lighter {
-    font-weight: lighter;
+    font-weight: lighter
 }
 
 .bg-transparent-10 {
-    opacity: 0.1;
+    opacity: .1
 }
 
 .bg-transparent-20 {
-    opacity: 0.2;
+    opacity: .2
 }
 
 .bg-transparent-30 {
-    opacity: 0.3;
+    opacity: .3
 }
 
 .bg-transparent-40 {
-    opacity: 0.4;
+    opacity: .4
 }
 
 .bg-transparent-50 {
-    opacity: 0.5;
+    opacity: .5
 }
 
 .bg-transparent-60 {
-    opacity: 0.6;
+    opacity: .6
 }
 
 .bg-transparent-70 {
-    opacity: 0.7;
+    opacity: .7
 }
 
 .bg-transparent-80 {
-    opacity: 0.8;
+    opacity: .8
 }
 
 .bg-transparent-90 {
-    opacity: 0.9;
+    opacity: .9
 }
 
 .bg-basic-red {
-    background-color: #d71920;
-}
-
-.bg-light-gray {
-    background-color: #e4e4e4;
+    background-color: #d71920
 }
 
 .bg-very-light-gray {
-    background-color: #eaeaea;
+    background-color: #eaeaea
 }
 
-.dashed-border-b {
-    border-bottom: dashed 1px #8b8b8b;
-}
-
-.solid-border-b {
-    border-bottom: dashed 1px #8b8b8b;
+.dashed-border-b,.solid-border-b {
+    border-bottom: 1px dashed #8b8b8b
 }
 
 .blockquote-warning {
-    border-left: 3px solid #d71920;
+    border-left: 3px solid #d71920
 }
 
 .grayscale {
     -webkit-filter: grayscale(100%);
-    /* Safari 6.0 - 9.0 */
-    filter: grayscale(100%);
+    filter: grayscale(100%)
 }
 
 .divider-title {
     font-size: 1rem;
     padding-bottom: 4px;
-    border-bottom: 1px solid #bcbcbc;
+    border-bottom: 1px solid #bcbcbc
 }
 
 .validation-alert {
-    font-size: 0.8rem;
+    font-size: .8rem;
     color: red;
-    font-weight: bold;
+    font-weight: 700
 }
 
 .alert-danger-outline {
     border: 2px solid #d71920;
-    border-left: 10px solid #d71920;
+    border-left-width: 10px;
     color: #414142;
-    background-color: #eaeaea;
+    background-color: #eaeaea
 }
 
 .offer-card {
     position: relative;
-    background-color: #ffffff;
-    padding: 1rem 1rem 4.4rem 1rem;
+    background-color: #fff;
+    padding: 1rem 1rem 4.4rem;
     height: 100%;
-    border: 1px solid #e4e4e4;
+    border: 1px solid #e4e4e4
 }
 
 .offer-title {
-    border-left: #3490dc 0.25rem solid;
+    border-left: .25rem solid #3490dc;
     padding-left: 1rem;
     margin-left: -1rem;
-    line-height: 1.8rem;
+    line-height: 1.8rem
 }
 
 .offer-subtitle {
-    font-size: 0.8rem;
-    color: #8b8b8b;
+    font-size: .8rem;
+    color: #8b8b8b
 }
 
 .offer-package {
-    font-size: 1rem;
+    font-size: 1rem
 }
 
 .offer-button {
     position: absolute;
-    bottom: 0.8rem;
+    bottom: .8rem;
     left: 0;
     width: 100%;
-    border-radius: 0;
+    border-radius: 0
 }
 
 .offer-price-title {
     margin: 0;
-    padding: 0;
+    padding: 0
 }
 
 .offer-price {
     font-weight: 600;
     font-size: 1.2rem;
     text-align: center;
-    margin: 0;
-    margin-left: -1rem;
-    margin-right: -1rem;
+    margin: 0 -1rem;
     background-color: #3490dc;
-    color: #ffffff;
+    color: #fff
 }
 
 .offer-price-promo {
     font-size: 1.1rem;
     border-top: 2px solid #bcbcbc;
-    border-bottom: 2px solid #bcbcbc;
+    border-bottom: 2px solid #bcbcbc
 }
 
 .side-menu {
-    background-color: #ffffff;
-    padding: 1rem;
+    background-color: #fff;
+    padding: 1rem
 }
 
 .card-content {
     margin-top: 2rem;
     margin-bottom: 4rem;
-    background-color: #ffffff;
-    padding-top: 1.4rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
-    padding-bottom: 1rem;
-    border-top: 0.8rem solid #e4e4e4;
-    border-bottom: 0.8rem solid #e4e4e4;
+    background-color: #fff;
+    padding: 1.4rem 1rem 1rem;
+    border-top: .8rem solid #e4e4e4;
+    border-bottom: .8rem solid #e4e4e4
 }
 
 .text-green {
-    color: #38c172;
+    color: #38c172
 }
 
 .text-red {
-    color: #d71920;
+    color: #d71920
 }
 
 .text-gray {
-    color: #bcbcbc;
+    color: #bcbcbc
 }
 
-.text-dark-gray {
-    color: #8b8b8b;
-}
-
-.text-ver-dark-gray {
-    color: #8b8b8b;
+.text-dark-gray,.text-ver-dark-gray {
+    color: #8b8b8b
 }
 
 .bg-dark-gray {
-    background-color: #8b8b8b;
+    background-color: #8b8b8b
 }
 
 .bg-very-dark-gray {
-    background-color: #414142;
+    background-color: #414142
 }
 
 .bg-gray {
-    background-color: #bcbcbc;
+    background-color: #bcbcbc
 }
 
 .bg-light-gray {
-    background-color: #e4e4e4;
+    background-color: #e4e4e4
 }
 
 .full-width {
     margin-left: -1rem;
-    margin-right: -1rem;
+    margin-right: -1rem
 }
 
 .footer {
-    padding: 1rem 3rem 1rem 3rem;
+    padding: 1rem 3rem;
     position: absolute;
     bottom: 0;
     width: 100%;
     background-color: #414142;
-    color: #e4e4e4;
+    color: #e4e4e4
 }
 
 .footer-logo-box {
     width: 100%;
-    background-color: white;
-    opacity: 0.7;
-    padding: 0.5rem;
+    background-color: #fff;
+    opacity: .7;
+    padding: .5rem;
     text-align: center;
-    height: 5rem;
+    height: 5rem
 }
 
 .footer-logo-box:hover {
-    opacity: 0.9;
+    opacity: .9
 }
 
 .footer-logo {
     max-width: 100%;
-    max-height: 100%;
+    max-height: 100%
 }
 
 .btn {
-    border-radius: 0;
+    border-radius: 0
 }
 
 html {
     position: relative;
-    min-height: 100%;
+    min-height: 100%
 }
 
 body {
-    margin-bottom: 4rem;
-    /* Margin bottom by footer height */
+    margin-bottom: 4rem
 }
 
 .produkt-box-container {
-    background-color: white;
+    background-color: #fff;
     margin-top: 3em;
     border-bottom: 2px solid #bcbcbc;
     padding-top: 2em;
-    padding-bottom: 1em;
+    padding-bottom: 1em
 }
 
 .pb-product-name-link {
     text-transform: uppercase;
     color: #414142;
     padding-right: 1em;
-    border-right: 0.1em solid #414142;
+    border-right: .1em solid #414142
 }
 
 .pb-normal-price {
     font-size: 3em;
     color: #d71920;
-    font-weight: bold;
+    font-weight: 700
 }
 
 .pb-old-price {
     font-size: 2em;
     color: #8b8b8b;
-    font-weight: bold;
+    font-weight: 700;
     -webkit-text-decoration: line-through 3px #414142;
-    text-decoration: line-through 3px #414142;
+    text-decoration: line-through 3px #414142
 }
 
 .pb-info-btn {
-    margin-top: 2.2em !important;
+    margin-top: 2.2em!important
 }
 
 .pb-adv {
     margin-top: 1em;
-    color: #d71920;
-}
-
-.pb-adv {
     padding: 1em;
     margin-top: 2em;
     margin-bottom: 2.5em;
-    color: #d71920;
+    color: #d71920
 }
 
 @media only screen and (max-width: 991px) {
     .pb-adv {
-        margin-top: 1em;
-        margin-bottom: 1em;
+        margin-top:1em;
+        margin-bottom: 1em
     }
 }
 
-.pb-adv > ul > li {
+.pb-adv>ul>li {
     font-size: 1em;
-    margin: 0;
+    margin: 0
 }
 
-.pb-adv > p {
+.pb-adv>p {
     margin: 0;
     padding: 0;
     color: #d71920;
-    font-size: 1.3em;
+    font-size: 1.3em
 }
 
 .cart-price-normal {
-    margin-top: 0.5em;
+    margin-top: .5em;
     font-size: 2em;
     color: #d71920;
-    font-weight: bold;
+    font-weight: 700
 }
 
 .empty-cart {
-    color: #414142;
     margin-top: 1em;
     margin-bottom: 3em;
     padding: 1.5em;
     text-align: center;
-    text-transform: uppercase;
     border-top: 2px solid #d71920;
     border-bottom: 2px solid #d71920;
-    background-color: #eaeaea;
+    background-color: #eaeaea
+}
+
+.empty-cart,.shop-cart a {
+    color: #414142;
+    text-transform: uppercase
 }
 
 .shop-cart a {
-    color: #414142;
-    text-transform: uppercase;
-    font-weight: bold;
+    font-weight: 700
 }
 
 .shop-cart .cart-product-thumbnail img {
     max-width: 120px;
-    padding: 10px;
+    padding: 10px
 }
 
 .akcyza-select-box {
-    margin-top: 1em;
+    margin-top: 1em
 }
 
 @media only screen and (min-width: 1000px) {
     .side-menu {
-        position: fixed;
+        position:fixed;
         left: 75%;
-        width: 20%;
+        width: 20%
     }
 }
 
 @media only screen and (max-width: 1000px) {
     body {
-        margin-bottom: 8rem;
-        /* Margin bottom by footer height */
+        margin-bottom:8rem
     }
 }
 
 @media only screen and (max-width: 720px) {
     body {
-        margin-bottom: 10rem;
-        /* Margin bottom by footer height */
+        margin-bottom:10rem
     }
 }
 
 @media only screen and (max-width: 480px) {
     body {
-        margin-bottom: 10rem;
-        /* Margin bottom by footer height */
+        margin-bottom:10rem
     }
 }
 
-/* 1. Add your custom Css styles below 2. Place the this code in your template: */
-/* ---------------------------------------------------------------------- Base Colors -------------------------------------------------------------------------*/
-/*Background colors*/
-/*Typography*/
-/*Font*/
-/*Header*/
-/*Side Panel*/
-/*Page Titile*/
-/*Margins*/
-/*Transitions*/
-/* ------------------------------------------------------------------------ Fonts - Find/Replace your website fonts with your custom font name. -------------------------------------------------------------------------*/
-#topbar.dark {
-    border-bottom: 1px solid rgba(231, 231, 231, 0.3);
-}
-
-#topbar.topbar-dark, #topbar.dark {
-    background-color: #333133;
-    border-color: rgba(231, 231, 231, 0.25);
-}
-
-button.btn.btn-secondary, .btn:not(.close):not(.mfp-close).btn-secondary, a.btn:not([href]):not([tabindex]).btn-secondary {
-    background-color: rgba(51, 51, 51, 0.9);
-    border-color: #5a6268;
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-}
-
-button.btn, .btn:not(.close):not(.mfp-close), a.btn:not([href]):not([tabindex]) {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-}
-
-/*Body*/
-body {
-    font-size: 1em;
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-}
-
-/*Paragraphs*/
-p, .ff-nunito {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-}
-
-.ff-poppins {
-    font-family: "Roboto", "Poppins", "Arial", sans-serif;
-}
-
-.text-uppercase {
-    text-transform: uppercase;
-}
-
-.bg50 {
-    background: rgba(0, 0, 0, 0.5);
-    padding: 4px;
-}
-
-.op80 {
-    opacity: 0.5 !important;
-    transition: transform 2s;
-}
-
-.op80:hover {
-    opacity: 1 !important;
-}
-
-/*Headings*/
-h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
-    font-family: "Roboto", "Poppins", "Helvetica", "Arial", sans-serif;
-}
-
-/*Main Menu*/
-#mainMenu nav > ul > li > a {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.6px;
-}
-
-#mainMenu nav > ul > li .dropdown-menu > li > a, #mainMenu nav > ul > li .dropdown-menu > li > span, #mainMenu nav > ul > li .dropdown-menu > li [class*=col-] > ul > li > a {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-}
-
-#mainMenu nav > ul > li.mega-menu-item .mega-menu-content .mega-menu-title {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.header-extras > ul > li > a:not(.btn), .header-extras > ul > li .topbar-dropdown > .title {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-/*Page Menu*/
-.page-menu nav > ul > li {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-}
-
-.page-menu nav > ul > li .dropdown-menu {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-}
-
-/*Sidebar Menu*/
-.sidebar-menu {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-}
-
-/*Buttons*/
-button, a.btn:not([href]):not([tabindex]), .btn {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-}
-
-/*slider*/
-.inspiro-slider .slide .slide-captions .strong {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
+.btn:not(.close):not(.mfp-close),.btn:not(.close):not(.mfp-close).btn-secondary,a.btn:not([href]):not([tabindex]),a.btn:not([href]):not([tabindex]).btn-secondary,button.btn,button.btn.btn-secondary {
+    font-family: Roboto,Nunito,Helvetica,Arial,sans-serif
 }
 
 .inspiro-slider {
-    height: 23.2vw;
+    height: 23.2vw
 }
 
 .flickity-button:hover {
-    background-color: #bcbcbc;
+    background-color: #bcbcbc
 }
 
 .slider_container {
     display: block;
-    height: 23.2vw;
+    height: 23.2vw
 }
 
 .inspiro-slider .flickity-page-dots {
-    bottom: 5vw;
+    bottom: 5vw
 }
 
 .slider-bottom-text {
@@ -1568,1000 +1417,851 @@ button, a.btn:not([href]):not([tabindex]), .btn {
     height: 3vw;
     bottom: 3vw;
     background-color: #d71920;
-    opacity: 0.85;
+    opacity: .85;
     width: 100%;
     text-align: center;
-    color: #ffffff;
+    color: #fff;
     z-index: 100;
-    font-size: 2vw;
+    font-size: 2vw
 }
 
-#banner_text > p {
+#banner_text>p {
     color: inherit;
-    font-size: inherit;
+    font-size: inherit
 }
 
 #banner_text {
-    overflow: hidden;
-}
-
-/*Page Title*/
-#page-title .page-title > h1 {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-    font-size: 44px;
-    line-height: 56px;
-    font-weight: 400;
-}
-
-/*Footer*/
-#footer {
-    font-size: 14px;
-    font-weight: 400;
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-}
-
-#footer p {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-}
-
-#footer .widget .widget-title, #footer .widget h4 {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-    font-size: 14px;
-    letter-spacing: 1px;
-    font-weight: 600;
-}
-
-#footer .widget .widget-title ul li a, #footer .widget h4 ul li a {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-    font-size: 15px;
+    overflow: hidden
 }
 
 .qty {
-    width: 100px !important;
-    max-width: 100px !important;
-}
-
-.product .product-new {
-    background: #6bd183;
-}
-
-/* button.btn.btn-primary, .btn:not(.close):not(.mfp-close).btn-primary, a.btn:not([href]):not([tabindex]).btn-primary { background-color: red; border-color: red; } button.btn.btn-primary:hover, .btn:not(.close):not(.mfp-close).btn-primary:hover, a.btn:not([href]):not([tabindex]).btn-primary:hover { background-color: #c40000; border-color: #c40000; } */
-#footer {
-    color: #ccc;
-    line-height: normal;
-}
-
-#footer sup {
-    text-decoration: underline;
-    margin-left: 2px;
-    margin-right: 2px;
-    font-size: 70%;
+    width: 100px!important;
+    max-width: 100px!important
 }
 
 #footer .copyright-content {
-    padding-top: 0.4em;
-    padding-bottom: 0.4em;
-    min-height: 20px;
+    padding-top: .4em;
+    padding-bottom: .4em;
+    min-height: 20px
 }
 
 #footer .footer-content {
-    padding: 20px 0 20px 0;
+    padding: 20px 0
 }
 
-.alert {
-    z-index: auto;
-}
-
-#footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-}
-
-/* 1. Add your custom Css styles below 2. Place the this code in your template: */
-/* ---------------------------------------------------------------------- Base Colors -------------------------------------------------------------------------*/
-/*Background colors*/
-/*Typography*/
-/*Font*/
-/*Header*/
-/*Side Panel*/
-/*Page Titile*/
-/*Margins*/
-/*Transitions*/
-/* ------------------------------------------------------------------------ Fonts - Find/Replace your website fonts with your custom font name. -------------------------------------------------------------------------*/
 #topbar.dark {
-    border-bottom: 1px solid rgba(231, 231, 231, 0.3);
+    border-bottom: 1px solid hsla(0,0%,90.6%,.3)
 }
 
-#topbar.topbar-dark, #topbar.dark {
+#topbar.dark,#topbar.topbar-dark {
     background-color: #333133;
-    border-color: rgba(231, 231, 231, 0.25);
+    border-color: hsla(0,0%,90.6%,.25)
 }
 
-button.btn.btn-secondary, .btn:not(.close):not(.mfp-close).btn-secondary, a.btn:not([href]):not([tabindex]).btn-secondary {
-    background-color: rgba(51, 51, 51, 0.9);
-    border-color: #5a6268;
+.btn:not(.close):not(.mfp-close).btn-secondary,a.btn:not([href]):not([tabindex]).btn-secondary,button.btn.btn-secondary {
+    background-color: rgba(51,51,51,.9);
+    border-color: #5a6268
 }
 
-/*Body*/
 body {
-    font-size: 1em;
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
+    font-size: 1em
 }
 
-/*Paragraphs*/
-p, .ff-nunito {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
+.ff-nunito,body,p {
+    font-family: Roboto,Nunito,Helvetica,Arial,sans-serif
 }
 
 .ff-poppins {
-    font-family: "Roboto", "Poppins", "Arial", sans-serif;
+    font-family: Roboto,Poppins,Arial,sans-serif
 }
 
 .text-uppercase {
-    text-transform: uppercase;
+    text-transform: uppercase
 }
 
 .bg50 {
-    background: rgba(0, 0, 0, 0.5);
-    padding: 4px;
+    background: rgba(0,0,0,.5);
+    padding: 4px
 }
 
 .op80 {
-    opacity: 0.5 !important;
-    transition: transform 2s;
+    opacity: .5!important;
+    transition: transform 2s
 }
 
 .op80:hover {
-    opacity: 1 !important;
+    opacity: 1!important
 }
 
-/*Headings*/
-h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
-    font-family: "Roboto", "Poppins", "Helvetica", "Arial", sans-serif;
+.h1,.h2,.h3,.h4,.h5,.h6,h1,h2,h3,h4,h5,h6 {
+    font-family: Roboto,Poppins,Helvetica,Arial,sans-serif
 }
 
-/*Main Menu*/
-#mainMenu nav > ul > li > a {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
+#mainMenu nav>ul>li>a {
     font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.6px;
+    letter-spacing: .6px
 }
 
-#mainMenu nav > ul > li .dropdown-menu > li > a, #mainMenu nav > ul > li .dropdown-menu > li > span, #mainMenu nav > ul > li .dropdown-menu > li [class*=col-] > ul > li > a {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
+#mainMenu nav>ul>li .dropdown-menu>li>a,#mainMenu nav>ul>li .dropdown-menu>li>span,#mainMenu nav>ul>li .dropdown-menu>li [class*=col-]>ul>li>a,#mainMenu nav>ul>li>a {
+    font-family: Roboto,Nunito,Helvetica,Arial,sans-serif
 }
 
-#mainMenu nav > ul > li.mega-menu-item .mega-menu-content .mega-menu-title {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
+#mainMenu nav>ul>li.mega-menu-item .mega-menu-content .mega-menu-title {
+    font-family: Roboto,Nunito,Helvetica,Arial,sans-serif;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 600
 }
 
-.header-extras > ul > li > a:not(.btn), .header-extras > ul > li .topbar-dropdown > .title {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
+.header-extras>ul>li .topbar-dropdown>.title,.header-extras>ul>li>a:not(.btn) {
+    font-family: Roboto,Nunito,Helvetica,Arial,sans-serif;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 700
 }
 
-/*Page Menu*/
-.page-menu nav > ul > li {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
+.btn,.inspiro-slider .slide .slide-captions .strong,.page-menu nav>ul>li,.page-menu nav>ul>li .dropdown-menu,.sidebar-menu,a.btn:not([href]):not([tabindex]),button {
+    font-family: Roboto,Nunito,Helvetica,Arial,sans-serif
 }
 
-.page-menu nav > ul > li .dropdown-menu {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-}
-
-/*Sidebar Menu*/
-.sidebar-menu {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-}
-
-/*Buttons*/
-button, a.btn:not([href]):not([tabindex]), .btn {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-}
-
-/*slider*/
-.inspiro-slider .slide .slide-captions .strong {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-}
-
-/*Page Title*/
-#page-title .page-title > h1 {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
+#page-title .page-title>h1 {
     font-size: 44px;
-    line-height: 56px;
-    font-weight: 400;
+    line-height: 56px
 }
 
-/*Footer*/
+#footer,#page-title .page-title>h1 {
+    font-family: Roboto,Nunito,Helvetica,Arial,sans-serif;
+    font-weight: 400
+}
+
 #footer {
-    font-size: 14px;
-    font-weight: 400;
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
+    font-size: 14px
 }
 
-#footer p {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
+#footer .widget .widget-title,#footer .widget h4,#footer p {
+    font-family: Roboto,Nunito,Helvetica,Arial,sans-serif
 }
 
-#footer .widget .widget-title, #footer .widget h4 {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
+#footer .widget .widget-title,#footer .widget h4 {
     font-size: 14px;
     letter-spacing: 1px;
-    font-weight: 600;
+    font-weight: 600
 }
 
-#footer .widget .widget-title ul li a, #footer .widget h4 ul li a {
-    font-family: "Roboto", "Nunito", "Helvetica", "Arial", sans-serif;
-    font-size: 15px;
+#footer .widget .widget-title ul li a,#footer .widget h4 ul li a {
+    font-family: Roboto,Nunito,Helvetica,Arial,sans-serif;
+    font-size: 15px
 }
 
 .pb-qty {
-    width: 33% !important;
-    max-width: 33% !important;
-    background-color: #e4e4e4;
-    font-size: 1.75em !important;
-    margin-top: 1px !important;
-    margin-bottom: 1px !important;
+    width: 33%!important;
+    max-width: 33%!important;
+    background-color: #e4e4e4
 }
 
-.pb-minus, .pb-plus {
-    background-color: #e4e4e4 !important;
-    font-size: 1.75em !important;
-    margin-top: 1px !important;
-    margin-bottom: 1px !important;
-    padding: 0px !important;
+.pb-minus,.pb-plus,.pb-qty {
+    font-size: 1.75em!important;
+    margin-top: 1px!important;
+    margin-bottom: 1px!important
+}
+
+.pb-minus,.pb-plus {
+    background-color: #e4e4e4!important;
+    padding: 0!important
 }
 
 .pb-plus {
-    border-left: 1px solid #414142 !important;
+    border-left: 1px solid #414142!important
 }
 
 .pb-minus {
-    border-right: 1px solid #414142 !important;
+    border-right: 1px solid #414142!important
 }
 
 .product .product-new {
-    background: #6bd183;
+    background: #6bd183
 }
 
-/* button.btn.btn-primary, .btn:not(.close):not(.mfp-close).btn-primary, a.btn:not([href]):not([tabindex]).btn-primary { background-color: red; border-color: red; } button.btn.btn-primary:hover, .btn:not(.close):not(.mfp-close).btn-primary:hover, a.btn:not([href]):not([tabindex]).btn-primary:hover { background-color: #c40000; border-color: #c40000; } */
 #footer {
     color: #ccc;
-    line-height: normal;
+    line-height: normal
 }
 
 #footer sup {
     text-decoration: underline;
     margin-left: 2px;
     margin-right: 2px;
-    font-size: 70%;
+    font-size: 70%
 }
 
 #footer .footer-content {
-    padding: 20px 0 0 0;
+    padding: 20px 0 0
 }
 
 body {
-    padding-right: 0 !important;
-    margin-bottom: 215px;
+    padding-right: 0!important;
+    margin-bottom: 215px
 }
 
 @media only screen and (max-width: 767px) {
     body {
-        padding-right: 0 !important;
-        margin-bottom: 662px;
+        padding-right:0!important;
+        margin-bottom: 662px
     }
 }
 
-@media only screen and (min-width: 768px) and (max-width: 991px) {
+@media only screen and (min-width: 768px) and (max-width:991px) {
     body {
-        padding-right: 0 !important;
-        margin-bottom: 606px;
+        padding-right:0!important;
+        margin-bottom: 606px
     }
 }
 
-@media only screen and (min-width: 991px) and (max-width: 1200px) {
+@media only screen and (min-width: 991px) and (max-width:1200px) {
     body {
-        padding-right: 0 !important;
-        margin-bottom: 271px;
+        padding-right:0!important;
+        margin-bottom: 271px
     }
 }
 
 .alert {
-    z-index: auto;
+    z-index: auto
 }
 
 #footer {
     position: absolute;
     bottom: 0;
-    width: 100%;
+    width: 100%
 }
 
 .list-group-item.active {
     z-index: 2;
     color: #fff;
     background-color: #007bff;
-    border-color: #007bff;
+    border-color: #007bff
 }
 
-.list-group input[type=radio]:checked + .list-group-item {
+.list-group input[type=radio]:checked+.list-group-item {
     background-color: #e3342f;
-    color: #ffffff;
+    color: #fff
 }
 
-button.btn.btn-primary, .btn:not(.close):not(.mfp-close).btn-primary, a.btn:not([href]):not([tabindex]).btn-primary {
+.btn:not(.close):not(.mfp-close).btn-primary,a.btn:not([href]):not([tabindex]).btn-primary,button.btn.btn-primary {
     background-color: #d71920;
-    border-color: #d71920;
+    border-color: #d71920
 }
 
-button.btn.btn-primary:hover, button.btn.btn-primary:focus, button.btn.btn-primary:not(:disabled):not(.disabled):active, button.btn.btn-primary:not(:disabled):not(.disabled).active, .btn:not(.close):not(.mfp-close).btn-primary:hover, .btn:not(.close):not(.mfp-close).btn-primary:focus, .btn:not(.close):not(.mfp-close).btn-primary:not(:disabled):not(.disabled):active, .btn:not(.close):not(.mfp-close).btn-primary:not(:disabled):not(.disabled).active, a.btn:not([href]):not([tabindex]).btn-primary:hover, a.btn:not([href]):not([tabindex]).btn-primary:focus, a.btn:not([href]):not([tabindex]).btn-primary:not(:disabled):not(.disabled):active, a.btn:not([href]):not([tabindex]).btn-primary:not(:disabled):not(.disabled).active {
+.btn:not(.close):not(.mfp-close).btn-primary:focus,.btn:not(.close):not(.mfp-close).btn-primary:hover,.btn:not(.close):not(.mfp-close).btn-primary:not(:disabled):not(.disabled).active,.btn:not(.close):not(.mfp-close).btn-primary:not(:disabled):not(.disabled):active,a.btn:not([href]):not([tabindex]).btn-primary:focus,a.btn:not([href]):not([tabindex]).btn-primary:hover,a.btn:not([href]):not([tabindex]).btn-primary:not(:disabled):not(.disabled).active,a.btn:not([href]):not([tabindex]).btn-primary:not(:disabled):not(.disabled):active,button.btn.btn-primary:focus,button.btn.btn-primary:hover,button.btn.btn-primary:not(:disabled):not(.disabled).active,button.btn.btn-primary:not(:disabled):not(.disabled):active {
     background-color: #c0161b;
     border-color: #c0161b;
-    color: #ffffff;
+    color: #fff
 }
 
 del {
-    color: #8b8b8b;
+    color: #8b8b8b
 }
 
-.grid-filter li:hover a, .grid-filter li:hover a:hover, .grid-filter li:hover a:active, .grid-filter li:hover a:focus, .grid-filter li.active a, .grid-filter li.active a:hover, .grid-filter li.active a:active, .grid-filter li.active a:focus {
-    background-color: #d71920;
+#dotsMenu ul li a.active:before,#dotsMenu ul li a:hover:before,#mainMenu nav>ul>li .dropdown-menu>li>a:active,#mainMenu nav>ul>li .dropdown-menu>li>a:focus,#mainMenu nav>ul>li .dropdown-menu>li>a:hover,#mainMenu nav>ul>li .dropdown-menu>li>span:active,#mainMenu nav>ul>li .dropdown-menu>li>span:focus,#mainMenu nav>ul>li .dropdown-menu>li>span:hover,#mainMenu nav>ul>li .dropdown-menu>li [class*=col-]>ul>li>a:active,#mainMenu nav>ul>li .dropdown-menu>li [class*=col-]>ul>li>a:focus,#mainMenu nav>ul>li .dropdown-menu>li [class*=col-]>ul>li>a:hover,.grid-filter li.active a,.grid-filter li.active a:active,.grid-filter li.active a:focus,.grid-filter li.active a:hover,.grid-filter li:hover a,.grid-filter li:hover a:active,.grid-filter li:hover a:focus,.grid-filter li:hover a:hover,.tags a.active,.tags a:active,.tags a:focus,.tags a:hover {
+    background-color: #d71920
 }
 
-#mainMenu nav > ul > li .dropdown-menu > li > a:focus, #mainMenu nav > ul > li .dropdown-menu > li > a:hover, #mainMenu nav > ul > li .dropdown-menu > li > a:active, #mainMenu nav > ul > li .dropdown-menu > li > span:focus, #mainMenu nav > ul > li .dropdown-menu > li > span:hover, #mainMenu nav > ul > li .dropdown-menu > li > span:active, #mainMenu nav > ul > li .dropdown-menu > li [class*=col-] > ul > li > a:focus, #mainMenu nav > ul > li .dropdown-menu > li [class*=col-] > ul > li > a:hover, #mainMenu nav > ul > li .dropdown-menu > li [class*=col-] > ul > li > a:active {
-    background-color: #d71920;
-}
-
-#dotsMenu ul li a:hover:before, #dotsMenu ul li a.active:before {
-    background-color: #d71920;
-}
-
-.tags a:hover, .tags a:focus, .tags a:active, .tags a.active {
-    background-color: #d71920;
-    background-color: #d71920;
-}
-
-.dark #mainMenu nav > ul > li.hover-active > a, .dark #mainMenu nav > ul > li.hover-active > span, .dark #mainMenu nav > ul > li.current > a, .dark #mainMenu nav > ul > li.current > span, .dark #mainMenu nav > ul > li:hover > a, .dark #mainMenu nav > ul > li:hover > span, .dark #mainMenu nav > ul > li:focus > a, .dark #mainMenu nav > ul > li:focus > span, #mainMenu.dark nav > ul > li.hover-active > a, #mainMenu.dark nav > ul > li.hover-active > span, #mainMenu.dark nav > ul > li.current > a, #mainMenu.dark nav > ul > li.current > span, #mainMenu.dark nav > ul > li:hover > a, #mainMenu.dark nav > ul > li:hover > span, #mainMenu.dark nav > ul > li:focus > a, #mainMenu.dark nav > ul > li:focus > span {
-    color: #d71920;
-}
-
-a:not(.btn):not(.badge):hover, a:not(.btn):not(.badge):focus, a:not(.btn):not(.badge):active {
-    color: #d71920;
+#mainMenu.dark nav>ul>li.current>a,#mainMenu.dark nav>ul>li.current>span,#mainMenu.dark nav>ul>li.hover-active>a,#mainMenu.dark nav>ul>li.hover-active>span,#mainMenu.dark nav>ul>li:focus>a,#mainMenu.dark nav>ul>li:focus>span,#mainMenu.dark nav>ul>li:hover>a,#mainMenu.dark nav>ul>li:hover>span,.dark #mainMenu nav>ul>li.current>a,.dark #mainMenu nav>ul>li.current>span,.dark #mainMenu nav>ul>li.hover-active>a,.dark #mainMenu nav>ul>li.hover-active>span,.dark #mainMenu nav>ul>li:focus>a,.dark #mainMenu nav>ul>li:focus>span,.dark #mainMenu nav>ul>li:hover>a,.dark #mainMenu nav>ul>li:hover>span,a:not(.btn):not(.badge):active,a:not(.btn):not(.badge):focus,a:not(.btn):not(.badge):hover {
+    color: #d71920
 }
 
 .highlight.highlight-colored {
     background-color: #d71920;
-    color: #ffffff;
+    color: #fff
 }
 
-.list-icon.list-icon-colored li::before, .list-icon.icon-list-colored i {
-    color: #d71920;
+.list-icon.icon-list-colored i,.list-icon.list-icon-colored li:before {
+    color: #d71920
 }
 
 .tabs .nav-tabs .nav-link.active {
     color: #d71920;
     background-color: transparent;
-    border-bottom: 2px solid #d71920;
+    border-bottom: 2px solid #d71920
 }
 
-button.btn, .btn:not(.close):not(.mfp-close), a.btn:not([href]):not([tabindex]) {
+.btn:not(.close):not(.mfp-close),a.btn:not([href]):not([tabindex]),button.btn {
     background-color: #d71920;
-    border-color: #d71920;
+    border-color: #d71920
 }
 
-button.btn:hover, button.btn:focus, button.btn:not(:disabled):not(.disabled):active, button.btn:not(:disabled):not(.disabled).active, .btn:not(.close):not(.mfp-close):hover, .btn:not(.close):not(.mfp-close):focus, .btn:not(.close):not(.mfp-close):not(:disabled):not(.disabled):active, .btn:not(.close):not(.mfp-close):not(:disabled):not(.disabled).active, a.btn:not([href]):not([tabindex]):hover, a.btn:not([href]):not([tabindex]):focus, a.btn:not([href]):not([tabindex]):not(:disabled):not(.disabled):active, a.btn:not([href]):not([tabindex]):not(:disabled):not(.disabled).active {
+.btn:not(.close):not(.mfp-close):focus,.btn:not(.close):not(.mfp-close):hover,.btn:not(.close):not(.mfp-close):not(:disabled):not(.disabled).active,.btn:not(.close):not(.mfp-close):not(:disabled):not(.disabled):active,a.btn:not([href]):not([tabindex]):focus,a.btn:not([href]):not([tabindex]):hover,a.btn:not([href]):not([tabindex]):not(:disabled):not(.disabled).active,a.btn:not([href]):not([tabindex]):not(:disabled):not(.disabled):active,button.btn:focus,button.btn:hover,button.btn:not(:disabled):not(.disabled).active,button.btn:not(:disabled):not(.disabled):active {
     background-color: #c0161b;
-    border-color: #c0161b;
+    border-color: #c0161b
 }
 
 .shopping-path {
-    background-color: #c0c0c0;
+    background-color: silver;
     padding-top: 1em;
-    padding-bottom: 1em;
+    padding-bottom: 1em
 }
 
 .shopping-path-img {
     transition: all 1s ease;
-    width: 30%;
+    width: 30%
 }
 
 .shopping-path-img:hover {
     transition: all 1s ease;
-    transform: scale(1.03);
+    transform: scale(1.03)
 }
 
 .cookie-consent {
     position: fixed;
     width: 100%;
-    bottom: 0px;
+    bottom: 0;
     z-index: 10000;
     background-color: #d71920;
-    color: white;
+    color: #fff;
     display: block;
     text-align: center;
-    opacity: 0.9;
-    padding: 1em;
+    opacity: .9;
+    padding: 1em
 }
 
 .cookie-consent-link {
     color: #e4e4e4;
-    border-bottom: 1px dashed #e4e4e4;
+    border-bottom: 1px dashed #e4e4e4
 }
 
 .cookie-consent-link:hover {
     background-color: #414142;
     border-bottom: 1px dashed #e4e4e4;
-    color: white !important;
+    color: #fff!important
 }
 
 .base-a {
-    color: #414142 !important;
-    border-bottom: 1px #414142 dashed !important;
-    text-transform: none !important;
+    color: #414142!important;
+    border-bottom: 1px dashed #414142!important
+}
+
+.base-a,.base-a:hover {
+    text-transform: none!important
 }
 
 .base-a:hover {
-    color: #d71920 !important;
-    text-transform: none !important;
+    color: #d71920!important
 }
 
 .without-underscore {
-    border-bottom: none !important;
+    border-bottom: none!important
 }
 
 h1.product-name {
     font-size: 2.35714286em;
     line-height: 1.36363636em;
-    font-weight: 500;
+    font-weight: 500
 }
 
 .grecaptcha-badge {
-    bottom: 130px !important;
+    bottom: 130px!important
 }
 
-.footer-list > li {
-    line-height: 22px;
+.footer-list>li {
+    line-height: 22px
 }
 
-h4#banner_text > .js-marquee-wrapper, h4#banner_text > .js-marquee-wrapper > .js-marquee, h4#banner_text > .js-marquee-wrapper > .js-marquee > p {
-    font-size: inherit !important;
-    color: inherit !important;
+h4#banner_text>.js-marquee-wrapper,h4#banner_text>.js-marquee-wrapper>.js-marquee,h4#banner_text>.js-marquee-wrapper>.js-marquee>p {
+    font-size: inherit!important;
+    color: inherit!important
 }
 
 .js-marquee {
     padding-left: 50px;
-    border-left: 2px solid white;
+    border-left: 2px solid #fff
 }
 
 @media only screen and (max-width: 991px) {
     .pb-product-name-link {
-        border-right: 0;
+        border-right:0
     }
 }
 
 .error-form {
-    font-size: 0.8em;
-    color: #d71920;
+    font-size: .8em;
+    color: #d71920
 }
 
 .form-control-sm {
-    min-height: 30px !important;
+    min-height: 30px!important
 }
 
 .form-control-50 {
-    width: 50%;
+    width: 50%
 }
 
 #voucher-link {
-    font-weight: bold;
-    cursor: pointer;
+    font-weight: 700;
+    cursor: pointer
 }
 
-button.btn.btn-outline, .btn:not(.close):not(.mfp-close).btn-outline, a.btn:not([href]):not([tabindex]).btn-outline {
+.btn:not(.close):not(.mfp-close).btn-outline,a.btn:not([href]):not([tabindex]).btn-outline,button.btn.btn-outline {
     background-color: transparent;
-    border-width: 1px;
-    border-style: solid;
-    border-color: #d71920;
-    color: #d71920;
+    border: 1px solid #d71920;
+    color: #d71920
 }
 
-button.btn.btn-outline:hover, button.btn.btn-outline:focus, button.btn.btn-outline:active, button.btn.btn-outline.active, .btn:not(.close):not(.mfp-close).btn-outline:hover, .btn:not(.close):not(.mfp-close).btn-outline:focus, .btn:not(.close):not(.mfp-close).btn-outline:active, .btn:not(.close):not(.mfp-close).btn-outline.active, a.btn:not([href]):not([tabindex]).btn-outline:hover, a.btn:not([href]):not([tabindex]).btn-outline:focus, a.btn:not([href]):not([tabindex]).btn-outline:active, a.btn:not([href]):not([tabindex]).btn-outline.active {
+.btn:not(.close):not(.mfp-close).btn-outline.active,.btn:not(.close):not(.mfp-close).btn-outline:active,.btn:not(.close):not(.mfp-close).btn-outline:focus,.btn:not(.close):not(.mfp-close).btn-outline:hover,a.btn:not([href]):not([tabindex]).btn-outline.active,a.btn:not([href]):not([tabindex]).btn-outline:active,a.btn:not([href]):not([tabindex]).btn-outline:focus,a.btn:not([href]):not([tabindex]).btn-outline:hover,button.btn.btn-outline.active,button.btn.btn-outline:active,button.btn.btn-outline:focus,button.btn.btn-outline:hover {
     background-color: #c0161b;
-    border-width: 1px;
-    border-style: solid;
-    border-color: #c0161b;
-    color: #fff;
+    border: 1px solid #c0161b;
+    color: #fff
 }
 
 .footer-company-link {
-    text-decoration: underline;
+    text-decoration: underline
 }
 
 .footer-company-link:hover {
-    text-decoration: none !important;
+    text-decoration: none!important
 }
 
 @media (max-width: 360px) {
     .col-1.zgoda {
-        flex: 0 0 10%;
+        flex:0 0 10%
     }
 
     .col-11.zgoda {
-        flex: 0 0 90%;
+        flex: 0 0 90%
     }
 }
 
-.list-group input[type=radio]:checked + .list-group-item {
-    transition: 300ms;
+.list-group input[type=radio]:checked+.list-group-item {
+    transition: .3s
 }
 
-@media (min-width: 0px) and (max-width: 575px) {
+@media (min-width: 0px) and (max-width:575px) {
     .border-xs-top {
-        border-top: 1px solid #e3e7eb !important;
+        border-top:1px solid #e3e7eb!important
     }
 
     .border-xs-right {
-        border-right: 1px solid #e3e7eb !important;
+        border-right: 1px solid #e3e7eb!important
     }
 
     .border-xs-bottom {
-        border-bottom: 1px solid #e3e7eb !important;
+        border-bottom: 1px solid #e3e7eb!important
     }
 
     .border-xs-left {
-        border-left: 1px solid #e3e7eb !important;
+        border-left: 1px solid #e3e7eb!important
     }
 
     .border-xs-top-0 {
-        border-top: 0 !important;
+        border-top: 0!important
     }
 
     .border-xs-right-0 {
-        border-right: 0 !important;
+        border-right: 0!important
     }
 
     .border-xs-bottom-0 {
-        border-bottom: 0 !important;
+        border-bottom: 0!important
     }
 
     .border-sm-left-0 {
-        border-left: 0 !important;
+        border-left: 0!important
     }
 
     .border-xs-x {
-        border-left: 1px solid #e3e7eb !important;
-        border-right: 1px solid #e3e7eb !important;
+        border-left: 1px solid #e3e7eb!important;
+        border-right: 1px solid #e3e7eb!important
     }
 
     .border-xs-y {
-        border-top: 1px solid #e3e7eb !important;
-        border-bottom: 1px solid #e3e7eb !important;
+        border-top: 1px solid #e3e7eb!important;
+        border-bottom: 1px solid #e3e7eb!important
     }
 
     .border-xs {
-        border-top: 1px solid #e3e7eb !important;
-        border-bottom: 1px solid #e3e7eb !important;
-        border-left: 1px solid #e3e7eb !important;
-        border-right: 1px solid #e3e7eb !important;
+        border: 1px solid #e3e7eb!important
     }
 
     .border-xs-0 {
-        border-top: 0 !important;
-        border-bottom: 0 !important;
-        border-left: 0 !important;
-        border-right: 0 !important;
+        border: 0!important
     }
 
     .w-xs-25 {
-        width: 25%;
+        width: 25%
     }
 
     .w-xs-33 {
-        width: 33%;
+        width: 33%
     }
 
     .w-xs-50 {
-        width: 50%;
+        width: 50%
     }
 
     .w-xs-66 {
-        width: 66%;
+        width: 66%
     }
 
     .w-xs-75 {
-        width: 75%;
+        width: 75%
     }
 
     .w-xs-100 {
-        width: 100%;
+        width: 100%
     }
 
     .py-xs-1 {
-        padding-top: 0.5rem !important;
-        padding-bottom: 0.5rem !important;
+        padding-top: .5rem!important;
+        padding-bottom: .5rem!important
     }
 
     .py-xs-2 {
-        padding-top: 0.75rem !important;
-        padding-bottom: 0.75rem !important;
+        padding-top: .75rem!important;
+        padding-bottom: .75rem!important
     }
 
     .py-xs-3 {
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
+        padding-top: 1rem!important;
+        padding-bottom: 1rem!important
     }
 
     .px-xs-1 {
-        padding-left: 0.5rem !important;
-        padding-right: 0.5rem !important;
+        padding-left: .5rem!important;
+        padding-right: .5rem!important
     }
 
     .px-xs-2 {
-        padding-left: 0.75rem !important;
-        padding-right: 0.75rem !important;
+        padding-left: .75rem!important;
+        padding-right: .75rem!important
     }
 
     .px-xs-3 {
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
+        padding-left: 1rem!important;
+        padding-right: 1rem!important
     }
 }
 
-@media (min-width: 576px) and (max-width: 767px) {
+@media (min-width: 576px) and (max-width:767px) {
     .border-sm-top {
-        border-top: 1px solid #e3e7eb !important;
+        border-top:1px solid #e3e7eb!important
     }
 
     .border-sm-right {
-        border-right: 1px solid #e3e7eb !important;
+        border-right: 1px solid #e3e7eb!important
     }
 
     .border-sm-bottom {
-        border-bottom: 1px solid #e3e7eb !important;
+        border-bottom: 1px solid #e3e7eb!important
     }
 
     .border-sm-left {
-        border-left: 1px solid #e3e7eb !important;
+        border-left: 1px solid #e3e7eb!important
     }
 
     .border-sm-top-0 {
-        border-top: 0 !important;
+        border-top: 0!important
     }
 
     .border-sm-right-0 {
-        border-right: 0 !important;
+        border-right: 0!important
     }
 
     .border-sm-bottom-0 {
-        border-bottom: 0 !important;
+        border-bottom: 0!important
     }
 
     .border-sm-left-0 {
-        border-left: 0 !important;
+        border-left: 0!important
     }
 
     .border-sm-x {
-        border-left: 1px solid #e3e7eb !important;
-        border-right: 1px solid #e3e7eb !important;
+        border-left: 1px solid #e3e7eb!important;
+        border-right: 1px solid #e3e7eb!important
     }
 
     .border-sm-y {
-        border-top: 1px solid #e3e7eb !important;
-        border-bottom: 1px solid #e3e7eb !important;
+        border-top: 1px solid #e3e7eb!important;
+        border-bottom: 1px solid #e3e7eb!important
     }
 
     .border-sm {
-        border-top: 1px solid #e3e7eb !important;
-        border-bottom: 1px solid #e3e7eb !important;
-        border-left: 1px solid #e3e7eb !important;
-        border-right: 1px solid #e3e7eb !important;
+        border: 1px solid #e3e7eb!important
     }
 
     .border-sm-0 {
-        border-top: 0 !important;
-        border-bottom: 0 !important;
-        border-left: 0 !important;
-        border-right: 0 !important;
+        border: 0!important
     }
 
     .w-sm-25 {
-        width: 25%;
+        width: 25%
     }
 
     .w-sm-33 {
-        width: 33%;
+        width: 33%
     }
 
     .w-sm-50 {
-        width: 50%;
+        width: 50%
     }
 
     .w-sm-66 {
-        width: 66%;
+        width: 66%
     }
 
     .w-sm-75 {
-        width: 75%;
+        width: 75%
     }
 
     .w-sm-100 {
-        width: 100%;
+        width: 100%
     }
 }
 
-@media (min-width: 768px) and (max-width: 991px) {
+@media (min-width: 768px) and (max-width:991px) {
     .border-md-top {
-        border-top: 1px solid #e3e7eb !important;
+        border-top:1px solid #e3e7eb!important
     }
 
     .border-md-right {
-        border-right: 1px solid #e3e7eb !important;
+        border-right: 1px solid #e3e7eb!important
     }
 
     .border-md-bottom {
-        border-bottom: 1px solid #e3e7eb !important;
+        border-bottom: 1px solid #e3e7eb!important
     }
 
     .border-md-left {
-        border-left: 1px solid #e3e7eb !important;
+        border-left: 1px solid #e3e7eb!important
     }
 
     .border-md-top-0 {
-        border-top: 0 !important;
+        border-top: 0!important
     }
 
     .border-md-right-0 {
-        border-right: 0 !important;
+        border-right: 0!important
     }
 
     .border-md-bottom-0 {
-        border-bottom: 0 !important;
+        border-bottom: 0!important
     }
 
     .border-md-left-0 {
-        border-left: 0 !important;
+        border-left: 0!important
     }
 
     .border-md-x {
-        border-left: 1px solid #e3e7eb !important;
-        border-right: 1px solid #e3e7eb !important;
+        border-left: 1px solid #e3e7eb!important;
+        border-right: 1px solid #e3e7eb!important
     }
 
     .border-md-y {
-        border-top: 1px solid #e3e7eb !important;
-        border-bottom: 1px solid #e3e7eb !important;
+        border-top: 1px solid #e3e7eb!important;
+        border-bottom: 1px solid #e3e7eb!important
     }
 
     .border-md {
-        border-top: 1px solid #e3e7eb !important;
-        border-bottom: 1px solid #e3e7eb !important;
-        border-left: 1px solid #e3e7eb !important;
-        border-right: 1px solid #e3e7eb !important;
+        border: 1px solid #e3e7eb!important
     }
 
     .border-md-0 {
-        border-top: 0 !important;
-        border-bottom: 0 !important;
-        border-left: 0 !important;
-        border-right: 0 !important;
+        border: 0!important
     }
 
     .w-md-25 {
-        width: 25%;
+        width: 25%
     }
 
     .w-md-33 {
-        width: 33%;
+        width: 33%
     }
 
     .w-md-50 {
-        width: 50%;
+        width: 50%
     }
 
     .w-md-66 {
-        width: 66%;
+        width: 66%
     }
 
     .w-md-75 {
-        width: 75%;
+        width: 75%
     }
 
     .w-md-100 {
-        width: 100%;
+        width: 100%
     }
 }
 
-@media (min-width: 992px) and (max-width: 1199px) {
+@media (min-width: 992px) and (max-width:1199px) {
     .border-lg-top {
-        border-top: 1px solid #e3e7eb !important;
+        border-top:1px solid #e3e7eb!important
     }
 
     .border-lg-right {
-        border-right: 1px solid #e3e7eb !important;
+        border-right: 1px solid #e3e7eb!important
     }
 
     .border-lg-bottom {
-        border-bottom: 1px solid #e3e7eb !important;
+        border-bottom: 1px solid #e3e7eb!important
     }
 
     .border-lg-left {
-        border-left: 1px solid #e3e7eb !important;
+        border-left: 1px solid #e3e7eb!important
     }
 
     .border-lg-top-0 {
-        border-top: 0 !important;
+        border-top: 0!important
     }
 
     .border-lg-right-0 {
-        border-right: 0 !important;
+        border-right: 0!important
     }
 
     .border-lg-bottom-0 {
-        border-bottom: 0 !important;
+        border-bottom: 0!important
     }
 
     .border-lg-left-0 {
-        border-left: 0 !important;
+        border-left: 0!important
     }
 
     .border-lg-x {
-        border-left: 1px solid #e3e7eb !important;
-        border-right: 1px solid #e3e7eb !important;
+        border-left: 1px solid #e3e7eb!important;
+        border-right: 1px solid #e3e7eb!important
     }
 
     .border-lg-y {
-        border-top: 1px solid #e3e7eb !important;
-        border-bottom: 1px solid #e3e7eb !important;
+        border-top: 1px solid #e3e7eb!important;
+        border-bottom: 1px solid #e3e7eb!important
     }
 
     .border-lg {
-        border-top: 1px solid #e3e7eb !important;
-        border-bottom: 1px solid #e3e7eb !important;
-        border-left: 1px solid #e3e7eb !important;
-        border-right: 1px solid #e3e7eb !important;
+        border: 1px solid #e3e7eb!important
     }
 
     .border-lg-0 {
-        border-top: 0 !important;
-        border-bottom: 0 !important;
-        border-left: 0 !important;
-        border-right: 0 !important;
+        border: 0!important
     }
 
     .w-lg-25 {
-        width: 25%;
+        width: 25%
     }
 
     .w-lg-33 {
-        width: 33%;
+        width: 33%
     }
 
     .w-lg-50 {
-        width: 50%;
+        width: 50%
     }
 
     .w-lg-66 {
-        width: 66%;
+        width: 66%
     }
 
     .w-lg-75 {
-        width: 75%;
+        width: 75%
     }
 
     .w-lg-100 {
-        width: 100%;
+        width: 100%
     }
 }
 
 @media (min-width: 1200px) {
     .border-xl-top {
-        border-top: 1px solid #e3e7eb !important;
+        border-top:1px solid #e3e7eb!important
     }
 
     .border-xl-right {
-        border-right: 1px solid #e3e7eb !important;
+        border-right: 1px solid #e3e7eb!important
     }
 
     .border-xl-bottom {
-        border-bottom: 1px solid #e3e7eb !important;
+        border-bottom: 1px solid #e3e7eb!important
     }
 
     .border-xl-left {
-        border-left: 1px solid #e3e7eb !important;
+        border-left: 1px solid #e3e7eb!important
     }
 
     .border-xl-top-0 {
-        border-top: 0 !important;
+        border-top: 0!important
     }
 
     .border-xl-right-0 {
-        border-right: 0 !important;
+        border-right: 0!important
     }
 
     .border-xl-bottom-0 {
-        border-bottom: 0 !important;
+        border-bottom: 0!important
     }
 
     .border-xl-left-0 {
-        border-left: 0 !important;
+        border-left: 0!important
     }
 
     .border-xl-x {
-        border-left: 1px solid #e3e7eb !important;
-        border-right: 1px solid #e3e7eb !important;
+        border-left: 1px solid #e3e7eb!important;
+        border-right: 1px solid #e3e7eb!important
     }
 
     .border-xl-y {
-        border-top: 1px solid #e3e7eb !important;
-        border-bottom: 1px solid #e3e7eb !important;
+        border-top: 1px solid #e3e7eb!important;
+        border-bottom: 1px solid #e3e7eb!important
     }
 
     .border-xl {
-        border-top: 1px solid #e3e7eb !important;
-        border-bottom: 1px solid #e3e7eb !important;
-        border-left: 1px solid #e3e7eb !important;
-        border-right: 1px solid #e3e7eb !important;
+        border: 1px solid #e3e7eb!important
     }
 
     .border-xl-0 {
-        border-top: 0 !important;
-        border-bottom: 0 !important;
-        border-left: 0 !important;
-        border-right: 0 !important;
+        border: 0!important
     }
 
     .w-xl-25 {
-        width: 25%;
+        width: 25%
     }
 
     .w-xl-33 {
-        width: 33%;
+        width: 33%
     }
 
     .w-xl-50 {
-        width: 50%;
+        width: 50%
     }
 
     .w-xl-66 {
-        width: 66%;
+        width: 66%
     }
 
     .w-xl-75 {
-        width: 75%;
+        width: 75%
     }
 
     .w-xl-100 {
-        width: 100%;
+        width: 100%
     }
 }
 
-.alert-paragraph-pl-0 > p {
-    padding-left: 0 !important;
-    color: #414142;
+.alert-paragraph-pl-0>p {
+    padding-left: 0!important;
+    color: #414142
 }
 
 .line-height-1 {
-    line-height: 1em;
+    line-height: 1em
 }
 
 .line-height-125 {
-    line-height: 1.25em;
+    line-height: 1.25em
 }
 
-.komunikat {
+.komunikat,.komunikat>p {
     line-height: 1.25em;
-    margin: 0;
+    margin: 0
 }
 
-.komunikat > p {
-    line-height: 1.25em;
-    margin: 0;
-    color: #ffffff;
+.komunikat>p {
+    color: #fff
 }
 
 #loading {
@@ -2574,81 +2274,71 @@ button.btn.btn-outline:hover, button.btn.btn-outline:focus, button.btn.btn-outli
     text-align: center;
     opacity: 1;
     background-color: #fff;
-    z-index: 99;
+    z-index: 99
 }
 
 #loading-text {
-    position: relative;
     padding-top: 150px;
+    font-size: 1.7em
+}
+
+#loading-info,#loading-text {
+    position: relative;
     text-align: center;
-    z-index: 100;
-    font-size: 1.7em;
+    z-index: 100
 }
 
 #loading-info {
-    position: relative;
     padding-top: 10px;
-    text-align: center;
-    z-index: 100;
-    font-size: 1em;
+    font-size: 1em
 }
 
 .grecaptcha-badge {
-    z-index: 1000;
+    z-index: 1000
 }
 
 .cart-bottom-info {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(0,0,0,.05);
     padding: 10px;
     color: #8b8b8b;
     text-align: right;
-    margin-top: 20px;
+    margin-top: 20px
 }
 
-.alert-danger > a {
-    color: white;
-    border-bottom: 1px dashed white;
+.alert-danger>a {
+    color: #fff;
+    border-bottom: 1px dashed #fff
 }
 
-.alert-danger > a:not(.btn):not(.badge):hover, .alert-danger > a:not(.btn):not(.badge):focus, .alert-danger > a:not(.btn):not(.badge):active {
-    color: white;
-    border-bottom: none;
+.alert-danger>a:not(.btn):not(.badge):active,.alert-danger>a:not(.btn):not(.badge):focus,.alert-danger>a:not(.btn):not(.badge):hover {
+    color: #fff;
+    border-bottom: none
 }
 
-#footer .footer-list > li > a:hover, #footer .footer-list-icon > li > a:hover {
-    color: #ffffff;
+#footer .footer-list-icon>li>a:hover,#footer .footer-list>li>a:hover {
+    color: #fff
 }
 
-ul.basic > li {
-    list-style: initial;
+ul.basic>li {
+    list-style: initial
 }
 
-ul.basic > li::before {
-    content: none !important;
-    font-family: none !important;
+ul.basic>li:before {
+    content: none!important;
+    font-family: none!important
 }
 
 @media (min-width: 1025px) {
     .anchor {
-        scroll-margin-top: 90px;
+        scroll-margin-top:90px
     }
 }
 
 .dropzone .dz-preview {
-    width: calc(100% - 32px);
+    width: calc(100% - 32px)
 }
 
-.alert-flash > p {
-    color: #ffffff;
-    margin-bottom: 0;
-}
-
-.alert-danger a {
-    color: white;
-    border-bottom: 1px dashed white;
-}
-
-.alert-danger a:not(.btn):not(.badge):hover, .alert-danger a:not(.btn):not(.badge):focus, .alert-danger a:not(.btn):not(.badge):active {
-    color: white;
-    border-bottom: 1px solid white;
+.alert-flash>p {
+    color: #fff;
+    margin-bottom: 0
 }
