@@ -69,9 +69,9 @@ code {
         h1 > 404 Page Not Found < /h1> <
         p > The page you requested was not found. < /p> </div >
         <
-        script defer src = "https://static.cloudflareinsights.com/beacon.min.js/v652eace1692a40cfa3763df669d7439c1639079717194"
-    integrity = "sha512-Gi7xpJR8tSkrpF7aordPZQlW2DLtzUlZcumS8dMQjwDHEnw9I7ZLyiOj/6tZStRBGtGgN6ceN6cMH8z7etPGlw=="
-    data - cf - beacon = '{"rayId":"760b702519a7bf6f","version":"2022.10.3","r":1,"token":"1407efe1fa4f46d3aab0d83ae5f110e1","si":100}'
+        script defer src = "https://static.cloudflareinsights.com/beacon.min.js/vaafb692b2aea4879b33c060e79fe94621666317369993"
+    integrity = "sha512-0ahDYl866UMhKuYcW078ScMalXqtFJggm7TmlUtp0UlD4eQk0Ixfnm5ykXKvGJNFjLMoortdseTfsRT8oCfgGA=="
+    data - cf - beacon = '{"rayId":"760b70a999f5c01c","version":"2022.10.3","r":1,"token":"1407efe1fa4f46d3aab0d83ae5f110e1","si":100}'
     crossorigin = "anonymous" > < /script> <
         /body> <
         /html>
