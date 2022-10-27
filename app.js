@@ -1,4 +1,4 @@
-xd! function(e) {
+! function(e) {
     var t = {};
 
     function n(r) {
