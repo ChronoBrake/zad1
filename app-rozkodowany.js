@@ -6877,6 +6877,59 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -6884,12 +6937,14 @@ var kodPocztowy = vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["helpers
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['user_types', 'errors', 'old_values', 'marketing_consents', 'recapcha_code'],
   data: function data() {
-    var _this$old_values$user, _this$old_values$tele, _this$old_values$adre, _this$old_values$adre2, _this$old_values$adre3, _this$old_values$adre4, _this$old_values$firm, _this$old_values$firm2, _this$old_values$nip, _this$old_values$rego, _this$old_values$emai, _this$old_values$emai2;
+    var _this$old_values$user, _this$old_values$imie, _this$old_values$nazw, _this$old_values$tele, _this$old_values$adre, _this$old_values$adre2, _this$old_values$adre3, _this$old_values$adre4, _this$old_values$firm, _this$old_values$firm2, _this$old_values$nip, _this$old_values$rego, _this$old_values$emai, _this$old_values$emai2;
 
     return {
       user_type_id: (_this$old_values$user = this.old_values.user_type_id) !== null && _this$old_values$user !== void 0 ? _this$old_values$user : 1,
       czyFirma: false,
       csrf: document.querySelector('meta[name="csrf-token"]').content,
+      imie: (_this$old_values$imie = this.old_values.imie) !== null && _this$old_values$imie !== void 0 ? _this$old_values$imie : "",
+      nazwisko: (_this$old_values$nazw = this.old_values.nazwisko) !== null && _this$old_values$nazw !== void 0 ? _this$old_values$nazw : "",
       telefon: (_this$old_values$tele = this.old_values.telefon) !== null && _this$old_values$tele !== void 0 ? _this$old_values$tele : "",
       adres_miasto: (_this$old_values$adre = this.old_values.adres_miejscowosc) !== null && _this$old_values$adre !== void 0 ? _this$old_values$adre : "",
       adres_kod: (_this$old_values$adre2 = this.old_values.adres_kod_pocztowy) !== null && _this$old_values$adre2 !== void 0 ? _this$old_values$adre2 : "",
@@ -7103,7 +7158,10 @@ var kodPocztowy = vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["helpers
                   this.$v.adres_ulica.$touch();
                   this.$v.adres_nr_domu.$touch();
                   this.$v.adres_kod.$touch();
-                } else {}
+                } else {
+                  this.$v.imie.$touch();
+                  this.$v.nazwisko.$touch();
+                }
 
                 this.$v.password.$touch();
                 this.$v.password_confirmation.$touch();
@@ -7189,11 +7247,11 @@ var kodPocztowy = vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["helpers
                 return _context2.abrupt("return", this.setErrorMessage());
 
               case 27:
-                _context2.next = 29;
+                _context2.next = 33;
                 break;
 
               case 29:
-                if (!this.$v.email.$error) {
+                if (!this.$v.imie.$error) {
                   _context2.next = 31;
                   break;
                 }
@@ -7201,7 +7259,7 @@ var kodPocztowy = vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["helpers
                 return _context2.abrupt("return", this.setErrorMessage());
 
               case 31:
-                if (!this.$v.email_confirmation.$error) {
+                if (!this.$v.nazwisko.$error) {
                   _context2.next = 33;
                   break;
                 }
@@ -7209,7 +7267,7 @@ var kodPocztowy = vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["helpers
                 return _context2.abrupt("return", this.setErrorMessage());
 
               case 33:
-                if (!this.$v.password.$error) {
+                if (!this.$v.email.$error) {
                   _context2.next = 35;
                   break;
                 }
@@ -7217,7 +7275,7 @@ var kodPocztowy = vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["helpers
                 return _context2.abrupt("return", this.setErrorMessage());
 
               case 35:
-                if (!this.$v.password_confirmation.$error) {
+                if (!this.$v.email_confirmation.$error) {
                   _context2.next = 37;
                   break;
                 }
@@ -7225,7 +7283,7 @@ var kodPocztowy = vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["helpers
                 return _context2.abrupt("return", this.setErrorMessage());
 
               case 37:
-                if (!this.$v.zgoda_cookies.$error) {
+                if (!this.$v.password.$error) {
                   _context2.next = 39;
                   break;
                 }
@@ -7233,15 +7291,31 @@ var kodPocztowy = vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["helpers
                 return _context2.abrupt("return", this.setErrorMessage());
 
               case 39:
-                // if (this.$v.zgoda_przetwarzanie.$error) return this.setErrorMessage();
-                this.register_in_progress = true;
-                _context2.next = 42;
-                return this.setRecaptchaToken();
+                if (!this.$v.password_confirmation.$error) {
+                  _context2.next = 41;
+                  break;
+                }
 
-              case 42:
-                this.submit();
+                return _context2.abrupt("return", this.setErrorMessage());
+
+              case 41:
+                if (!this.$v.zgoda_cookies.$error) {
+                  _context2.next = 43;
+                  break;
+                }
+
+                return _context2.abrupt("return", this.setErrorMessage());
 
               case 43:
+                // if (this.$v.zgoda_przetwarzanie.$error) return this.setErrorMessage();
+                this.register_in_progress = true;
+                _context2.next = 46;
+                return this.setRecaptchaToken();
+
+              case 46:
+                this.submit();
+
+              case 47:
               case "end":
                 return _context2.stop();
             }
@@ -7310,6 +7384,18 @@ var kodPocztowy = vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["helpers
       minLength: Object(vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["minLength"])(3),
       maxLength: Object(vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["maxLength"])(50),
       noOnlyDigits: _validations_customValidations__WEBPACK_IMPORTED_MODULE_3__["noOnlyDigits"]
+    },
+    imie: {
+      required: vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["required"],
+      minLength: Object(vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["minLength"])(3),
+      maxLength: Object(vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["maxLength"])(30),
+      noDigits: _validations_customValidations__WEBPACK_IMPORTED_MODULE_3__["noDigits"]
+    },
+    nazwisko: {
+      required: vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["required"],
+      minLength: Object(vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["minLength"])(3),
+      maxLength: Object(vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["maxLength"])(40),
+      noDigits: _validations_customValidations__WEBPACK_IMPORTED_MODULE_3__["noDigits"]
     },
     telefon: {
       required: vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_1__["required"],
@@ -7417,64 +7503,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['sklady', 'csrf', 'selected_sklad_id']
-});
-
-/***/ }),
-
-/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Uzytkownik/AktualizacjaWK.vue?vue&type=script&lang=js&":
-/*!************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Uzytkownik/AktualizacjaWK.vue?vue&type=script&lang=js& ***!
-  \************************************************************************************************************************************************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-/* harmony default export */ __webpack_exports__["default"] = ({
-  props: ["wk", "posiada_dane", "btn_class", 'disabled'],
-  data: function data() {
-    return {
-      csrf: document.querySelector('meta[name="csrf-token"]').content
-    };
-  },
-  methods: {
-    submit: function submit(e) {
-      if (this.$props.disabled) return false;
-      var form = document.createElement("form");
-      var element1 = document.createElement("input");
-      var element2 = document.createElement("input");
-      form.method = "POST";
-      form.action = "/wk/login";
-      element1.value = this.csrf;
-      element1.name = "_token";
-      element1.type = "hidden";
-      form.appendChild(element1);
-      document.body.appendChild(form);
-      form.submit();
-      e.preventDefault();
-    }
-  }
 });
 
 /***/ }),
@@ -9326,10 +9354,281 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-  props: ["zgoda_profil", "kod", "miasto", "ulica", "dom", "adres_spalania", "spalanie_kod", "spalanie_miasto", "spalanie_ulica", "spalanie_dom", "spalanie_miejscowosci_pna", "spalanie_ulice_pna", "ins_imie", "ins_nazwisko", "ins_pesel", "ins_telefon", "ins_iban", "miejscowosci_pna", "ulice_pna", "old_values", "blokada", "formularz_url", "bank", "wk", "mozna_edytowac", "blokuj_adres_spalania", "trwa_aktualizacja"],
+  props: ["zgoda_profil", "kod", "miasto", "ulica", "dom", "adres_spalania", "spalanie_kod", "spalanie_miasto", "spalanie_ulica", "spalanie_dom", "spalanie_miejscowosci_pna", "spalanie_ulice_pna", "ins_imie", "ins_nazwisko", "ins_pesel", "ins_telefon", "ins_iban", "miejscowosci_pna", "ulice_pna", "old_values", "blokada", "formularz_url", "bank"],
   data: function data() {
     var _this$old_values$tele, _this$old_values$adre, _this$old_values$adre2, _this$old_values$adre3, _this$old_values$adre4, _this$old_values$spal, _this$old_values$spal2, _this$old_values$spal3, _this$old_values$spal4, _this$old_values$pese, _this$old_values$iban;
 
@@ -9502,6 +9801,7 @@ __webpack_require__.r(__webpack_exports__);
       });
     },
     getMiejscowosci: function getMiejscowosci() {
+      console.log("getMiejscowosc");
       this.connection_error_miejscowosci = false;
       this.dostepne_miejscowosci = [];
       this.adres_miasto = "";
@@ -9604,57 +9904,27 @@ __webpack_require__.r(__webpack_exports__);
     }
   },
   mounted: function mounted() {
-    // blokujemy wyłącznie jeśli nie ma aktywnych zamówień:
-    var blokada = false;
+    // this.blokady.spalanie_adres_miejscowosc = false;
+    // this.blokady.spalanie_adres_kod = false;
+    // this.blokady.spalanie_adres_ulica = false;
+    // this.blokady.spalanie_adres_nr_domu = false;
+    this.blokady.imie = this.ins_imie != "" && this.ins_imie != null && !this.old_values.imie;
+    this.blokady.nazwisko = this.ins_nazwisko != "" && this.ins_nazwisko != null && !this.old_values.nazwisko;
+    this.blokady.telefon = this.ins_telefon != "" && this.ins_telefon != null && !this.old_values.telefon;
+    this.blokady.pesel = this.ins_pesel != "" && this.ins_pesel != null && !this.old_values.pesel;
+    this.blokady.iban = this.ins_iban != "" && this.ins_iban != null && !this.old_values.iban;
 
-    if (!this.mozna_edytowac) {
-      blokada = true;
+    if (this.miasto != "" && this.miasto != null && !this.old_values.adres_miasto && this.kod != "" && this.kod != null && !this.old_values.adres_miasto && this.ulica != "" && this.ulica != null && !this.old_values.adres_miasto && this.dom != "" && this.dom != null && !this.old_values.adres_miasto) {
+      this.blokady.adres_miasto = true;
+      this.blokady.adres_kod = true;
+      this.blokady.adres_ulica = true;
+      this.blokady.adres_nr_domu = true;
+    } else {
+      this.blokady.adres_miasto = false;
+      this.blokady.adres_kod = false;
+      this.blokady.adres_ulica = false;
+      this.blokady.adres_nr_domu = false;
     }
-
-    if (this.trwa_aktualizacja) blokada = true;
-    this.blokady.imie = this.blokady.nazwisko = //this.blokady.telefon=
-    this.blokady.iban = this.blokady.adres_miasto = this.blokady.adres_kod = this.blokady.adres_ulica = this.blokady.adres_nr_domu = blokada;
-    /*
-            this.blokady.imie =
-                this.ins_imie != "" && this.ins_imie != null && !this.old_values.imie;
-            this.blokady.nazwisko =
-                this.ins_nazwisko != "" &&
-                this.ins_nazwisko != null &&
-                !this.old_values.nazwisko;
-            this.blokady.telefon =
-                this.ins_telefon != "" &&
-                this.ins_telefon != null &&
-                !this.old_values.telefon;
-            this.blokady.pesel =
-                this.ins_pesel != "" && this.ins_pesel != null && !this.old_values.pesel;
-            this.blokady.iban =
-                this.ins_iban != "" && this.ins_iban != null && !this.old_values.iban;
-    
-            if (
-                this.miasto != "" &&
-                this.miasto != null &&
-                !this.old_values.adres_miasto &&
-                this.kod != "" &&
-                this.kod != null &&
-                !this.old_values.adres_miasto &&
-                this.ulica != "" &&
-                this.ulica != null &&
-                !this.old_values.adres_miasto &&
-                this.dom != "" &&
-                this.dom != null &&
-                !this.old_values.adres_miasto
-            ) {
-                this.blokady.adres_miasto = true;
-                this.blokady.adres_kod = true;
-                this.blokady.adres_ulica = true;
-                this.blokady.adres_nr_domu = true;
-            } else {
-                this.blokady.adres_miasto = false;
-                this.blokady.adres_kod = false;
-                this.blokady.adres_ulica = false;
-                this.blokady.adres_nr_domu = false;
-            }
-    */
 
     if (this.spalanie_miasto != "" && this.spalanie_miasto != null && !this.old_values.spalanie_adres_miasto && this.spalanie_kod != "" && this.spalanie_kod != null && !this.old_values.spalanie_adres_miasto && this.spalanie_ulica != "" && this.spalanie_ulica != null && !this.old_values.spalanie_adres_miasto && this.spalanie_dom != "" && this.spalanie_dom != null && !this.old_values.spalanie_adres_miasto) {
       this.blokady.spalanie_adres_miejscowosc = true;
@@ -9707,8 +9977,6 @@ __webpack_require__.r(__webpack_exports__);
       });
       if (filtered.length == 0 && spalanie_ulica != "") this.spalanie_ulica_wpis_manualny = true;
     }
-
-    console.log("Blokady:", this.blokady);
   },
   validations: {
     adres_miasto: {
@@ -93855,13 +94123,137 @@ var render = function() {
               ]),
               _vm._v(" "),
               !_vm.czyFirma
-                ? _c("div", { staticClass: "row justify-content-md-center" })
+                ? _c("div", { staticClass: "row justify-content-md-center" }, [
+                    _c("div", { staticClass: "col-md-4 mb-2" }, [
+                      _vm._m(5),
+                      _vm._v(" "),
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: _vm.$v.imie.$model,
+                            expression: "$v.imie.$model"
+                          }
+                        ],
+                        staticClass: "form-control rounded-0 text-center",
+                        attrs: { name: "imie", type: "text" },
+                        domProps: { value: _vm.$v.imie.$model },
+                        on: {
+                          input: function($event) {
+                            if ($event.target.composing) {
+                              return
+                            }
+                            _vm.$set(_vm.$v.imie, "$model", $event.target.value)
+                          }
+                        }
+                      }),
+                      _vm._v(" "),
+                      _vm.$v.imie.$error
+                        ? _c("div", { staticClass: "text-danger" }, [
+                            !_vm.$v.imie.required
+                              ? _c("div", { staticClass: "error-form" }, [
+                                  _vm._v("Pole wymagane")
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            !_vm.$v.imie.minLength
+                              ? _c("div", { staticClass: "error-form" }, [
+                                  _vm._v(
+                                    "\n                                    Minimalnie 3 znaki\n                                "
+                                  )
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            !_vm.$v.imie.maxLength
+                              ? _c("div", { staticClass: "error-form" }, [
+                                  _vm._v(
+                                    "\n                                    Maksymalnie 30 znaków\n                                "
+                                  )
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            !_vm.$v.imie.noDigits
+                              ? _c("div", { staticClass: "error-form" }, [
+                                  _vm._v(
+                                    "\n                                    Cyfry są niedozwolone\n                                "
+                                  )
+                                ])
+                              : _vm._e()
+                          ])
+                        : _vm._e()
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "col-md-4 mb-2" }, [
+                      _vm._m(6),
+                      _vm._v(" "),
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: _vm.$v.nazwisko.$model,
+                            expression: "$v.nazwisko.$model"
+                          }
+                        ],
+                        staticClass: "form-control rounded-0 text-center",
+                        attrs: { name: "nazwisko", type: "text" },
+                        domProps: { value: _vm.$v.nazwisko.$model },
+                        on: {
+                          input: function($event) {
+                            if ($event.target.composing) {
+                              return
+                            }
+                            _vm.$set(
+                              _vm.$v.nazwisko,
+                              "$model",
+                              $event.target.value
+                            )
+                          }
+                        }
+                      }),
+                      _vm._v(" "),
+                      _vm.$v.nazwisko.$error
+                        ? _c("div", { staticClass: "text-danger" }, [
+                            !_vm.$v.nazwisko.required
+                              ? _c("div", { staticClass: "error-form" }, [
+                                  _vm._v("Pole wymagane")
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            !_vm.$v.nazwisko.minLength
+                              ? _c("div", { staticClass: "error-form" }, [
+                                  _vm._v(
+                                    "\n                                    Minimalnie 3 znaki\n                                "
+                                  )
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            !_vm.$v.nazwisko.maxLength
+                              ? _c("div", { staticClass: "error-form" }, [
+                                  _vm._v(
+                                    "\n                                    Maksymalnie 40 znaków\n                                "
+                                  )
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            !_vm.$v.nazwisko.noDigits
+                              ? _c("div", { staticClass: "error-form" }, [
+                                  _vm._v(
+                                    "\n                                    Cyfry są niedozwolone\n                                "
+                                  )
+                                ])
+                              : _vm._e()
+                          ])
+                        : _vm._e()
+                    ])
+                  ])
                 : _vm._e(),
               _vm._v(" "),
               _vm.czyFirma
                 ? _c("div", { staticClass: "row justify-content-md-center" }, [
                     _c("div", { staticClass: "col-md-4 mb-2" }, [
-                      _vm._m(5),
+                      _vm._m(7),
                       _vm._v(" "),
                       _c("input", {
                         directives: [
@@ -93917,7 +94309,7 @@ var render = function() {
                     ]),
                     _vm._v(" "),
                     _c("div", { staticClass: "col-md-4 mb-2" }, [
-                      _vm._m(6),
+                      _vm._m(8),
                       _vm._v(" "),
                       _c("input", {
                         directives: [
@@ -93969,7 +94361,7 @@ var render = function() {
               _vm.czyFirma
                 ? _c("div", { staticClass: "row justify-content-md-center" }, [
                     _c("div", { staticClass: "col-md-4 mb-2" }, [
-                      _vm._m(7),
+                      _vm._m(9),
                       _vm._v(" "),
                       _c("input", {
                         directives: [
@@ -94007,7 +94399,7 @@ var render = function() {
                     ]),
                     _vm._v(" "),
                     _c("div", { staticClass: "col-md-4 mb-2" }, [
-                      _vm._m(8),
+                      _vm._m(10),
                       _vm._v(" "),
                       _c("input", {
                         directives: [
@@ -94053,7 +94445,7 @@ var render = function() {
               _vm.czyFirma
                 ? _c("div", { staticClass: "row justify-content-md-center" }, [
                     _c("div", { staticClass: "col-md-4 mb-2" }, [
-                      _vm._m(9),
+                      _vm._m(11),
                       _vm._v(" "),
                       _c("input", {
                         directives: [
@@ -94129,7 +94521,7 @@ var render = function() {
               _vm.czyFirma
                 ? _c("div", { staticClass: "row justify-content-md-center" }, [
                     _c("div", { staticClass: "col-md-3 mb-2" }, [
-                      _vm._m(10),
+                      _vm._m(12),
                       _vm._v(" "),
                       _c("input", {
                         directives: [
@@ -94192,7 +94584,7 @@ var render = function() {
                     ]),
                     _vm._v(" "),
                     _c("div", { staticClass: "col-md-6 mb-2" }, [
-                      _vm._m(11),
+                      _vm._m(13),
                       _vm._v(" "),
                       _c(
                         "select",
@@ -94311,7 +94703,7 @@ var render = function() {
                       ? _c("div", { staticClass: "col-md-9" }, [
                           _c("div", { staticClass: " alert alert-danger" }, [
                             _c("div", { staticClass: "row" }, [
-                              _vm._m(12),
+                              _vm._m(14),
                               _vm._v(" "),
                               _c("div", { staticClass: "col-11" }, [
                                 _vm._v(
@@ -94340,7 +94732,7 @@ var render = function() {
               _vm.czyFirma
                 ? _c("div", { staticClass: "row justify-content-md-center" }, [
                     _c("div", { staticClass: "col-md-3 mb-2" }, [
-                      _vm._m(13),
+                      _vm._m(15),
                       _vm._v(" "),
                       _vm.dostepne_ulice.length > 0 && !_vm.ulica_wpis_manualny
                         ? _c(
@@ -94502,7 +94894,7 @@ var render = function() {
                                       }
                                     }),
                                     _vm._v(" "),
-                                    _vm._m(14)
+                                    _vm._m(16)
                                   ]
                                 )
                               ]
@@ -94573,7 +94965,7 @@ var render = function() {
                     ]),
                     _vm._v(" "),
                     _c("div", { staticClass: "col-md-3 mb-2" }, [
-                      _vm._m(15),
+                      _vm._m(17),
                       _vm._v(" "),
                       _c("input", {
                         directives: [
@@ -94626,7 +95018,7 @@ var render = function() {
                       ? _c("div", { staticClass: "col-md-9" }, [
                           _c("div", { staticClass: " alert alert-danger" }, [
                             _c("div", { staticClass: "row" }, [
-                              _vm._m(16),
+                              _vm._m(18),
                               _vm._v(" "),
                               _c("div", { staticClass: "col-11" }, [
                                 _vm._v(
@@ -94698,11 +95090,11 @@ var render = function() {
                       }
                     }),
                     _vm._v(" "),
-                    _vm._m(17)
+                    _vm._m(19)
                   ])
                 ]),
                 _vm._v(" "),
-                _vm._m(18),
+                _vm._m(20),
                 _vm._v(" "),
                 _c("div", { staticClass: "col-2 col-sm-1 zgoda mb-2" }, [
                   _c("div", { staticClass: "pretty p-icon p-thick p-smooth" }, [
@@ -94756,7 +95148,7 @@ var render = function() {
                       }
                     }),
                     _vm._v(" "),
-                    _vm._m(19)
+                    _vm._m(21)
                   ])
                 ]),
                 _vm._v(" "),
@@ -94764,7 +95156,7 @@ var render = function() {
                   "div",
                   { staticClass: "col-10 col-sm-11 zgoda text-justify mb-2" },
                   [
-                    _vm._m(20),
+                    _vm._m(22),
                     _vm._v(" "),
                     _vm.$v.zgoda_cookies.$error
                       ? _c("div", [
@@ -94810,7 +95202,7 @@ var render = function() {
                               }
                             }),
                             _vm._v(" "),
-                            _vm._m(21, true)
+                            _vm._m(23, true)
                           ]
                         )
                       ]),
@@ -94832,10 +95224,10 @@ var render = function() {
               ),
               _vm._v(" "),
               _c("div", { staticClass: "row" }, [
-                _vm._m(22),
+                _vm._m(24),
                 _vm._v(" "),
                 _vm.errorMessage
-                  ? _c("div", { staticClass: "col-12" }, [_vm._m(23)])
+                  ? _c("div", { staticClass: "col-12" }, [_vm._m(25)])
                   : _vm._e()
               ]),
               _vm._v(" "),
@@ -94975,6 +95367,32 @@ var staticRenderFns = [
         staticStyle: { width: "100%" }
       },
       [_c("span", {}, [_vm._v("Status prawny")])]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "div",
+      {
+        staticClass: "bg-very-dark-gray text-center text-light",
+        staticStyle: { width: "100%" }
+      },
+      [_c("span", {}, [_vm._v("Imię")])]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "div",
+      {
+        staticClass: "bg-very-dark-gray text-center text-light",
+        staticStyle: { width: "100%" }
+      },
+      [_c("span", {}, [_vm._v("Nazwisko")])]
     )
   },
   function() {
@@ -95294,78 +95712,6 @@ var render = function() {
           [_vm._v("Zmień skład")]
         )
       ]
-    )
-  ])
-}
-var staticRenderFns = []
-render._withStripped = true
-
-
-
-/***/ }),
-
-/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Uzytkownik/AktualizacjaWK.vue?vue&type=template&id=70890ceb&":
-/*!****************************************************************************************************************************************************************************************************************************!*\
-  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Uzytkownik/AktualizacjaWK.vue?vue&type=template&id=70890ceb& ***!
-  \****************************************************************************************************************************************************************************************************************************/
-/*! exports provided: render, staticRenderFns */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c("div", [
-    !_vm.wk && !_vm.ins_pesel
-      ? _c("p", { staticClass: "mb-0" }, [
-          _vm._v(
-            "\n    Dokończ rejestrację w systemie sklep.pgg.pl za pośrednictwem\n  "
-          )
-        ])
-      : _vm._e(),
-    _vm._v(" "),
-    _c(
-      "button",
-      {
-        class: _vm.btn_class,
-        attrs: { disabled: _vm.disabled ? true : false },
-        on: {
-          click: function($event) {
-            return _vm.submit($event)
-          }
-        }
-      },
-      [
-        !_vm.wk && !_vm.ins_pesel
-          ? [
-              _vm._v("\n      login.gov.pl\n      "),
-              _c("br"),
-              _c("br"),
-              _vm._v("Logowanie do usług cyfrowych\n    ")
-            ]
-          : _vm._e(),
-        _vm._v(" "),
-        !_vm.wk && _vm.ins_pesel
-          ? [
-              _vm._v("\n      Weryfikuj dane za pomocą\n      "),
-              _c("br"),
-              _vm._v("\n      login.gov.pl\n    ")
-            ]
-          : _vm._e(),
-        _vm._v(" "),
-        _vm.wk
-          ? [
-              _vm._v("\n      Zaktualizuj dane za pomocą"),
-              _c("br"),
-              _vm._v("\n      Login.gov.pl\n    ")
-            ]
-          : _vm._e()
-      ],
-      2
     )
   ])
 }
@@ -97298,1755 +97644,1684 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _vm.wk
-      ? _c(
-          "form",
-          {
-            ref: "user_form",
-            staticClass: "mb-5 full-width pt-4 pb-4",
-            attrs: { action: "/uzytkownik/zapisz-dane", method: "post" },
-            on: {
-              submit: function($event) {
-                $event.preventDefault()
-                return _vm.validate($event)
+    _c(
+      "form",
+      {
+        ref: "user_form",
+        staticClass: "mb-5 full-width pt-4 pb-4",
+        attrs: { action: "/uzytkownik/zapisz-dane", method: "post" },
+        on: {
+          submit: function($event) {
+            $event.preventDefault()
+            return _vm.validate($event)
+          }
+        }
+      },
+      [
+        _c("input", {
+          attrs: { type: "hidden", name: "_token" },
+          domProps: { value: _vm.csrf }
+        }),
+        _vm._v(" "),
+        _c("input", {
+          attrs: { type: "hidden", name: "_method", value: "patch" }
+        }),
+        _vm._v(" "),
+        _vm._m(0),
+        _vm._v(" "),
+        _c("div", { staticClass: "row justify-content-md-center" }, [
+          _c("div", { staticClass: "col-md-4 mb-2" }, [
+            _vm._m(1),
+            _vm._v(" "),
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.$v.imie.$model,
+                  expression: "$v.imie.$model"
+                }
+              ],
+              staticClass: "form-control rounded-0 text-center",
+              attrs: { name: "imie", type: "text", disabled: _vm.blokady.imie },
+              domProps: { value: _vm.$v.imie.$model },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.$set(_vm.$v.imie, "$model", $event.target.value)
+                }
               }
-            }
-          },
-          [
-            _c("input", {
-              attrs: { type: "hidden", name: "_token" },
-              domProps: { value: _vm.csrf }
             }),
             _vm._v(" "),
-            _c("input", {
-              attrs: { type: "hidden", name: "_method", value: "patch" }
-            }),
-            _vm._v(" "),
-            !_vm.mozna_edytowac
-              ? _c(
-                  "div",
-                  {
-                    staticClass:
-                      "col-12 alert alert-danger text-center  text-normal"
-                  },
-                  [
-                    _vm._v(
-                      "\n                Posiadasz zamówienia będące w trakcie realizacji."
-                    ),
-                    _c("br"),
-                    _vm._v(
-                      "\n                Do czasu ich zakończenia nie możesz zmienić swoich danych.\n            "
-                    )
-                  ]
-                )
-              : _vm._e(),
-            _vm._v(" "),
-            _vm.trwa_aktualizacja
-              ? _c(
-                  "div",
-                  {
-                    staticClass:
-                      "col-12 alert alert-danger text-center  text-normal"
-                  },
-                  [
-                    _vm._v(
-                      "\n                Trwa aktualizacja Twoich danych w systemach PGG."
-                    ),
-                    _c("br"),
-                    _vm._v(
-                      "\n                Do czasu zakończenia aktualizacji danych nie możesz ich zmienić. Może to trwać kilka minut.\n            "
-                    )
-                  ]
-                )
-              : _vm._e(),
-            _vm._v(" "),
-            _vm._m(0),
-            _vm._v(" "),
-            _c("div", { staticClass: "row justify-content-md-center" }, [
-              _c("div", { staticClass: "col-md-4 mb-2" }, [
-                _vm._m(1),
-                _vm._v(" "),
-                _c("input", {
-                  staticClass: "form-control rounded-0 text-center",
-                  attrs: { name: "imie", type: "text", disabled: true },
-                  domProps: { value: _vm.ins_imie }
-                })
-              ]),
-              _vm._v(" "),
-              _c("div", { staticClass: "col-md-4 mb-2" }, [
-                _vm._m(2),
-                _vm._v(" "),
-                _c("input", {
-                  staticClass: "form-control rounded-0 text-center",
-                  attrs: { name: "nazwisko", type: "text", disabled: true },
-                  domProps: { value: _vm.ins_nazwisko }
-                })
-              ])
-            ]),
-            _vm._v(" "),
-            _c("div", { staticClass: "row justify-content-md-center" }, [
-              _c("div", { staticClass: "col-md-4 mb-2" }, [
-                _vm._m(3),
-                _vm._v(" "),
-                _c("input", {
-                  staticClass: "form-control rounded-0 text-center",
-                  attrs: { name: "pesel", type: "text", disabled: true },
-                  domProps: { value: _vm.ins_pesel }
-                })
-              ]),
-              _vm._v(" "),
-              _c(
-                "div",
-                { staticClass: "col-md-4 mb-2 mt-2 text-center" },
-                [
-                  _c("uzytkownik-aktualizacja-wk", {
-                    attrs: {
-                      wk: _vm.wk,
-                      btn_class:
-                        "btn btn-outline-primary rounded-0 px-4   btn-block",
-                      posiada_dane: _vm.ins_pesel ? true : false,
-                      disabled: !_vm.mozna_edytowac || _vm.trwa_aktualizacja
-                    }
-                  })
-                ],
-                1
-              )
-            ]),
-            _vm._v(" "),
-            _vm.wk
-              ? [
-                  _c("div", { staticClass: "row justify-content-md-center" }, [
-                    _c("div", { staticClass: "col-md-4" }, [
-                      _vm._m(4),
-                      _vm._v(" "),
-                      _c("input", {
-                        directives: [
-                          {
-                            name: "model",
-                            rawName: "v-model",
-                            value: _vm.$v.telefon.$model,
-                            expression: "$v.telefon.$model"
-                          }
-                        ],
-                        staticClass: "form-control rounded-0 text-center",
-                        attrs: {
-                          name: "telefon",
-                          type: "text",
-                          disabled: _vm.blokady.telefon
-                        },
-                        domProps: { value: _vm.$v.telefon.$model },
-                        on: {
-                          input: function($event) {
-                            if ($event.target.composing) {
-                              return
-                            }
-                            _vm.$set(
-                              _vm.$v.telefon,
-                              "$model",
-                              $event.target.value
-                            )
-                          }
-                        }
-                      }),
-                      _vm._v(" "),
-                      _vm.$v.telefon.$error
-                        ? _c("div", { staticClass: "text-danger" }, [
-                            !_vm.$v.telefon.required
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Proszę podać numer telefonu\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.telefon.numeric
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Numer telefonu musi składać się z 9 cyfr\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.telefon.minLength
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Numer telefonu musi składać się z 9 cyfr\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.telefon.maxLength
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Numer telefonu musi składać się z 9 cyfr\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.telefon.noLeadingZeros
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Proszę podać poprawny numer telefonu\n                            "
-                                  )
-                                ])
-                              : _vm._e()
-                          ])
-                        : _vm._e()
-                    ]),
-                    _vm._v(" "),
-                    _c("div", { staticClass: "col-md-4 mb-2" }, [
-                      _vm._m(5),
-                      _vm._v(" "),
-                      _c("input", {
-                        directives: [
-                          {
-                            name: "model",
-                            rawName: "v-model",
-                            value: _vm.$v.iban.$model,
-                            expression: "$v.iban.$model"
-                          },
-                          {
-                            name: "mask",
-                            rawName: "v-mask",
-                            value: "PL ## #### #### #### #### #### ####",
-                            expression: "'PL ## #### #### #### #### #### ####'"
-                          }
-                        ],
-                        staticClass: "form-control rounded-0 text-center",
-                        attrs: {
-                          name: "iban",
-                          type: "text",
-                          disabled: _vm.blokady.iban
-                        },
-                        domProps: { value: _vm.$v.iban.$model },
-                        on: {
-                          input: function($event) {
-                            if ($event.target.composing) {
-                              return
-                            }
-                            _vm.$set(_vm.$v.iban, "$model", $event.target.value)
-                          }
-                        }
-                      }),
-                      _vm._v(" "),
-                      _vm.nazwa_banku != "" && _vm.nazwa_banku != false
-                        ? _c("div", { staticClass: "text-center" }, [
-                            _c("p", { staticClass: "my-0" }, [
-                              _c("i", { staticClass: "fas fa-info-circle" }),
-                              _vm._v(
-                                " Twój bank:\n                                "
-                              ),
-                              _c("strong", [_vm._v(_vm._s(_vm.nazwa_banku))])
-                            ])
-                          ])
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.$v.iban.$error
-                        ? _c("div", { staticClass: "text-danger" }, [
-                            !_vm.$v.iban.required
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Proszę podać numer konta bankowego\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.iban.iban
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Niepoprawny nr konta bankowego\n                            "
-                                  )
-                                ])
-                              : _vm._e()
-                          ])
-                        : _vm._e()
-                    ])
-                  ]),
-                  _vm._v(" "),
-                  _c("hr"),
-                  _vm._v(" "),
-                  _vm._m(6),
-                  _vm._v(" "),
-                  _c("div", { staticClass: "row justify-content-md-center" }, [
-                    _c("div", { staticClass: "col-md-3 mb-2" }, [
-                      _vm._m(7),
-                      _vm._v(" "),
-                      _c("input", {
-                        directives: [
-                          {
-                            name: "model",
-                            rawName: "v-model",
-                            value: _vm.$v.adres_kod.$model,
-                            expression: "$v.adres_kod.$model"
-                          },
-                          {
-                            name: "mask",
-                            rawName: "v-mask",
-                            value: "##-###",
-                            expression: "'##-###'"
-                          }
-                        ],
-                        staticClass: "form-control rounded-0 text-center",
-                        class: _vm.$v.adres_kod.$error ? "is-invalid" : "",
-                        attrs: {
-                          name: "adres_kod_pocztowy",
-                          type: "text",
-                          disabled: _vm.blokady.adres_kod && _vm.ins_imie
-                        },
-                        domProps: { value: _vm.$v.adres_kod.$model },
-                        on: {
-                          input: function($event) {
-                            if ($event.target.composing) {
-                              return
-                            }
-                            _vm.$set(
-                              _vm.$v.adres_kod,
-                              "$model",
-                              $event.target.value
-                            )
-                          }
-                        }
-                      }),
-                      _vm._v(" "),
-                      _vm.pobieranie_miejscowosci
-                        ? _c("span", { staticClass: "text-dark" }, [
-                            _vm._v("Pobieranie miejscowości...")
-                          ])
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.$v.adres_kod.$error
-                        ? _c("div", { staticClass: "text-danger" }, [
-                            !_vm.$v.adres_kod.required
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Proszę podać kod pocztowy.\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.adres_kod.kodPocztowy
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Poprawny format 40-039\n                            "
-                                  )
-                                ])
-                              : _vm._e()
-                          ])
-                        : _vm._e()
-                    ]),
-                    _vm._v(" "),
-                    _c("div", { staticClass: "col-md-6 mb-2" }, [
-                      _vm._m(8),
-                      _vm._v(" "),
-                      !_vm.blokady.adres_miasto
-                        ? _c(
-                            "select",
-                            {
-                              directives: [
-                                {
-                                  name: "model",
-                                  rawName: "v-model",
-                                  value: _vm.$v.adres_miasto.$model,
-                                  expression: "$v.adres_miasto.$model"
-                                }
-                              ],
-                              staticClass: "form-control text-center rounded-0",
-                              class: _vm.$v.adres_miasto.$error
-                                ? "is-invalid"
-                                : "",
-                              attrs: {
-                                name: "adres_miejscowosc",
-                                disabled:
-                                  _vm.dostepne_miejscowosci.length == 0 ||
-                                  _vm.blokady.adres_miasto
-                              },
-                              on: {
-                                change: function($event) {
-                                  var $$selectedVal = Array.prototype.filter
-                                    .call($event.target.options, function(o) {
-                                      return o.selected
-                                    })
-                                    .map(function(o) {
-                                      var val =
-                                        "_value" in o ? o._value : o.value
-                                      return val
-                                    })
-                                  _vm.$set(
-                                    _vm.$v.adres_miasto,
-                                    "$model",
-                                    $event.target.multiple
-                                      ? $$selectedVal
-                                      : $$selectedVal[0]
-                                  )
-                                }
-                              }
-                            },
-                            [
-                              _vm.dostepne_miejscowosci.length == 0
-                                ? _c("option", { attrs: { value: "" } }, [
-                                    _vm._v(
-                                      "\n                                Proszę wpisać kod pocztowy\n                            "
-                                    )
-                                  ])
-                                : _vm._e(),
-                              _vm._v(" "),
-                              _vm.adres_miasto &&
-                              _vm.dostepne_miejscowosci.length == 0
-                                ? _c(
-                                    "option",
-                                    { domProps: { value: _vm.adres_miasto } },
-                                    [
-                                      _vm._v(
-                                        "\n                                " +
-                                          _vm._s(_vm.adres_miasto) +
-                                          "\n                            "
-                                      )
-                                    ]
-                                  )
-                                : _vm._e(),
-                              _vm._v(" "),
-                              _vm.dostepne_miejscowosci.length > 0
-                                ? _c("option", { attrs: { value: "" } }, [
-                                    _vm._v(
-                                      "\n                                Proszę wybrać miejscowość\n                            "
-                                    )
-                                  ])
-                                : _vm._e(),
-                              _vm._v(" "),
-                              _vm._l(_vm.dostepne_miejscowosci, function(
-                                miejscowosc
-                              ) {
-                                return _c(
-                                  "option",
-                                  {
-                                    key: miejscowosc.id,
-                                    domProps: { value: miejscowosc.miejscowosc }
-                                  },
-                                  [
-                                    _vm._v(
-                                      "\n                                " +
-                                        _vm._s(miejscowosc.miejscowosc) +
-                                        " (woj.\n                                " +
-                                        _vm._s(miejscowosc.wojewodztwo) +
-                                        ")\n                            "
-                                    )
-                                  ]
-                                )
-                              })
-                            ],
-                            2
-                          )
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.blokady.adres_miasto
-                        ? _c("input", {
-                            directives: [
-                              {
-                                name: "model",
-                                rawName: "v-model",
-                                value: _vm.$v.adres_miasto.$model,
-                                expression: "$v.adres_miasto.$model"
-                              }
-                            ],
-                            staticClass: "form-control rounded-0 text-center",
-                            class: _vm.$v.adres_miasto.$error
-                              ? "is-invalid"
-                              : "",
-                            attrs: {
-                              name: "adres_miasto",
-                              type: "text",
-                              disabled: _vm.blokady.adres_miasto
-                            },
-                            domProps: { value: _vm.$v.adres_miasto.$model },
-                            on: {
-                              input: function($event) {
-                                if ($event.target.composing) {
-                                  return
-                                }
-                                _vm.$set(
-                                  _vm.$v.adres_miasto,
-                                  "$model",
-                                  $event.target.value
-                                )
-                              }
-                            }
-                          })
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.$v.adres_miasto.$error
-                        ? _c("div", { staticClass: "text-danger" }, [
-                            !_vm.$v.adres_miasto.required
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Proszę wybrać miejscowość\n                            "
-                                  )
-                                ])
-                              : _vm._e()
-                          ])
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.brak_miejscowosci
-                        ? _c("div", { staticClass: "error-form" }, [
-                            _vm._v(
-                              "\n                            Nie znaleziono miejscowości dla podanego kodu pocztowego\n                        "
-                            )
-                          ])
-                        : _vm._e()
-                    ]),
-                    _vm._v(" "),
-                    _c("input", {
-                      directives: [
-                        {
-                          name: "model",
-                          rawName: "v-model",
-                          value: _vm.wojewodztwo_id,
-                          expression: "wojewodztwo_id"
-                        }
-                      ],
-                      attrs: { type: "hidden", name: "wojewodztwo_id" },
-                      domProps: { value: _vm.wojewodztwo_id },
-                      on: {
-                        input: function($event) {
-                          if ($event.target.composing) {
-                            return
-                          }
-                          _vm.wojewodztwo_id = $event.target.value
-                        }
-                      }
-                    }),
-                    _vm._v(" "),
-                    _vm.connection_error_miejscowosci
-                      ? _c("div", { staticClass: "col-md-9" }, [
-                          _c("div", { staticClass: "alert alert-danger" }, [
-                            _c("div", { staticClass: "row" }, [
-                              _vm._m(9),
-                              _vm._v(" "),
-                              _c("div", { staticClass: "col-11" }, [
-                                _vm._v(
-                                  "\n                                    Nie udało się nawiązać połączenia z serwerem.\n                                    "
-                                ),
-                                _c("br"),
-                                _vm._v(" "),
-                                _c(
-                                  "button",
-                                  {
-                                    staticClass: "btn btn-sm mt-2",
-                                    attrs: { type: "button" },
-                                    on: { click: _vm.getMiejscowosci }
-                                  },
-                                  [
-                                    _vm._v(
-                                      "\n                                        Pobierz niezbędne dane"
-                                    )
-                                  ]
-                                ),
-                                _c("br")
-                              ])
-                            ])
-                          ])
-                        ])
-                      : _vm._e()
-                  ]),
-                  _vm._v(" "),
-                  _c("div", { staticClass: "row justify-content-md-center" }, [
-                    _c("div", { staticClass: "col-md-3 mb-2" }, [
-                      _vm._m(10),
-                      _vm._v(" "),
-                      _vm.dostepne_ulice.length > 0 &&
-                      !_vm.ulica_wpis_manualny &&
-                      !_vm.blokady.adres_ulica
-                        ? _c(
-                            "select",
-                            {
-                              directives: [
-                                {
-                                  name: "model",
-                                  rawName: "v-model",
-                                  value: _vm.$v.adres_ulica.$model,
-                                  expression: "$v.adres_ulica.$model"
-                                }
-                              ],
-                              staticClass: "form-control text-center",
-                              attrs: {
-                                name: "adres_ulica",
-                                disabled:
-                                  _vm.pobieranie_ulic ||
-                                  _vm.adres_miasto == "" ||
-                                  _vm.adres_miasto == null ||
-                                  _vm.blokady.adres_ulica
-                              },
-                              on: {
-                                change: function($event) {
-                                  var $$selectedVal = Array.prototype.filter
-                                    .call($event.target.options, function(o) {
-                                      return o.selected
-                                    })
-                                    .map(function(o) {
-                                      var val =
-                                        "_value" in o ? o._value : o.value
-                                      return val
-                                    })
-                                  _vm.$set(
-                                    _vm.$v.adres_ulica,
-                                    "$model",
-                                    $event.target.multiple
-                                      ? $$selectedVal
-                                      : $$selectedVal[0]
-                                  )
-                                }
-                              }
-                            },
-                            [
-                              _c("option", { attrs: { value: "" } }, [
-                                _vm._v("Proszę wybrać ulicę")
-                              ]),
-                              _vm._v(" "),
-                              _vm._l(_vm.dostepne_ulice, function(ul, index) {
-                                return _c(
-                                  "option",
-                                  { key: index, domProps: { value: ul.ulica } },
-                                  [
-                                    _vm._v(
-                                      "\n                                " +
-                                        _vm._s(ul.ulica) +
-                                        "\n                            "
-                                    )
-                                  ]
-                                )
-                              })
-                            ],
-                            2
-                          )
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.dostepne_ulice.length == 0 ||
-                      _vm.ulica_wpis_manualny ||
-                      _vm.blokady.adres_ulica
-                        ? _c("input", {
-                            directives: [
-                              {
-                                name: "model",
-                                rawName: "v-model",
-                                value: _vm.$v.adres_ulica.$model,
-                                expression: "$v.adres_ulica.$model"
-                              }
-                            ],
-                            staticClass: "form-control rounded-0 text-center",
-                            attrs: {
-                              name: "adres_ulica",
-                              type: "text",
-                              disabled:
-                                _vm.pobieranie_ulic ||
-                                _vm.adres_miasto == "" ||
-                                _vm.adres_miasto == null ||
-                                _vm.connection_error_ulice ||
-                                _vm.blokady.adres_ulica
-                            },
-                            domProps: { value: _vm.$v.adres_ulica.$model },
-                            on: {
-                              input: function($event) {
-                                if ($event.target.composing) {
-                                  return
-                                }
-                                _vm.$set(
-                                  _vm.$v.adres_ulica,
-                                  "$model",
-                                  $event.target.value
-                                )
-                              }
-                            }
-                          })
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.pobieranie_ulic
-                        ? _c("span", { staticClass: "text-dark" }, [
-                            _vm._v("Pobieranie nazw ulic...")
-                          ])
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.dostepne_ulice.length > 0 && !_vm.blokady.adres_ulica
-                        ? _c("div", { staticClass: "row mt-1" }, [
-                            _c(
-                              "div",
-                              { staticClass: "col-2 col-sm-auto pr-0" },
-                              [
-                                _c(
-                                  "div",
-                                  {
-                                    staticClass:
-                                      "pretty p-icon p-thick p-smooth mr-0"
-                                  },
-                                  [
-                                    _c("input", {
-                                      directives: [
-                                        {
-                                          name: "model",
-                                          rawName: "v-model",
-                                          value: _vm.ulica_wpis_manualny,
-                                          expression: "ulica_wpis_manualny"
-                                        }
-                                      ],
-                                      attrs: {
-                                        type: "checkbox",
-                                        name: "ulica_wpis_manualny",
-                                        id: "dane_profil"
-                                      },
-                                      domProps: {
-                                        checked: Array.isArray(
-                                          _vm.ulica_wpis_manualny
-                                        )
-                                          ? _vm._i(
-                                              _vm.ulica_wpis_manualny,
-                                              null
-                                            ) > -1
-                                          : _vm.ulica_wpis_manualny
-                                      },
-                                      on: {
-                                        change: function($event) {
-                                          var $$a = _vm.ulica_wpis_manualny,
-                                            $$el = $event.target,
-                                            $$c = $$el.checked ? true : false
-                                          if (Array.isArray($$a)) {
-                                            var $$v = null,
-                                              $$i = _vm._i($$a, $$v)
-                                            if ($$el.checked) {
-                                              $$i < 0 &&
-                                                (_vm.ulica_wpis_manualny = $$a.concat(
-                                                  [$$v]
-                                                ))
-                                            } else {
-                                              $$i > -1 &&
-                                                (_vm.ulica_wpis_manualny = $$a
-                                                  .slice(0, $$i)
-                                                  .concat($$a.slice($$i + 1)))
-                                            }
-                                          } else {
-                                            _vm.ulica_wpis_manualny = $$c
-                                          }
-                                        }
-                                      }
-                                    }),
-                                    _vm._v(" "),
-                                    _vm._m(11)
-                                  ]
-                                )
-                              ]
-                            ),
-                            _vm._v(" "),
-                            _c(
-                              "div",
-                              {
-                                staticClass: "col-9 col-sm-10 form-group pl-1"
-                              },
-                              [
-                                _c(
-                                  "label",
-                                  {
-                                    staticClass: "font-weight-bold",
-                                    staticStyle: { "font-size": "1em" },
-                                    attrs: { for: "dane_profil" },
-                                    on: {
-                                      click: function($event) {
-                                        _vm.adres_ulica = ""
-                                      }
-                                    }
-                                  },
-                                  [
-                                    _vm._v(
-                                      "\n                                    - brak mojej ulicy\n                                "
-                                    )
-                                  ]
-                                )
-                              ]
-                            )
-                          ])
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.$v.adres_ulica.$error
-                        ? _c("div", { staticClass: "text-danger" }, [
-                            !_vm.$v.adres_ulica.required
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Proszę podać nazwę ulicy\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.adres_ulica.minLength
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Nazwa ulicy wymaga wpisania co najmniej 3 znaków\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.adres_ulica.maxLength
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Nazwa ulicy nie może przekroczyć 50 znaków\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.adres_ulica.noOnlyDigits
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Nazwa ulicy nie może składać się z samych cyfr\n                            "
-                                  )
-                                ])
-                              : _vm._e()
-                          ])
-                        : _vm._e()
-                    ]),
-                    _vm._v(" "),
-                    _c("div", { staticClass: "col-md-3 mb-2" }, [
-                      _vm._m(12),
-                      _vm._v(" "),
-                      _c("input", {
-                        directives: [
-                          {
-                            name: "model",
-                            rawName: "v-model",
-                            value: _vm.$v.adres_nr_domu.$model,
-                            expression: "$v.adres_nr_domu.$model"
-                          }
-                        ],
-                        staticClass: "form-control rounded-0 text-center",
-                        attrs: {
-                          name: "adres_nr_domu",
-                          type: "text",
-                          disabled:
-                            _vm.blokady.adres_nr_domu ||
-                            _vm.adres_miasto == "" ||
-                            _vm.adres_miasto == null
-                        },
-                        domProps: { value: _vm.$v.adres_nr_domu.$model },
-                        on: {
-                          input: function($event) {
-                            if ($event.target.composing) {
-                              return
-                            }
-                            _vm.$set(
-                              _vm.$v.adres_nr_domu,
-                              "$model",
-                              $event.target.value
-                            )
-                          }
-                        }
-                      }),
-                      _vm._v(" "),
-                      _vm.$v.adres_nr_domu.$error
-                        ? _c("div", { staticClass: "text-danger" }, [
-                            !_vm.$v.adres_nr_domu.required
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Proszę wpisać nr domu\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.adres_nr_domu.maxLength
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Numer domu nie może przekroczyć 7 znaków\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.adres_nr_domu.noOnlyLetters
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Numer domu nie może składać się z samych liter\n                            "
-                                  )
-                                ])
-                              : _vm._e()
-                          ])
-                        : _vm._e()
-                    ]),
-                    _vm._v(" "),
-                    _vm.connection_error_ulice
-                      ? _c("div", { staticClass: "col-md-9" }, [
-                          _c("div", { staticClass: "alert alert-danger" }, [
-                            _c("div", { staticClass: "row" }, [
-                              _vm._m(13),
-                              _vm._v(" "),
-                              _c("div", { staticClass: "col-11" }, [
-                                _vm._v(
-                                  "\n                                    Nie udało się nawiązać połączenia z serwerem.\n                                    "
-                                ),
-                                _c("br"),
-                                _vm._v(" "),
-                                _c(
-                                  "button",
-                                  {
-                                    staticClass: "btn btn-sm mt-2",
-                                    attrs: { type: "button" },
-                                    on: { click: _vm.getUlice }
-                                  },
-                                  [
-                                    _vm._v(
-                                      "\n                                        Pobierz niezbędne dane"
-                                    )
-                                  ]
-                                ),
-                                _c("br")
-                              ])
-                            ])
-                          ])
-                        ])
-                      : _vm._e()
-                  ]),
-                  _vm._v(" "),
-                  _vm._m(14),
-                  _vm._v(" "),
-                  _c("div", { staticClass: "row justify-content-md-center" }, [
-                    _c("div", { staticClass: "col-md-3 mb-2" }, [
-                      _vm._m(15),
-                      _vm._v(" "),
-                      _c("input", {
-                        directives: [
-                          {
-                            name: "model",
-                            rawName: "v-model",
-                            value: _vm.$v.spalanie_adres_kod.$model,
-                            expression: "$v.spalanie_adres_kod.$model"
-                          },
-                          {
-                            name: "mask",
-                            rawName: "v-mask",
-                            value: "##-###",
-                            expression: "'##-###'"
-                          }
-                        ],
-                        staticClass: "form-control rounded-0 text-center",
-                        class: _vm.$v.spalanie_adres_kod.$error
-                          ? "is-invalid"
-                          : "",
-                        attrs: {
-                          name: "spalanie_adres_kod_pocztowy",
-                          type: "text",
-                          disabled: _vm.blokady.spalanie_adres_kod
-                        },
-                        domProps: { value: _vm.$v.spalanie_adres_kod.$model },
-                        on: {
-                          input: function($event) {
-                            if ($event.target.composing) {
-                              return
-                            }
-                            _vm.$set(
-                              _vm.$v.spalanie_adres_kod,
-                              "$model",
-                              $event.target.value
-                            )
-                          }
-                        }
-                      }),
-                      _vm._v(" "),
-                      _vm.spalanie_pobieranie_miejscowosci
-                        ? _c("span", { staticClass: "text-dark" }, [
-                            _vm._v(
-                              "Pobieranie\n                            miejscowości..."
-                            )
-                          ])
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.$v.spalanie_adres_kod.$error
-                        ? _c("div", { staticClass: "text-danger" }, [
-                            !_vm.$v.spalanie_adres_kod.required
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Proszę podać kod pocztowy.\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.spalanie_adres_kod.kodPocztowy
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Poprawny format 40-039\n                            "
-                                  )
-                                ])
-                              : _vm._e()
-                          ])
-                        : _vm._e()
-                    ]),
-                    _vm._v(" "),
-                    _c("div", { staticClass: "col-md-6 mb-2" }, [
-                      _vm._m(16),
-                      _vm._v(" "),
-                      !_vm.blokady.spalanie_adres_miejscowosc
-                        ? _c(
-                            "select",
-                            {
-                              directives: [
-                                {
-                                  name: "model",
-                                  rawName: "v-model",
-                                  value:
-                                    _vm.$v.spalanie_adres_miejscowosc.$model,
-                                  expression:
-                                    "$v.spalanie_adres_miejscowosc.$model"
-                                }
-                              ],
-                              staticClass: "form-control text-center rounded-0",
-                              class: _vm.$v.spalanie_adres_miejscowosc.$error
-                                ? "is-invalid"
-                                : "",
-                              attrs: {
-                                name: "spalanie_adres_miejscowosc",
-                                disabled:
-                                  _vm.spalanie_dostepne_miejscowosci.length ==
-                                    0 || _vm.blokady.spalanie_adres_miejscowosc
-                              },
-                              on: {
-                                change: function($event) {
-                                  var $$selectedVal = Array.prototype.filter
-                                    .call($event.target.options, function(o) {
-                                      return o.selected
-                                    })
-                                    .map(function(o) {
-                                      var val =
-                                        "_value" in o ? o._value : o.value
-                                      return val
-                                    })
-                                  _vm.$set(
-                                    _vm.$v.spalanie_adres_miejscowosc,
-                                    "$model",
-                                    $event.target.multiple
-                                      ? $$selectedVal
-                                      : $$selectedVal[0]
-                                  )
-                                }
-                              }
-                            },
-                            [
-                              _vm.spalanie_dostepne_miejscowosci.length == 0
-                                ? _c("option", { attrs: { value: "" } }, [
-                                    _vm._v(
-                                      "\n                                Proszę wpisać kod pocztowy\n                            "
-                                    )
-                                  ])
-                                : _vm._e(),
-                              _vm._v(" "),
-                              _vm.spalanie_adres_miejscowosc &&
-                              _vm.spalanie_dostepne_miejscowosci.length == 0
-                                ? _c(
-                                    "option",
-                                    {
-                                      domProps: {
-                                        value: _vm.spalanie_adres_miejscowosc
-                                      }
-                                    },
-                                    [
-                                      _vm._v(
-                                        "\n                                " +
-                                          _vm._s(
-                                            _vm.spalanie_adres_miejscowosc
-                                          ) +
-                                          "\n                            "
-                                      )
-                                    ]
-                                  )
-                                : _vm._e(),
-                              _vm._v(" "),
-                              _vm.spalanie_dostepne_miejscowosci.length > 0
-                                ? _c("option", { attrs: { value: "" } }, [
-                                    _vm._v(
-                                      "\n                                Proszę wybrać miejscowość\n                            "
-                                    )
-                                  ])
-                                : _vm._e(),
-                              _vm._v(" "),
-                              _vm._l(
-                                _vm.spalanie_dostepne_miejscowosci,
-                                function(miejscowosc) {
-                                  return _c(
-                                    "option",
-                                    {
-                                      key: miejscowosc.id,
-                                      domProps: {
-                                        value: miejscowosc.miejscowosc
-                                      }
-                                    },
-                                    [
-                                      _vm._v(
-                                        "\n                                " +
-                                          _vm._s(miejscowosc.miejscowosc) +
-                                          " (woj.\n                                " +
-                                          _vm._s(miejscowosc.wojewodztwo) +
-                                          ")\n                            "
-                                      )
-                                    ]
-                                  )
-                                }
-                              )
-                            ],
-                            2
-                          )
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.blokady.spalanie_adres_miejscowosc
-                        ? _c("input", {
-                            directives: [
-                              {
-                                name: "model",
-                                rawName: "v-model",
-                                value: _vm.$v.spalanie_adres_miejscowosc.$model,
-                                expression:
-                                  "$v.spalanie_adres_miejscowosc.$model"
-                              }
-                            ],
-                            staticClass: "form-control rounded-0 text-center",
-                            class: _vm.$v.spalanie_adres_miejscowosc.$error
-                              ? "is-invalid"
-                              : "",
-                            attrs: {
-                              name: "spalanie_adres_miejscowosc",
-                              type: "text",
-                              disabled: _vm.blokady.spalanie_adres_miejscowosc
-                            },
-                            domProps: {
-                              value: _vm.$v.spalanie_adres_miejscowosc.$model
-                            },
-                            on: {
-                              input: function($event) {
-                                if ($event.target.composing) {
-                                  return
-                                }
-                                _vm.$set(
-                                  _vm.$v.spalanie_adres_miejscowosc,
-                                  "$model",
-                                  $event.target.value
-                                )
-                              }
-                            }
-                          })
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.$v.adres_miasto.$error
-                        ? _c("div", { staticClass: "text-danger" }, [
-                            !_vm.$v.spalanie_adres_miejscowosc.required
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Proszę wybrać miejscowość\n                            "
-                                  )
-                                ])
-                              : _vm._e()
-                          ])
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.spalanie_brak_miejscowosci
-                        ? _c("div", { staticClass: "error-form" }, [
-                            _vm._v(
-                              "\n                            Nie znaleziono miejscowości dla podanego kodu pocztowego\n                        "
-                            )
-                          ])
-                        : _vm._e()
-                    ]),
-                    _vm._v(" "),
-                    _c("input", {
-                      directives: [
-                        {
-                          name: "model",
-                          rawName: "v-model",
-                          value: _vm.spalanie_wojewodztwo_id,
-                          expression: "spalanie_wojewodztwo_id"
-                        }
-                      ],
-                      attrs: {
-                        type: "hidden",
-                        name: "spalanie_wojewodztwo_id"
-                      },
-                      domProps: { value: _vm.spalanie_wojewodztwo_id },
-                      on: {
-                        input: function($event) {
-                          if ($event.target.composing) {
-                            return
-                          }
-                          _vm.spalanie_wojewodztwo_id = $event.target.value
-                        }
-                      }
-                    }),
-                    _vm._v(" "),
-                    _vm.spalanie_connection_error_miejscowosci
-                      ? _c("div", { staticClass: "col-md-9" }, [
-                          _c("div", { staticClass: "alert alert-danger" }, [
-                            _c("div", { staticClass: "row" }, [
-                              _vm._m(17),
-                              _vm._v(" "),
-                              _c("div", { staticClass: "col-11" }, [
-                                _vm._v(
-                                  "\n                                    Nie udało się nawiązać połączenia z serwerem.\n                                    "
-                                ),
-                                _c("br"),
-                                _vm._v(" "),
-                                _c(
-                                  "button",
-                                  {
-                                    staticClass: "btn btn-sm mt-2",
-                                    attrs: { type: "button" },
-                                    on: { click: _vm.getSpalanieMiejscowosci }
-                                  },
-                                  [
-                                    _vm._v(
-                                      "\n                                        Pobierz niezbędne dane"
-                                    )
-                                  ]
-                                ),
-                                _c("br")
-                              ])
-                            ])
-                          ])
-                        ])
-                      : _vm._e()
-                  ]),
-                  _vm._v(" "),
-                  _c("div", { staticClass: "row justify-content-md-center" }, [
-                    _c("div", { staticClass: "col-md-3 mb-2" }, [
-                      _vm._m(18),
-                      _vm._v(" "),
-                      _vm.spalanie_dostepne_ulice.length > 0 &&
-                      !_vm.spalanie_ulica_wpis_manualny &&
-                      !_vm.blokady.spalanie_adres_ulica
-                        ? _c(
-                            "select",
-                            {
-                              directives: [
-                                {
-                                  name: "model",
-                                  rawName: "v-model",
-                                  value: _vm.$v.spalanie_adres_ulica.$model,
-                                  expression: "$v.spalanie_adres_ulica.$model"
-                                }
-                              ],
-                              staticClass: "form-control text-center",
-                              attrs: {
-                                name: "spalanie_adres_ulica",
-                                disabled:
-                                  _vm.spalanie_pobieranie_ulic ||
-                                  _vm.spalanie_adres_miejscowosc == "" ||
-                                  _vm.spalanie_adres_miejscowosc == null ||
-                                  _vm.blokady.spalanie_adres_ulica
-                              },
-                              on: {
-                                change: function($event) {
-                                  var $$selectedVal = Array.prototype.filter
-                                    .call($event.target.options, function(o) {
-                                      return o.selected
-                                    })
-                                    .map(function(o) {
-                                      var val =
-                                        "_value" in o ? o._value : o.value
-                                      return val
-                                    })
-                                  _vm.$set(
-                                    _vm.$v.spalanie_adres_ulica,
-                                    "$model",
-                                    $event.target.multiple
-                                      ? $$selectedVal
-                                      : $$selectedVal[0]
-                                  )
-                                }
-                              }
-                            },
-                            [
-                              _c("option", { attrs: { value: "" } }, [
-                                _vm._v("Proszę wybrać ulicę")
-                              ]),
-                              _vm._v(" "),
-                              _vm._l(_vm.spalanie_dostepne_ulice, function(
-                                ul,
-                                index
-                              ) {
-                                return _c(
-                                  "option",
-                                  { key: index, domProps: { value: ul.ulica } },
-                                  [
-                                    _vm._v(
-                                      "\n                                " +
-                                        _vm._s(ul.ulica) +
-                                        "\n                            "
-                                    )
-                                  ]
-                                )
-                              })
-                            ],
-                            2
-                          )
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.spalanie_dostepne_ulice.length == 0 ||
-                      _vm.spalanie_ulica_wpis_manualny ||
-                      _vm.blokady.spalanie_adres_ulica
-                        ? _c("input", {
-                            directives: [
-                              {
-                                name: "model",
-                                rawName: "v-model",
-                                value: _vm.$v.spalanie_adres_ulica.$model,
-                                expression: "$v.spalanie_adres_ulica.$model"
-                              }
-                            ],
-                            staticClass: "form-control rounded-0 text-center",
-                            attrs: {
-                              name: "spalanie_adres_ulica",
-                              type: "text",
-                              disabled:
-                                _vm.spalanie_pobieranie_ulic ||
-                                _vm.spalanie_adres_miejscowosc == "" ||
-                                _vm.spalanie_adres_miejscowosc == null ||
-                                _vm.spalanie_connection_error_ulice ||
-                                _vm.blokady.spalanie_adres_ulica
-                            },
-                            domProps: {
-                              value: _vm.$v.spalanie_adres_ulica.$model
-                            },
-                            on: {
-                              input: function($event) {
-                                if ($event.target.composing) {
-                                  return
-                                }
-                                _vm.$set(
-                                  _vm.$v.spalanie_adres_ulica,
-                                  "$model",
-                                  $event.target.value
-                                )
-                              }
-                            }
-                          })
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.spalanie_pobieranie_ulic
-                        ? _c("span", { staticClass: "text-dark" }, [
-                            _vm._v("Pobieranie nazw ulic...")
-                          ])
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.spalanie_dostepne_ulice.length > 0 &&
-                      !_vm.blokady.spalanie_adres_ulica
-                        ? _c("div", { staticClass: "row mt-1" }, [
-                            _c(
-                              "div",
-                              { staticClass: "col-2 col-sm-auto pr-0" },
-                              [
-                                _c(
-                                  "div",
-                                  {
-                                    staticClass:
-                                      "pretty p-icon p-thick p-smooth mr-0"
-                                  },
-                                  [
-                                    _c("input", {
-                                      directives: [
-                                        {
-                                          name: "model",
-                                          rawName: "v-model",
-                                          value:
-                                            _vm.spalanie_ulica_wpis_manualny,
-                                          expression:
-                                            "spalanie_ulica_wpis_manualny"
-                                        }
-                                      ],
-                                      attrs: {
-                                        type: "checkbox",
-                                        name: "spalanie_ulica_wpis_manualny",
-                                        id: "spalanie_dane_profil"
-                                      },
-                                      domProps: {
-                                        checked: Array.isArray(
-                                          _vm.spalanie_ulica_wpis_manualny
-                                        )
-                                          ? _vm._i(
-                                              _vm.spalanie_ulica_wpis_manualny,
-                                              null
-                                            ) > -1
-                                          : _vm.spalanie_ulica_wpis_manualny
-                                      },
-                                      on: {
-                                        change: function($event) {
-                                          var $$a =
-                                              _vm.spalanie_ulica_wpis_manualny,
-                                            $$el = $event.target,
-                                            $$c = $$el.checked ? true : false
-                                          if (Array.isArray($$a)) {
-                                            var $$v = null,
-                                              $$i = _vm._i($$a, $$v)
-                                            if ($$el.checked) {
-                                              $$i < 0 &&
-                                                (_vm.spalanie_ulica_wpis_manualny = $$a.concat(
-                                                  [$$v]
-                                                ))
-                                            } else {
-                                              $$i > -1 &&
-                                                (_vm.spalanie_ulica_wpis_manualny = $$a
-                                                  .slice(0, $$i)
-                                                  .concat($$a.slice($$i + 1)))
-                                            }
-                                          } else {
-                                            _vm.spalanie_ulica_wpis_manualny = $$c
-                                          }
-                                        }
-                                      }
-                                    }),
-                                    _vm._v(" "),
-                                    _vm._m(19)
-                                  ]
-                                )
-                              ]
-                            ),
-                            _vm._v(" "),
-                            _c(
-                              "div",
-                              {
-                                staticClass: "col-9 col-sm-10 form-group pl-1"
-                              },
-                              [
-                                _c(
-                                  "label",
-                                  {
-                                    staticClass: "font-weight-bold",
-                                    staticStyle: { "font-size": "1em" },
-                                    attrs: { for: "spalanie_dane_profil" },
-                                    on: {
-                                      click: function($event) {
-                                        _vm.spalanie_adres_ulica = ""
-                                      }
-                                    }
-                                  },
-                                  [
-                                    _vm._v(
-                                      "\n                                    - brak mojej ulicy\n                                "
-                                    )
-                                  ]
-                                )
-                              ]
-                            )
-                          ])
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.$v.spalanie_adres_ulica.$error
-                        ? _c("div", { staticClass: "text-danger" }, [
-                            !_vm.$v.spalanie_adres_ulica.required
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Proszę podać nazwę ulicy\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.spalanie_adres_ulica.minLength
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Nazwa ulicy wymaga wpisania co najmniej 3 znaków\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.spalanie_adres_ulica.maxLength
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Nazwa ulicy nie może przekroczyć 50 znaków\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.spalanie_adres_ulica.noOnlyDigits
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Nazwa ulicy nie może składać się z samych cyfr\n                            "
-                                  )
-                                ])
-                              : _vm._e()
-                          ])
-                        : _vm._e()
-                    ]),
-                    _vm._v(" "),
-                    _c("div", { staticClass: "col-md-3 mb-2" }, [
-                      _vm._m(20),
-                      _vm._v(" "),
-                      _c("input", {
-                        directives: [
-                          {
-                            name: "model",
-                            rawName: "v-model",
-                            value: _vm.$v.spalanie_adres_nr_domu.$model,
-                            expression: "$v.spalanie_adres_nr_domu.$model"
-                          }
-                        ],
-                        staticClass: "form-control rounded-0 text-center",
-                        attrs: {
-                          name: "spalanie_adres_nr_domu",
-                          type: "text",
-                          disabled:
-                            _vm.blokady.spalanie_adres_nr_domu ||
-                            _vm.spalanie_adres_miejscowosc == "" ||
-                            _vm.spalanie_adres_miejscowosc == null
-                        },
-                        domProps: {
-                          value: _vm.$v.spalanie_adres_nr_domu.$model
-                        },
-                        on: {
-                          input: function($event) {
-                            if ($event.target.composing) {
-                              return
-                            }
-                            _vm.$set(
-                              _vm.$v.spalanie_adres_nr_domu,
-                              "$model",
-                              $event.target.value
-                            )
-                          }
-                        }
-                      }),
-                      _vm._v(" "),
-                      _vm.$v.spalanie_adres_nr_domu.$error
-                        ? _c("div", { staticClass: "text-danger" }, [
-                            !_vm.$v.spalanie_adres_nr_domu.required
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Proszę wpisać nr domu\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.spalanie_adres_nr_domu.maxLength
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Numer domu nie może przekroczyć 9 znaków\n                            "
-                                  )
-                                ])
-                              : _vm._e(),
-                            _vm._v(" "),
-                            !_vm.$v.spalanie_adres_nr_domu.noOnlyLetters
-                              ? _c("div", { staticClass: "error" }, [
-                                  _vm._v(
-                                    "\n                                Numer domu nie może składać się z samych liter\n                            "
-                                  )
-                                ])
-                              : _vm._e()
-                          ])
-                        : _vm._e()
-                    ]),
-                    _vm._v(" "),
-                    _vm.spalanie_connection_error_ulice
-                      ? _c("div", { staticClass: "col-md-9" }, [
-                          _c("div", { staticClass: "alert alert-danger" }, [
-                            _c("div", { staticClass: "row" }, [
-                              _vm._m(21),
-                              _vm._v(" "),
-                              _c("div", { staticClass: "col-11" }, [
-                                _vm._v(
-                                  "\n                                    Nie udało się nawiązać połączenia z serwerem.\n                                    "
-                                ),
-                                _c("br"),
-                                _vm._v(" "),
-                                _c(
-                                  "button",
-                                  {
-                                    staticClass: "btn btn-sm mt-2",
-                                    attrs: { type: "button" },
-                                    on: { click: _vm.getSpalanieUlice }
-                                  },
-                                  [
-                                    _vm._v(
-                                      "\n                                        Pobierz niezbędne dane"
-                                    )
-                                  ]
-                                ),
-                                _c("br")
-                              ])
-                            ])
-                          ])
-                        ])
-                      : _vm._e(),
-                    _vm._v(" "),
-                    _vm.mozna_edytowac && !_vm.trwa_aktualizacja
-                      ? _c("div", { staticClass: "col-sm-12" }, [
-                          _c(
-                            "div",
-                            {
-                              staticClass: "row mt-1 justify-content-md-center"
-                            },
-                            [
-                              _c(
-                                "div",
-                                { staticClass: "col-2 col-sm-auto pr-0" },
-                                [
-                                  _c(
-                                    "div",
-                                    {
-                                      staticClass:
-                                        "pretty p-icon p-thick p-smooth mr-0"
-                                    },
-                                    [
-                                      _c("input", {
-                                        directives: [
-                                          {
-                                            name: "model",
-                                            rawName: "v-model",
-                                            value:
-                                              _vm.$v.zgoda_przetwarzanie.$model,
-                                            expression:
-                                              "$v.zgoda_przetwarzanie.$model"
-                                          }
-                                        ],
-                                        attrs: {
-                                          type: "checkbox",
-                                          id: "zgoda_przetwarzanie",
-                                          name: "zgoda_przetwarzanie"
-                                        },
-                                        domProps: {
-                                          checked: Array.isArray(
-                                            _vm.$v.zgoda_przetwarzanie.$model
-                                          )
-                                            ? _vm._i(
-                                                _vm.$v.zgoda_przetwarzanie
-                                                  .$model,
-                                                null
-                                              ) > -1
-                                            : _vm.$v.zgoda_przetwarzanie.$model
-                                        },
-                                        on: {
-                                          change: function($event) {
-                                            var $$a =
-                                                _vm.$v.zgoda_przetwarzanie
-                                                  .$model,
-                                              $$el = $event.target,
-                                              $$c = $$el.checked ? true : false
-                                            if (Array.isArray($$a)) {
-                                              var $$v = null,
-                                                $$i = _vm._i($$a, $$v)
-                                              if ($$el.checked) {
-                                                $$i < 0 &&
-                                                  _vm.$set(
-                                                    _vm.$v.zgoda_przetwarzanie,
-                                                    "$model",
-                                                    $$a.concat([$$v])
-                                                  )
-                                              } else {
-                                                $$i > -1 &&
-                                                  _vm.$set(
-                                                    _vm.$v.zgoda_przetwarzanie,
-                                                    "$model",
-                                                    $$a
-                                                      .slice(0, $$i)
-                                                      .concat(
-                                                        $$a.slice($$i + 1)
-                                                      )
-                                                  )
-                                              }
-                                            } else {
-                                              _vm.$set(
-                                                _vm.$v.zgoda_przetwarzanie,
-                                                "$model",
-                                                $$c
-                                              )
-                                            }
-                                          }
-                                        }
-                                      }),
-                                      _vm._v(" "),
-                                      _vm._m(22)
-                                    ]
-                                  )
-                                ]
-                              ),
-                              _vm._v(" "),
-                              _c(
-                                "div",
-                                {
-                                  staticClass: "col-9 col-sm-10 form-group pl-1"
-                                },
-                                [
-                                  _vm._m(23),
-                                  _vm._v(" "),
-                                  _vm.$v.zgoda_przetwarzanie.$error
-                                    ? _c("div", [
-                                        !_vm.$v.zgoda_przetwarzanie.boolean
-                                          ? _c(
-                                              "div",
-                                              { staticClass: "error-form" },
-                                              [
-                                                _vm._v(
-                                                  "\n                                        Zgoda wymagana\n                                    "
-                                                )
-                                              ]
-                                            )
-                                          : _vm._e()
-                                      ])
-                                    : _vm._e()
-                                ]
-                              )
-                            ]
-                          )
-                        ])
-                      : _vm._e()
-                  ]),
-                  _vm._v(" "),
-                  _vm.blokada
-                    ? _c("div", { staticClass: "col-sm-12 text-center mt-3" }, [
-                        _c("p", [
-                          _c("i", {
-                            staticClass:
-                              "fas fa-exclamation-triangle text-danger"
-                          }),
-                          _vm._v(
-                            "\n                        Aktualizacja wprowadzonych danych możliwa jest za pośrednictwem\n                        dedykowanego\n                        "
-                          ),
-                          _c("a", { attrs: { href: _vm.formularz_url } }, [
-                            _vm._v("formularza")
-                          ]),
-                          _vm._v(
-                            ", dostępnego na stronie\n                        e-Sklepu. Formularz po jego wypełnieniu powinien zostać przesłany na\n                        adres email "
-                          ),
-                          _c("a", { attrs: { href: "mailto:sklep@pgg.pl" } }, [
-                            _vm._v("sklep@pgg.pl")
-                          ]),
-                          _vm._v(".\n                    ")
-                        ])
+            _vm.$v.imie.$error
+              ? _c("div", { staticClass: "text-danger" }, [
+                  !_vm.$v.imie.minLength
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Minimalnie 3 znaki\n                    "
+                        )
                       ])
                     : _vm._e(),
                   _vm._v(" "),
-                  _vm.mozna_edytowac && !_vm.trwa_aktualizacja
-                    ? _c(
-                        "div",
-                        { staticClass: "row justify-content-md-center" },
-                        [_vm._m(24)]
-                      )
+                  !_vm.$v.imie.maxLength
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Maksymalnie 30 znaków\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.imie.noDigits
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Cyfry są niedozwolone\n                    "
+                        )
+                      ])
                     : _vm._e()
-                ]
+                ])
               : _vm._e()
-          ],
-          2
-        )
-      : _vm._e(),
-    _vm._v(" "),
-    !_vm.wk
-      ? _c("div", { staticClass: "col-sm-12 text-center mt-3" }, [
-          _c(
-            "div",
-            { staticClass: "text-center" },
-            [
-              _c("uzytkownik-aktualizacja-wk", {
-                attrs: {
-                  wk: _vm.wk,
-                  btn_class:
-                    " full-width pt-4 pb-4 btn btn-outline-primary rounded-0 px-4 my-2",
-                  posiada_dane: _vm.ins_pesel ? true : false,
-                  disabled: !_vm.mozna_edytowac || _vm.trwa_aktualizacja
-                }
-              })
-            ],
-            1
-          ),
+          ]),
           _vm._v(" "),
-          _c("p", [
-            _vm._v(
-              "\n                Aby dokończyć proces rejestracji należy pobrać dane z login.gov.pl,\n                klikając powyższy przycisk.\n            "
-            )
+          _c("div", { staticClass: "col-md-4 mb-2" }, [
+            _vm._m(2),
+            _vm._v(" "),
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.$v.nazwisko.$model,
+                  expression: "$v.nazwisko.$model"
+                }
+              ],
+              staticClass: "form-control rounded-0 text-center",
+              attrs: {
+                name: "nazwisko",
+                type: "text",
+                disabled: _vm.blokady.nazwisko
+              },
+              domProps: { value: _vm.$v.nazwisko.$model },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.$set(_vm.$v.nazwisko, "$model", $event.target.value)
+                }
+              }
+            }),
+            _vm._v(" "),
+            _vm.$v.nazwisko.$error
+              ? _c("div", { staticClass: "text-danger" }, [
+                  !_vm.$v.nazwisko.minLength
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Minimalnie 3 znaki\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.nazwisko.maxLength
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Maksymalnie 40 znaków\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.nazwisko.noDigits
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Cyfry są niedozwolone\n                    "
+                        )
+                      ])
+                    : _vm._e()
+                ])
+              : _vm._e()
           ])
-        ])
-      : _vm._e()
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "row justify-content-md-center" }, [
+          _c("div", { staticClass: "col-md-4 mb-2" }, [
+            _vm._m(3),
+            _vm._v(" "),
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.$v.pesel.$model,
+                  expression: "$v.pesel.$model"
+                }
+              ],
+              staticClass: "form-control rounded-0 text-center",
+              attrs: {
+                name: "pesel",
+                type: "text",
+                disabled: _vm.blokady.pesel
+              },
+              domProps: { value: _vm.$v.pesel.$model },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.$set(_vm.$v.pesel, "$model", $event.target.value)
+                }
+              }
+            }),
+            _vm._v(" "),
+            _vm.$v.pesel.$error
+              ? _c("div", { staticClass: "text-danger" }, [
+                  !_vm.$v.pesel.required
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Proszę podać nr PESEL\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.pesel.pesel
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Podano niepoprawny nr PESEL\n                    "
+                        )
+                      ])
+                    : _vm._e()
+                ])
+              : _vm._e()
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-md-4 mb-2" }, [
+            _vm._m(4),
+            _vm._v(" "),
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.$v.telefon.$model,
+                  expression: "$v.telefon.$model"
+                }
+              ],
+              staticClass: "form-control rounded-0 text-center",
+              attrs: {
+                name: "telefon",
+                type: "text",
+                disabled: _vm.blokady.telefon
+              },
+              domProps: { value: _vm.$v.telefon.$model },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.$set(_vm.$v.telefon, "$model", $event.target.value)
+                }
+              }
+            }),
+            _vm._v(" "),
+            _vm.$v.telefon.$error
+              ? _c("div", { staticClass: "text-danger" }, [
+                  !_vm.$v.telefon.required
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Proszę podać numer telefonu\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.telefon.numeric
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Numer telefonu musi składać się z 9 cyfr\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.telefon.minLength
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Numer telefonu musi składać się z 9 cyfr\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.telefon.maxLength
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Numer telefonu musi składać się z 9 cyfr\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.telefon.noLeadingZeros
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Proszę podać poprawny numer telefonu\n                    "
+                        )
+                      ])
+                    : _vm._e()
+                ])
+              : _vm._e()
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-md-6 mb-2" }, [
+            _vm._m(5),
+            _vm._v(" "),
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.$v.iban.$model,
+                  expression: "$v.iban.$model"
+                },
+                {
+                  name: "mask",
+                  rawName: "v-mask",
+                  value: "PL ## #### #### #### #### #### ####",
+                  expression: "'PL ## #### #### #### #### #### ####'"
+                }
+              ],
+              staticClass: "form-control rounded-0 text-center",
+              attrs: { name: "iban", type: "text", disabled: _vm.blokady.iban },
+              domProps: { value: _vm.$v.iban.$model },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.$set(_vm.$v.iban, "$model", $event.target.value)
+                }
+              }
+            }),
+            _vm._v(" "),
+            _vm.nazwa_banku != "" && _vm.nazwa_banku != false
+              ? _c("div", { staticClass: "text-center" }, [
+                  _c("p", { staticClass: "my-0" }, [
+                    _c("i", { staticClass: "fas fa-info-circle" }),
+                    _vm._v(" Twój bank:\n                        "),
+                    _c("strong", [_vm._v(_vm._s(_vm.nazwa_banku))])
+                  ])
+                ])
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.$v.iban.$error
+              ? _c("div", { staticClass: "text-danger" }, [
+                  !_vm.$v.iban.required
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Proszę podać numer konta bankowego\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.iban.iban
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Niepoprawny nr konta bankowego\n                    "
+                        )
+                      ])
+                    : _vm._e()
+                ])
+              : _vm._e()
+          ])
+        ]),
+        _vm._v(" "),
+        _vm._m(6),
+        _vm._v(" "),
+        _c("div", { staticClass: "row justify-content-md-center" }, [
+          _c("div", { staticClass: "col-md-3 mb-2" }, [
+            _vm._m(7),
+            _vm._v(" "),
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.$v.adres_kod.$model,
+                  expression: "$v.adres_kod.$model"
+                },
+                {
+                  name: "mask",
+                  rawName: "v-mask",
+                  value: "##-###",
+                  expression: "'##-###'"
+                }
+              ],
+              staticClass: "form-control rounded-0 text-center",
+              class: _vm.$v.adres_kod.$error ? "is-invalid" : "",
+              attrs: {
+                name: "adres_kod_pocztowy",
+                type: "text",
+                disabled: _vm.blokady.adres_kod
+              },
+              domProps: { value: _vm.$v.adres_kod.$model },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.$set(_vm.$v.adres_kod, "$model", $event.target.value)
+                }
+              }
+            }),
+            _vm._v(" "),
+            _vm.pobieranie_miejscowosci
+              ? _c("span", { staticClass: "text-dark" }, [
+                  _vm._v("Pobieranie miejscowości...")
+                ])
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.$v.adres_kod.$error
+              ? _c("div", { staticClass: "text-danger" }, [
+                  !_vm.$v.adres_kod.required
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Proszę podać kod pocztowy.\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.adres_kod.kodPocztowy
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Poprawny format 40-039\n                    "
+                        )
+                      ])
+                    : _vm._e()
+                ])
+              : _vm._e()
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-md-6 mb-2" }, [
+            _vm._m(8),
+            _vm._v(" "),
+            !_vm.blokady.adres_miasto
+              ? _c(
+                  "select",
+                  {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.$v.adres_miasto.$model,
+                        expression: "$v.adres_miasto.$model"
+                      }
+                    ],
+                    staticClass: "form-control text-center rounded-0",
+                    class: _vm.$v.adres_miasto.$error ? "is-invalid" : "",
+                    attrs: {
+                      name: "adres_miejscowosc",
+                      disabled:
+                        _vm.dostepne_miejscowosci.length == 0 ||
+                        _vm.blokady.adres_miasto
+                    },
+                    on: {
+                      change: function($event) {
+                        var $$selectedVal = Array.prototype.filter
+                          .call($event.target.options, function(o) {
+                            return o.selected
+                          })
+                          .map(function(o) {
+                            var val = "_value" in o ? o._value : o.value
+                            return val
+                          })
+                        _vm.$set(
+                          _vm.$v.adres_miasto,
+                          "$model",
+                          $event.target.multiple
+                            ? $$selectedVal
+                            : $$selectedVal[0]
+                        )
+                      }
+                    }
+                  },
+                  [
+                    _vm.dostepne_miejscowosci.length == 0
+                      ? _c("option", { attrs: { value: "" } }, [
+                          _vm._v(
+                            "\n                        Proszę wpisać kod pocztowy\n                    "
+                          )
+                        ])
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.adres_miasto && _vm.dostepne_miejscowosci.length == 0
+                      ? _c(
+                          "option",
+                          { domProps: { value: _vm.adres_miasto } },
+                          [
+                            _vm._v(
+                              "\n                        " +
+                                _vm._s(_vm.adres_miasto) +
+                                "\n                    "
+                            )
+                          ]
+                        )
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.dostepne_miejscowosci.length > 0
+                      ? _c("option", { attrs: { value: "" } }, [
+                          _vm._v(
+                            "\n                        Proszę wybrać miejscowość\n                    "
+                          )
+                        ])
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm._l(_vm.dostepne_miejscowosci, function(miejscowosc) {
+                      return _c(
+                        "option",
+                        {
+                          key: miejscowosc.id,
+                          domProps: { value: miejscowosc.miejscowosc }
+                        },
+                        [
+                          _vm._v(
+                            "\n                        " +
+                              _vm._s(miejscowosc.miejscowosc) +
+                              " (woj.\n                        " +
+                              _vm._s(miejscowosc.wojewodztwo) +
+                              ")\n                    "
+                          )
+                        ]
+                      )
+                    })
+                  ],
+                  2
+                )
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.blokady.adres_miasto
+              ? _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.$v.adres_miasto.$model,
+                      expression: "$v.adres_miasto.$model"
+                    }
+                  ],
+                  staticClass: "form-control rounded-0 text-center",
+                  class: _vm.$v.adres_miasto.$error ? "is-invalid" : "",
+                  attrs: {
+                    name: "adres_miasto",
+                    type: "text",
+                    disabled: _vm.blokady.adres_miasto
+                  },
+                  domProps: { value: _vm.$v.adres_miasto.$model },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(
+                        _vm.$v.adres_miasto,
+                        "$model",
+                        $event.target.value
+                      )
+                    }
+                  }
+                })
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.$v.adres_miasto.$error
+              ? _c("div", { staticClass: "text-danger" }, [
+                  !_vm.$v.adres_miasto.required
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Proszę wybrać miejscowość\n                    "
+                        )
+                      ])
+                    : _vm._e()
+                ])
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.brak_miejscowosci
+              ? _c("div", { staticClass: "error-form" }, [
+                  _vm._v(
+                    "\n                    Nie znaleziono miejscowości dla podanego kodu pocztowego\n                "
+                  )
+                ])
+              : _vm._e()
+          ]),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.wojewodztwo_id,
+                expression: "wojewodztwo_id"
+              }
+            ],
+            attrs: { type: "hidden", name: "wojewodztwo_id" },
+            domProps: { value: _vm.wojewodztwo_id },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.wojewodztwo_id = $event.target.value
+              }
+            }
+          }),
+          _vm._v(" "),
+          _vm.connection_error_miejscowosci
+            ? _c("div", { staticClass: "col-md-9" }, [
+                _c("div", { staticClass: "alert alert-danger" }, [
+                  _c("div", { staticClass: "row" }, [
+                    _vm._m(9),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "col-11" }, [
+                      _vm._v(
+                        "\n                            Nie udało się nawiązać połączenia z serwerem.\n                            "
+                      ),
+                      _c("br"),
+                      _vm._v(" "),
+                      _c(
+                        "button",
+                        {
+                          staticClass: "btn btn-sm mt-2",
+                          attrs: { type: "button" },
+                          on: { click: _vm.getMiejscowosci }
+                        },
+                        [
+                          _vm._v(
+                            "\n                                Pobierz niezbędne dane"
+                          )
+                        ]
+                      ),
+                      _c("br")
+                    ])
+                  ])
+                ])
+              ])
+            : _vm._e()
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "row justify-content-md-center" }, [
+          _c("div", { staticClass: "col-md-3 mb-2" }, [
+            _vm._m(10),
+            _vm._v(" "),
+            _vm.dostepne_ulice.length > 0 &&
+            !_vm.ulica_wpis_manualny &&
+            !_vm.blokady.adres_ulica
+              ? _c(
+                  "select",
+                  {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.$v.adres_ulica.$model,
+                        expression: "$v.adres_ulica.$model"
+                      }
+                    ],
+                    staticClass: "form-control text-center",
+                    attrs: {
+                      name: "adres_ulica",
+                      disabled:
+                        _vm.pobieranie_ulic ||
+                        _vm.adres_miasto == "" ||
+                        _vm.adres_miasto == null ||
+                        _vm.blokady.adres_ulica
+                    },
+                    on: {
+                      change: function($event) {
+                        var $$selectedVal = Array.prototype.filter
+                          .call($event.target.options, function(o) {
+                            return o.selected
+                          })
+                          .map(function(o) {
+                            var val = "_value" in o ? o._value : o.value
+                            return val
+                          })
+                        _vm.$set(
+                          _vm.$v.adres_ulica,
+                          "$model",
+                          $event.target.multiple
+                            ? $$selectedVal
+                            : $$selectedVal[0]
+                        )
+                      }
+                    }
+                  },
+                  [
+                    _c("option", { attrs: { value: "" } }, [
+                      _vm._v("Proszę wybrać ulicę")
+                    ]),
+                    _vm._v(" "),
+                    _vm._l(_vm.dostepne_ulice, function(ul, index) {
+                      return _c(
+                        "option",
+                        { key: index, domProps: { value: ul.ulica } },
+                        [
+                          _vm._v(
+                            "\n                        " +
+                              _vm._s(ul.ulica) +
+                              "\n                    "
+                          )
+                        ]
+                      )
+                    })
+                  ],
+                  2
+                )
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.dostepne_ulice.length == 0 ||
+            _vm.ulica_wpis_manualny ||
+            _vm.blokady.adres_ulica
+              ? _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.$v.adres_ulica.$model,
+                      expression: "$v.adres_ulica.$model"
+                    }
+                  ],
+                  staticClass: "form-control rounded-0 text-center",
+                  attrs: {
+                    name: "adres_ulica",
+                    type: "text",
+                    disabled:
+                      _vm.pobieranie_ulic ||
+                      _vm.adres_miasto == "" ||
+                      _vm.adres_miasto == null ||
+                      _vm.connection_error_ulice ||
+                      _vm.blokady.adres_ulica
+                  },
+                  domProps: { value: _vm.$v.adres_ulica.$model },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(
+                        _vm.$v.adres_ulica,
+                        "$model",
+                        $event.target.value
+                      )
+                    }
+                  }
+                })
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.pobieranie_ulic
+              ? _c("span", { staticClass: "text-dark" }, [
+                  _vm._v("Pobieranie nazw ulic...")
+                ])
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.dostepne_ulice.length > 0 && !_vm.blokady.adres_ulica
+              ? _c("div", { staticClass: "row mt-1" }, [
+                  _c("div", { staticClass: "col-2 col-sm-auto pr-0" }, [
+                    _c(
+                      "div",
+                      { staticClass: "pretty p-icon p-thick p-smooth mr-0" },
+                      [
+                        _c("input", {
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: _vm.ulica_wpis_manualny,
+                              expression: "ulica_wpis_manualny"
+                            }
+                          ],
+                          attrs: {
+                            type: "checkbox",
+                            name: "ulica_wpis_manualny",
+                            id: "dane_profil"
+                          },
+                          domProps: {
+                            checked: Array.isArray(_vm.ulica_wpis_manualny)
+                              ? _vm._i(_vm.ulica_wpis_manualny, null) > -1
+                              : _vm.ulica_wpis_manualny
+                          },
+                          on: {
+                            change: function($event) {
+                              var $$a = _vm.ulica_wpis_manualny,
+                                $$el = $event.target,
+                                $$c = $$el.checked ? true : false
+                              if (Array.isArray($$a)) {
+                                var $$v = null,
+                                  $$i = _vm._i($$a, $$v)
+                                if ($$el.checked) {
+                                  $$i < 0 &&
+                                    (_vm.ulica_wpis_manualny = $$a.concat([
+                                      $$v
+                                    ]))
+                                } else {
+                                  $$i > -1 &&
+                                    (_vm.ulica_wpis_manualny = $$a
+                                      .slice(0, $$i)
+                                      .concat($$a.slice($$i + 1)))
+                                }
+                              } else {
+                                _vm.ulica_wpis_manualny = $$c
+                              }
+                            }
+                          }
+                        }),
+                        _vm._v(" "),
+                        _vm._m(11)
+                      ]
+                    )
+                  ]),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    { staticClass: "col-9 col-sm-10 form-group pl-1" },
+                    [
+                      _c(
+                        "label",
+                        {
+                          staticClass: "font-weight-bold",
+                          staticStyle: { "font-size": "1em" },
+                          attrs: { for: "dane_profil" },
+                          on: {
+                            click: function($event) {
+                              _vm.adres_ulica = ""
+                            }
+                          }
+                        },
+                        [
+                          _vm._v(
+                            "\n                            - brak mojej ulicy\n                        "
+                          )
+                        ]
+                      )
+                    ]
+                  )
+                ])
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.$v.adres_ulica.$error
+              ? _c("div", { staticClass: "text-danger" }, [
+                  !_vm.$v.adres_ulica.required
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Proszę podać nazwę ulicy\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.adres_ulica.minLength
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Nazwa ulicy wymaga wpisania co najmniej 3 znaków\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.adres_ulica.maxLength
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Nazwa ulicy nie może przekroczyć 50 znaków\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.adres_ulica.noOnlyDigits
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Nazwa ulicy nie może składać się z samych cyfr\n                    "
+                        )
+                      ])
+                    : _vm._e()
+                ])
+              : _vm._e()
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-md-3 mb-2" }, [
+            _vm._m(12),
+            _vm._v(" "),
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.$v.adres_nr_domu.$model,
+                  expression: "$v.adres_nr_domu.$model"
+                }
+              ],
+              staticClass: "form-control rounded-0 text-center",
+              attrs: {
+                name: "adres_nr_domu",
+                type: "text",
+                disabled:
+                  _vm.blokady.adres_nr_domu ||
+                  _vm.adres_miasto == "" ||
+                  _vm.adres_miasto == null
+              },
+              domProps: { value: _vm.$v.adres_nr_domu.$model },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.$set(_vm.$v.adres_nr_domu, "$model", $event.target.value)
+                }
+              }
+            }),
+            _vm._v(" "),
+            _vm.$v.adres_nr_domu.$error
+              ? _c("div", { staticClass: "text-danger" }, [
+                  !_vm.$v.adres_nr_domu.required
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Proszę wpisać nr domu\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.adres_nr_domu.maxLength
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Numer domu nie może przekroczyć 7 znaków\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.adres_nr_domu.noOnlyLetters
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Numer domu nie może składać się z samych liter\n                    "
+                        )
+                      ])
+                    : _vm._e()
+                ])
+              : _vm._e()
+          ]),
+          _vm._v(" "),
+          _vm.connection_error_ulice
+            ? _c("div", { staticClass: "col-md-9" }, [
+                _c("div", { staticClass: "alert alert-danger" }, [
+                  _c("div", { staticClass: "row" }, [
+                    _vm._m(13),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "col-11" }, [
+                      _vm._v(
+                        "\n                            Nie udało się nawiązać połączenia z serwerem.\n                            "
+                      ),
+                      _c("br"),
+                      _vm._v(" "),
+                      _c(
+                        "button",
+                        {
+                          staticClass: "btn btn-sm mt-2",
+                          attrs: { type: "button" },
+                          on: { click: _vm.getUlice }
+                        },
+                        [
+                          _vm._v(
+                            "\n                                Pobierz niezbędne dane"
+                          )
+                        ]
+                      ),
+                      _c("br")
+                    ])
+                  ])
+                ])
+              ])
+            : _vm._e()
+        ]),
+        _vm._v(" "),
+        _vm._m(14),
+        _vm._v(" "),
+        _c("div", { staticClass: "row justify-content-md-center" }, [
+          _c("div", { staticClass: "col-md-3 mb-2" }, [
+            _vm._m(15),
+            _vm._v(" "),
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.$v.spalanie_adres_kod.$model,
+                  expression: "$v.spalanie_adres_kod.$model"
+                },
+                {
+                  name: "mask",
+                  rawName: "v-mask",
+                  value: "##-###",
+                  expression: "'##-###'"
+                }
+              ],
+              staticClass: "form-control rounded-0 text-center",
+              class: _vm.$v.spalanie_adres_kod.$error ? "is-invalid" : "",
+              attrs: {
+                name: "spalanie_adres_kod_pocztowy",
+                type: "text",
+                disabled: _vm.blokady.spalanie_adres_kod
+              },
+              domProps: { value: _vm.$v.spalanie_adres_kod.$model },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.$set(
+                    _vm.$v.spalanie_adres_kod,
+                    "$model",
+                    $event.target.value
+                  )
+                }
+              }
+            }),
+            _vm._v(" "),
+            _vm.spalanie_pobieranie_miejscowosci
+              ? _c("span", { staticClass: "text-dark" }, [
+                  _vm._v("Pobieranie miejscowości...")
+                ])
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.$v.spalanie_adres_kod.$error
+              ? _c("div", { staticClass: "text-danger" }, [
+                  !_vm.$v.spalanie_adres_kod.required
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Proszę podać kod pocztowy.\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.spalanie_adres_kod.kodPocztowy
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Poprawny format 40-039\n                    "
+                        )
+                      ])
+                    : _vm._e()
+                ])
+              : _vm._e()
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-md-6 mb-2" }, [
+            _vm._m(16),
+            _vm._v(" "),
+            !_vm.blokady.spalanie_adres_miejscowosc
+              ? _c(
+                  "select",
+                  {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.$v.spalanie_adres_miejscowosc.$model,
+                        expression: "$v.spalanie_adres_miejscowosc.$model"
+                      }
+                    ],
+                    staticClass: "form-control text-center rounded-0",
+                    class: _vm.$v.spalanie_adres_miejscowosc.$error
+                      ? "is-invalid"
+                      : "",
+                    attrs: {
+                      name: "spalanie_adres_miejscowosc",
+                      disabled:
+                        _vm.spalanie_dostepne_miejscowosci.length == 0 ||
+                        _vm.blokady.spalanie_adres_miejscowosc
+                    },
+                    on: {
+                      change: function($event) {
+                        var $$selectedVal = Array.prototype.filter
+                          .call($event.target.options, function(o) {
+                            return o.selected
+                          })
+                          .map(function(o) {
+                            var val = "_value" in o ? o._value : o.value
+                            return val
+                          })
+                        _vm.$set(
+                          _vm.$v.spalanie_adres_miejscowosc,
+                          "$model",
+                          $event.target.multiple
+                            ? $$selectedVal
+                            : $$selectedVal[0]
+                        )
+                      }
+                    }
+                  },
+                  [
+                    _vm.spalanie_dostepne_miejscowosci.length == 0
+                      ? _c("option", { attrs: { value: "" } }, [
+                          _vm._v(
+                            "\n                        Proszę wpisać kod pocztowy\n                    "
+                          )
+                        ])
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.spalanie_adres_miejscowosc &&
+                    _vm.spalanie_dostepne_miejscowosci.length == 0
+                      ? _c(
+                          "option",
+                          {
+                            domProps: { value: _vm.spalanie_adres_miejscowosc }
+                          },
+                          [
+                            _vm._v(
+                              "\n                        " +
+                                _vm._s(_vm.spalanie_adres_miejscowosc) +
+                                "\n                    "
+                            )
+                          ]
+                        )
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.spalanie_dostepne_miejscowosci.length > 0
+                      ? _c("option", { attrs: { value: "" } }, [
+                          _vm._v(
+                            "\n                        Proszę wybrać miejscowość\n                    "
+                          )
+                        ])
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm._l(_vm.spalanie_dostepne_miejscowosci, function(
+                      miejscowosc
+                    ) {
+                      return _c(
+                        "option",
+                        {
+                          key: miejscowosc.id,
+                          domProps: { value: miejscowosc.miejscowosc }
+                        },
+                        [
+                          _vm._v(
+                            "\n                        " +
+                              _vm._s(miejscowosc.miejscowosc) +
+                              " (woj.\n                        " +
+                              _vm._s(miejscowosc.wojewodztwo) +
+                              ")\n                    "
+                          )
+                        ]
+                      )
+                    })
+                  ],
+                  2
+                )
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.blokady.spalanie_adres_miejscowosc
+              ? _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.$v.spalanie_adres_miejscowosc.$model,
+                      expression: "$v.spalanie_adres_miejscowosc.$model"
+                    }
+                  ],
+                  staticClass: "form-control rounded-0 text-center",
+                  class: _vm.$v.spalanie_adres_miejscowosc.$error
+                    ? "is-invalid"
+                    : "",
+                  attrs: {
+                    name: "spalanie_adres_miejscowosc",
+                    type: "text",
+                    disabled: _vm.blokady.spalanie_adres_miejscowosc
+                  },
+                  domProps: { value: _vm.$v.spalanie_adres_miejscowosc.$model },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(
+                        _vm.$v.spalanie_adres_miejscowosc,
+                        "$model",
+                        $event.target.value
+                      )
+                    }
+                  }
+                })
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.$v.adres_miasto.$error
+              ? _c("div", { staticClass: "text-danger" }, [
+                  !_vm.$v.spalanie_adres_miejscowosc.required
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Proszę wybrać miejscowość\n                    "
+                        )
+                      ])
+                    : _vm._e()
+                ])
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.spalanie_brak_miejscowosci
+              ? _c("div", { staticClass: "error-form" }, [
+                  _vm._v(
+                    "\n                    Nie znaleziono miejscowości dla podanego kodu pocztowego\n                "
+                  )
+                ])
+              : _vm._e()
+          ]),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.spalanie_wojewodztwo_id,
+                expression: "spalanie_wojewodztwo_id"
+              }
+            ],
+            attrs: { type: "hidden", name: "spalanie_wojewodztwo_id" },
+            domProps: { value: _vm.spalanie_wojewodztwo_id },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.spalanie_wojewodztwo_id = $event.target.value
+              }
+            }
+          }),
+          _vm._v(" "),
+          _vm.spalanie_connection_error_miejscowosci
+            ? _c("div", { staticClass: "col-md-9" }, [
+                _c("div", { staticClass: "alert alert-danger" }, [
+                  _c("div", { staticClass: "row" }, [
+                    _vm._m(17),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "col-11" }, [
+                      _vm._v(
+                        "\n                            Nie udało się nawiązać połączenia z serwerem.\n                            "
+                      ),
+                      _c("br"),
+                      _vm._v(" "),
+                      _c(
+                        "button",
+                        {
+                          staticClass: "btn btn-sm mt-2",
+                          attrs: { type: "button" },
+                          on: { click: _vm.getSpalanieMiejscowosci }
+                        },
+                        [
+                          _vm._v(
+                            "\n                                Pobierz niezbędne dane"
+                          )
+                        ]
+                      ),
+                      _c("br")
+                    ])
+                  ])
+                ])
+              ])
+            : _vm._e()
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "row justify-content-md-center" }, [
+          _c("div", { staticClass: "col-md-3 mb-2" }, [
+            _vm._m(18),
+            _vm._v(" "),
+            _vm.spalanie_dostepne_ulice.length > 0 &&
+            !_vm.spalanie_ulica_wpis_manualny &&
+            !_vm.blokady.spalanie_adres_ulica
+              ? _c(
+                  "select",
+                  {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.$v.spalanie_adres_ulica.$model,
+                        expression: "$v.spalanie_adres_ulica.$model"
+                      }
+                    ],
+                    staticClass: "form-control text-center",
+                    attrs: {
+                      name: "spalanie_adres_ulica",
+                      disabled:
+                        _vm.spalanie_pobieranie_ulic ||
+                        _vm.spalanie_adres_miejscowosc == "" ||
+                        _vm.spalanie_adres_miejscowosc == null ||
+                        _vm.blokady.spalanie_adres_ulica
+                    },
+                    on: {
+                      change: function($event) {
+                        var $$selectedVal = Array.prototype.filter
+                          .call($event.target.options, function(o) {
+                            return o.selected
+                          })
+                          .map(function(o) {
+                            var val = "_value" in o ? o._value : o.value
+                            return val
+                          })
+                        _vm.$set(
+                          _vm.$v.spalanie_adres_ulica,
+                          "$model",
+                          $event.target.multiple
+                            ? $$selectedVal
+                            : $$selectedVal[0]
+                        )
+                      }
+                    }
+                  },
+                  [
+                    _c("option", { attrs: { value: "" } }, [
+                      _vm._v("Proszę wybrać ulicę")
+                    ]),
+                    _vm._v(" "),
+                    _vm._l(_vm.spalanie_dostepne_ulice, function(ul, index) {
+                      return _c(
+                        "option",
+                        { key: index, domProps: { value: ul.ulica } },
+                        [
+                          _vm._v(
+                            "\n                        " +
+                              _vm._s(ul.ulica) +
+                              "\n                    "
+                          )
+                        ]
+                      )
+                    })
+                  ],
+                  2
+                )
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.spalanie_dostepne_ulice.length == 0 ||
+            _vm.spalanie_ulica_wpis_manualny ||
+            _vm.blokady.spalanie_adres_ulica
+              ? _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.$v.spalanie_adres_ulica.$model,
+                      expression: "$v.spalanie_adres_ulica.$model"
+                    }
+                  ],
+                  staticClass: "form-control rounded-0 text-center",
+                  attrs: {
+                    name: "spalanie_adres_ulica",
+                    type: "text",
+                    disabled:
+                      _vm.spalanie_pobieranie_ulic ||
+                      _vm.spalanie_adres_miejscowosc == "" ||
+                      _vm.spalanie_adres_miejscowosc == null ||
+                      _vm.spalanie_connection_error_ulice ||
+                      _vm.blokady.spalanie_adres_ulica
+                  },
+                  domProps: { value: _vm.$v.spalanie_adres_ulica.$model },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(
+                        _vm.$v.spalanie_adres_ulica,
+                        "$model",
+                        $event.target.value
+                      )
+                    }
+                  }
+                })
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.spalanie_pobieranie_ulic
+              ? _c("span", { staticClass: "text-dark" }, [
+                  _vm._v("Pobieranie nazw ulic...")
+                ])
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.spalanie_dostepne_ulice.length > 0 &&
+            !_vm.blokady.spalanie_adres_ulica
+              ? _c("div", { staticClass: "row mt-1" }, [
+                  _c("div", { staticClass: "col-2 col-sm-auto pr-0" }, [
+                    _c(
+                      "div",
+                      { staticClass: "pretty p-icon p-thick p-smooth mr-0" },
+                      [
+                        _c("input", {
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: _vm.spalanie_ulica_wpis_manualny,
+                              expression: "spalanie_ulica_wpis_manualny"
+                            }
+                          ],
+                          attrs: {
+                            type: "checkbox",
+                            name: "spalanie_ulica_wpis_manualny",
+                            id: "spalanie_dane_profil"
+                          },
+                          domProps: {
+                            checked: Array.isArray(
+                              _vm.spalanie_ulica_wpis_manualny
+                            )
+                              ? _vm._i(_vm.spalanie_ulica_wpis_manualny, null) >
+                                -1
+                              : _vm.spalanie_ulica_wpis_manualny
+                          },
+                          on: {
+                            change: function($event) {
+                              var $$a = _vm.spalanie_ulica_wpis_manualny,
+                                $$el = $event.target,
+                                $$c = $$el.checked ? true : false
+                              if (Array.isArray($$a)) {
+                                var $$v = null,
+                                  $$i = _vm._i($$a, $$v)
+                                if ($$el.checked) {
+                                  $$i < 0 &&
+                                    (_vm.spalanie_ulica_wpis_manualny = $$a.concat(
+                                      [$$v]
+                                    ))
+                                } else {
+                                  $$i > -1 &&
+                                    (_vm.spalanie_ulica_wpis_manualny = $$a
+                                      .slice(0, $$i)
+                                      .concat($$a.slice($$i + 1)))
+                                }
+                              } else {
+                                _vm.spalanie_ulica_wpis_manualny = $$c
+                              }
+                            }
+                          }
+                        }),
+                        _vm._v(" "),
+                        _vm._m(19)
+                      ]
+                    )
+                  ]),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    { staticClass: "col-9 col-sm-10 form-group pl-1" },
+                    [
+                      _c(
+                        "label",
+                        {
+                          staticClass: "font-weight-bold",
+                          staticStyle: { "font-size": "1em" },
+                          attrs: { for: "spalanie_dane_profil" },
+                          on: {
+                            click: function($event) {
+                              _vm.spalanie_adres_ulica = ""
+                            }
+                          }
+                        },
+                        [
+                          _vm._v(
+                            "\n                            - brak mojej ulicy\n                        "
+                          )
+                        ]
+                      )
+                    ]
+                  )
+                ])
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.$v.spalanie_adres_ulica.$error
+              ? _c("div", { staticClass: "text-danger" }, [
+                  !_vm.$v.spalanie_adres_ulica.required
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Proszę podać nazwę ulicy\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.spalanie_adres_ulica.minLength
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Nazwa ulicy wymaga wpisania co najmniej 3 znaków\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.spalanie_adres_ulica.maxLength
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Nazwa ulicy nie może przekroczyć 50 znaków\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.spalanie_adres_ulica.noOnlyDigits
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Nazwa ulicy nie może składać się z samych cyfr\n                    "
+                        )
+                      ])
+                    : _vm._e()
+                ])
+              : _vm._e()
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-md-3 mb-2" }, [
+            _vm._m(20),
+            _vm._v(" "),
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.$v.spalanie_adres_nr_domu.$model,
+                  expression: "$v.spalanie_adres_nr_domu.$model"
+                }
+              ],
+              staticClass: "form-control rounded-0 text-center",
+              attrs: {
+                name: "spalanie_adres_nr_domu",
+                type: "text",
+                disabled:
+                  _vm.blokady.spalanie_adres_nr_domu ||
+                  _vm.spalanie_adres_miejscowosc == "" ||
+                  _vm.spalanie_adres_miejscowosc == null
+              },
+              domProps: { value: _vm.$v.spalanie_adres_nr_domu.$model },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.$set(
+                    _vm.$v.spalanie_adres_nr_domu,
+                    "$model",
+                    $event.target.value
+                  )
+                }
+              }
+            }),
+            _vm._v(" "),
+            _vm.$v.spalanie_adres_nr_domu.$error
+              ? _c("div", { staticClass: "text-danger" }, [
+                  !_vm.$v.spalanie_adres_nr_domu.required
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Proszę wpisać nr domu\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.spalanie_adres_nr_domu.maxLength
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Numer domu nie może przekroczyć 7 znaków\n                    "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.$v.spalanie_adres_nr_domu.noOnlyLetters
+                    ? _c("div", { staticClass: "error" }, [
+                        _vm._v(
+                          "\n                        Numer domu nie może składać się z samych liter\n                    "
+                        )
+                      ])
+                    : _vm._e()
+                ])
+              : _vm._e()
+          ]),
+          _vm._v(" "),
+          _vm.spalanie_connection_error_ulice
+            ? _c("div", { staticClass: "col-md-9" }, [
+                _c("div", { staticClass: "alert alert-danger" }, [
+                  _c("div", { staticClass: "row" }, [
+                    _vm._m(21),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "col-11" }, [
+                      _vm._v(
+                        "\n                            Nie udało się nawiązać połączenia z serwerem.\n                            "
+                      ),
+                      _c("br"),
+                      _vm._v(" "),
+                      _c(
+                        "button",
+                        {
+                          staticClass: "btn btn-sm mt-2",
+                          attrs: { type: "button" },
+                          on: { click: _vm.getSpalanieUlice }
+                        },
+                        [
+                          _vm._v(
+                            "\n                                Pobierz niezbędne dane"
+                          )
+                        ]
+                      ),
+                      _c("br")
+                    ])
+                  ])
+                ])
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          !_vm.blokada || !_vm.adres_spalania
+            ? _c("div", { staticClass: "col-sm-12" }, [
+                _c(
+                  "div",
+                  { staticClass: "row mt-1 justify-content-md-center" },
+                  [
+                    _c("div", { staticClass: "col-2 col-sm-auto pr-0" }, [
+                      _c(
+                        "div",
+                        { staticClass: "pretty p-icon p-thick p-smooth mr-0" },
+                        [
+                          _c("input", {
+                            directives: [
+                              {
+                                name: "model",
+                                rawName: "v-model",
+                                value: _vm.$v.zgoda_przetwarzanie.$model,
+                                expression: "$v.zgoda_przetwarzanie.$model"
+                              }
+                            ],
+                            attrs: {
+                              type: "checkbox",
+                              id: "zgoda_przetwarzanie",
+                              name: "zgoda_przetwarzanie"
+                            },
+                            domProps: {
+                              checked: Array.isArray(
+                                _vm.$v.zgoda_przetwarzanie.$model
+                              )
+                                ? _vm._i(
+                                    _vm.$v.zgoda_przetwarzanie.$model,
+                                    null
+                                  ) > -1
+                                : _vm.$v.zgoda_przetwarzanie.$model
+                            },
+                            on: {
+                              change: function($event) {
+                                var $$a = _vm.$v.zgoda_przetwarzanie.$model,
+                                  $$el = $event.target,
+                                  $$c = $$el.checked ? true : false
+                                if (Array.isArray($$a)) {
+                                  var $$v = null,
+                                    $$i = _vm._i($$a, $$v)
+                                  if ($$el.checked) {
+                                    $$i < 0 &&
+                                      _vm.$set(
+                                        _vm.$v.zgoda_przetwarzanie,
+                                        "$model",
+                                        $$a.concat([$$v])
+                                      )
+                                  } else {
+                                    $$i > -1 &&
+                                      _vm.$set(
+                                        _vm.$v.zgoda_przetwarzanie,
+                                        "$model",
+                                        $$a
+                                          .slice(0, $$i)
+                                          .concat($$a.slice($$i + 1))
+                                      )
+                                  }
+                                } else {
+                                  _vm.$set(
+                                    _vm.$v.zgoda_przetwarzanie,
+                                    "$model",
+                                    $$c
+                                  )
+                                }
+                              }
+                            }
+                          }),
+                          _vm._v(" "),
+                          _vm._m(22)
+                        ]
+                      )
+                    ]),
+                    _vm._v(" "),
+                    _c(
+                      "div",
+                      { staticClass: "col-9 col-sm-10 form-group pl-1" },
+                      [
+                        _vm._m(23),
+                        _vm._v(" "),
+                        _vm.$v.zgoda_przetwarzanie.$error
+                          ? _c("div", [
+                              !_vm.$v.zgoda_przetwarzanie.boolean
+                                ? _c("div", { staticClass: "error-form" }, [
+                                    _vm._v(
+                                      "\n                                Zgoda wymagana\n                            "
+                                    )
+                                  ])
+                                : _vm._e()
+                            ])
+                          : _vm._e()
+                      ]
+                    )
+                  ]
+                )
+              ])
+            : _vm._e()
+        ]),
+        _vm._v(" "),
+        _vm.blokada
+          ? _c("div", { staticClass: "col-sm-12 text-center mt-3" }, [
+              _c("p", [
+                _c("i", {
+                  staticClass: "fas fa-exclamation-triangle text-danger"
+                }),
+                _vm._v(
+                  " Aktualizacja wprowadzonych danych możliwa jest za pośrednictwem dedykowanego\n                "
+                ),
+                _c("a", { attrs: { href: _vm.formularz_url } }, [
+                  _vm._v("formularza")
+                ]),
+                _vm._v(
+                  ", dostępnego na stronie e-Sklepu. Formularz po jego wypełnieniu powinien zostać dołączony do zgłoszenia poprzez formularz kontaktowy na profilu klienta "
+                ),
+                _vm._m(24),
+                _vm._v(".\n            ")
+              ])
+            ])
+          : _vm._e(),
+        _vm._v(" "),
+        !_vm.blokada || !_vm.adres_spalania
+          ? _c("div", { staticClass: "row justify-content-md-center" }, [
+              _vm._m(25)
+            ])
+          : _vm._e()
+      ]
+    )
   ])
 }
 var staticRenderFns = [
@@ -99132,7 +99407,7 @@ var staticRenderFns = [
     return _c(
       "div",
       { staticClass: "col-sm-12 text-center text-uppercase mb-1" },
-      [_c("h5", [_vm._v("Adres zamieszkania")])]
+      [_c("hr"), _vm._v(" "), _c("h5", [_vm._v("Adres zamieszkania")])]
     )
   },
   function() {
@@ -99158,7 +99433,7 @@ var staticRenderFns = [
         staticClass: "bg-very-dark-gray text-center text-light",
         staticStyle: { width: "100%" }
       },
-      [_c("span", {}, [_vm._v("Miejscowość ")])]
+      [_c("span", {}, [_vm._v("Miejscowość")])]
     )
   },
   function() {
@@ -99328,18 +99603,28 @@ var staticRenderFns = [
       },
       [
         _vm._v(
-          "\n                                    - Wyrażam zgodę na przetwarzanie moich danych osobowych\n                                    obejmujących nr pesel, nr telefonu, nr konta bankowego adres\n                                    zamieszkania w celu realizacji przyszłych zakupów w Sklepie\n                                    Internetowym PGG, w tym obsługi zwrotu wpłaconych przeze mnie\n                                    środków pieniężnych w przypadku anulacji zamówienia lub zwrotu\n                                    nadpłaconej kwoty w przypadku niedoważenia węgla luzem."
+          "\n                            - Wyrażam zgodę na przetwarzanie moich danych\n                            osobowych obejmujących nr pesel, nr telefonu, nr\n                            konta bankowego adres zamieszkania w celu\n                            realizacji przyszłych zakupów w Sklepie\n                            Internetowym PGG, w tym obsługi zwrotu\n                            wpłaconych przeze mnie środków pieniężnych w\n                            przypadku anulacji zamówienia lub zwrotu\n                            nadpłaconej kwoty w przypadku niedoważenia węgla\n                            luzem."
         ),
         _c("br"),
         _vm._v(
-          "\n                                    Zgoda na przetwarzanie danych w powyższym zakresie, może być w\n                                    każdej chwili wycofana przez osobę, której dane dotyczą.\n                                    Wycofanie zgody nie wpływa na zgodność z prawem przetwarzania,\n                                    którego dokonano na podstawie zgody przed jej wycofaniem."
+          "\n                            Zgoda na przetwarzanie danych w powyższym\n                            zakresie, może być w każdej chwili wycofana\n                            przez osobę, której dane dotyczą. Wycofanie\n                            zgody nie wpływa na zgodność z prawem\n                            przetwarzania, którego dokonano na podstawie\n                            zgody przed jej wycofaniem."
         ),
         _c("br"),
         _vm._v(
-          "\n                                    Obowiązek informacyjny wynikający z art. 13 oraz art. 14 RODO\n                                    został spełniony na stronie internetowej Polskiej Grupy\n                                    Górniczej S.A. w zakładce RODO, w załączniku\n                                    „Kontrahenci/Pracownicy Kontrahentów”.\n                                "
+          "\n                            Obowiązek informacyjny wynikający z art. 13 oraz\n                            art. 14 RODO został spełniony na stronie\n                            internetowej Polskiej Grupy Górniczej S.A. w\n                            zakładce RODO, w załączniku\n                            „Kontrahenci/Pracownicy Kontrahentów”.\n                        "
         )
       ]
     )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("b", [
+      _vm._v("(Kategoria: Obsługa konta "),
+      _c("i", { staticClass: "fas fa-arrow-right" }),
+      _vm._v(" Zmiana danych osobowych)")
+    ])
   },
   function() {
     var _vm = this
@@ -99351,7 +99636,7 @@ var staticRenderFns = [
         { staticClass: "btn btn-primary btn-block", attrs: { type: "submit" } },
         [
           _c("i", { staticClass: "fas fa-save" }),
-          _vm._v(" Zapisz zmiany\n                        ")
+          _vm._v(" Zapisz zmiany\n                ")
         ]
       )
     ])
@@ -115296,8 +115581,7 @@ Vue.component('ankieta-checkbox-option', __webpack_require__(/*! ./components/An
 
 Vue.component('uzytkownik-edycja-danych-podstawowych', __webpack_require__(/*! ./components/Uzytkownik/EdycjaDanychPodstawowych.vue */ "./resources/js/components/Uzytkownik/EdycjaDanychPodstawowych.vue").default);
 Vue.component('uzytkownik-edycja-danych-firmy', __webpack_require__(/*! ./components/Uzytkownik/EdycjaDanychFirmy.vue */ "./resources/js/components/Uzytkownik/EdycjaDanychFirmy.vue").default);
-Vue.component('uzytkownik-edycja-ceeb', __webpack_require__(/*! ./components/Uzytkownik/EdycjaCEEB.vue */ "./resources/js/components/Uzytkownik/EdycjaCEEB.vue").default);
-Vue.component('uzytkownik-aktualizacja-wk', __webpack_require__(/*! ./components/Uzytkownik/AktualizacjaWK.vue */ "./resources/js/components/Uzytkownik/AktualizacjaWK.vue").default); // Planowanie odbioru zamówienia luz
+Vue.component('uzytkownik-edycja-ceeb', __webpack_require__(/*! ./components/Uzytkownik/EdycjaCEEB.vue */ "./resources/js/components/Uzytkownik/EdycjaCEEB.vue").default); // Planowanie odbioru zamówienia luz
 
 Vue.component('planowanie-odbioru-form', __webpack_require__(/*! ./components/Zamowienie/PlanowanieOdbioruLuz/formularz.vue */ "./resources/js/components/Zamowienie/PlanowanieOdbioruLuz/formularz.vue").default);
 Vue.component('planowanie-odbioru-kalendarz', __webpack_require__(/*! ./components/Zamowienie/PlanowanieOdbioruLuz/kalendarz.vue */ "./resources/js/components/Zamowienie/PlanowanieOdbioruLuz/kalendarz.vue").default);
@@ -116846,75 +117130,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_SkladyBox_vue_vue_type_template_id_55d7c4ee___WEBPACK_IMPORTED_MODULE_0__["render"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_SkladyBox_vue_vue_type_template_id_55d7c4ee___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
-
-
-
-/***/ }),
-
-/***/ "./resources/js/components/Uzytkownik/AktualizacjaWK.vue":
-/*!***************************************************************!*\
-  !*** ./resources/js/components/Uzytkownik/AktualizacjaWK.vue ***!
-  \***************************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _AktualizacjaWK_vue_vue_type_template_id_70890ceb___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AktualizacjaWK.vue?vue&type=template&id=70890ceb& */ "./resources/js/components/Uzytkownik/AktualizacjaWK.vue?vue&type=template&id=70890ceb&");
-/* harmony import */ var _AktualizacjaWK_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./AktualizacjaWK.vue?vue&type=script&lang=js& */ "./resources/js/components/Uzytkownik/AktualizacjaWK.vue?vue&type=script&lang=js&");
-/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
-
-
-
-
-
-/* normalize component */
-
-var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
-  _AktualizacjaWK_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
-  _AktualizacjaWK_vue_vue_type_template_id_70890ceb___WEBPACK_IMPORTED_MODULE_0__["render"],
-  _AktualizacjaWK_vue_vue_type_template_id_70890ceb___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
-  false,
-  null,
-  null,
-  null
-  
-)
-
-/* hot reload */
-if (false) { var api; }
-component.options.__file = "resources/js/components/Uzytkownik/AktualizacjaWK.vue"
-/* harmony default export */ __webpack_exports__["default"] = (component.exports);
-
-/***/ }),
-
-/***/ "./resources/js/components/Uzytkownik/AktualizacjaWK.vue?vue&type=script&lang=js&":
-/*!****************************************************************************************!*\
-  !*** ./resources/js/components/Uzytkownik/AktualizacjaWK.vue?vue&type=script&lang=js& ***!
-  \****************************************************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_AktualizacjaWK_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./AktualizacjaWK.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Uzytkownik/AktualizacjaWK.vue?vue&type=script&lang=js&");
-/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_AktualizacjaWK_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
-
-/***/ }),
-
-/***/ "./resources/js/components/Uzytkownik/AktualizacjaWK.vue?vue&type=template&id=70890ceb&":
-/*!**********************************************************************************************!*\
-  !*** ./resources/js/components/Uzytkownik/AktualizacjaWK.vue?vue&type=template&id=70890ceb& ***!
-  \**********************************************************************************************/
-/*! exports provided: render, staticRenderFns */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_AktualizacjaWK_vue_vue_type_template_id_70890ceb___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./AktualizacjaWK.vue?vue&type=template&id=70890ceb& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Uzytkownik/AktualizacjaWK.vue?vue&type=template&id=70890ceb&");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_AktualizacjaWK_vue_vue_type_template_id_70890ceb___WEBPACK_IMPORTED_MODULE_0__["render"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_AktualizacjaWK_vue_vue_type_template_id_70890ceb___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
 
 
 
