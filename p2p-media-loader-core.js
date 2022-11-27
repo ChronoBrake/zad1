@@ -16,7 +16,8 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
  * limitations under the License.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-const SMOOTH_INTERVAL = 1 * 1000;
+exports.BandwidthApproximator = void 0;
+const SMOOTH_INTERVAL = 15 * 1000;
 const MEASURE_INTERVAL = 60 * 1000;
 class NumberWithTime {
     constructor(value, timeStamp) {
@@ -29,38 +30,41 @@ class BandwidthApproximator {
         this.lastBytes = [];
         this.currentBytesSum = 0;
         this.lastBandwidth = [];
-    }
-    addBytes(bytes, timeStamp) {
-        this.lastBytes.push(new NumberWithTime(bytes, timeStamp));
-        this.currentBytesSum += bytes;
-        while (timeStamp - this.lastBytes[0].timeStamp > SMOOTH_INTERVAL) {
-            this.currentBytesSum -= this.lastBytes.shift().value;
-        }
-        this.lastBandwidth.push(new NumberWithTime(this.currentBytesSum / SMOOTH_INTERVAL, timeStamp));
-    }
-    // in bytes per millisecond
-    getBandwidth(timeStamp) {
-        while (this.lastBandwidth.length != 0 && timeStamp - this.lastBandwidth[0].timeStamp > MEASURE_INTERVAL) {
-            this.lastBandwidth.shift();
-        }
-        let maxBandwidth = 0;
-        for (const bandwidth of this.lastBandwidth) {
-            if (bandwidth.value > maxBandwidth) {
-                maxBandwidth = bandwidth.value;
+        this.addBytes = (bytes, timeStamp) => {
+            this.lastBytes.push(new NumberWithTime(bytes, timeStamp));
+            this.currentBytesSum += bytes;
+            while (timeStamp - this.lastBytes[0].timeStamp > SMOOTH_INTERVAL) {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                this.currentBytesSum -= this.lastBytes.shift().value;
             }
-        }
-        return maxBandwidth;
-    }
-    getSmoothInterval() {
-        return SMOOTH_INTERVAL;
-    }
-    getMeasureInterval() {
-        return MEASURE_INTERVAL;
+            const interval = Math.min(SMOOTH_INTERVAL, timeStamp);
+            this.lastBandwidth.push(new NumberWithTime(this.currentBytesSum / interval, timeStamp));
+        };
+        // in bytes per millisecond
+        this.getBandwidth = (timeStamp) => {
+            while (this.lastBandwidth.length !== 0 && timeStamp - this.lastBandwidth[0].timeStamp > MEASURE_INTERVAL) {
+                this.lastBandwidth.shift();
+            }
+            let maxBandwidth = 0;
+            for (const bandwidth of this.lastBandwidth) {
+                if (bandwidth.value > maxBandwidth) {
+                    maxBandwidth = bandwidth.value;
+                }
+            }
+            return maxBandwidth;
+        };
+        this.getSmoothInterval = () => {
+            return SMOOTH_INTERVAL;
+        };
+        this.getMeasureInterval = () => {
+            return MEASURE_INTERVAL;
+        };
     }
 }
 exports.BandwidthApproximator = BandwidthApproximator;
 
 },{}],2:[function(require,module,exports){
+"use strict";
 /**
  * Copyright 2018 Novage LLC.
  *
@@ -76,12 +80,31 @@ exports.BandwidthApproximator = BandwidthApproximator;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const p2pml = __importStar(require("./index"));
 if (!window.p2pml) {
     window.p2pml = {};
 }
-
-window.p2pml.core = require("./index");
+window.p2pml.core = p2pml;
 
 },{"./index":"p2p-media-loader-core"}],3:[function(require,module,exports){
 "use strict";
@@ -100,8 +123,12 @@ window.p2pml.core = require("./index");
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const Debug = require("debug");
+exports.HttpMediaManager = void 0;
+const debug_1 = __importDefault(require("debug"));
 const stringly_typed_event_emitter_1 = require("./stringly-typed-event-emitter");
 class HttpMediaManager extends stringly_typed_event_emitter_1.STEEmitter {
     constructor(settings) {
@@ -109,135 +136,133 @@ class HttpMediaManager extends stringly_typed_event_emitter_1.STEEmitter {
         this.settings = settings;
         this.xhrRequests = new Map();
         this.failedSegments = new Map();
-        this.debug = Debug("p2pml:http-media-manager");
-        this.now = () => performance.now();
-    }
-    download(segment, downloadedPieces) {
-        if (this.isDownloading(segment)) {
-            return;
-        }
-        this.cleanTimedOutFailedSegments();
-        const segmentUrl = this.settings.segmentUrlBuilder
-            ? this.settings.segmentUrlBuilder(segment)
-            : segment.url;
-        this.debug("http segment download", segmentUrl);
-        segment.requestUrl = segmentUrl;
-        const xhr = new XMLHttpRequest();
-        xhr.open("GET", segmentUrl, true);
-        xhr.responseType = "arraybuffer";
-        if (segment.range) {
-            xhr.setRequestHeader("Range", segment.range);
-            downloadedPieces = undefined; // TODO: process downloadedPieces for segments with range headers too
-        }
-        else if ((downloadedPieces !== undefined) && this.settings.httpUseRanges) {
-            let bytesDownloaded = 0;
-            for (const piece of downloadedPieces) {
-                bytesDownloaded += piece.byteLength;
-            }
-            xhr.setRequestHeader("Range", `bytes=${bytesDownloaded}-`);
-            this.debug("continue download from", bytesDownloaded);
-        }
-        else {
-            downloadedPieces = undefined;
-        }
-        this.setupXhrEvents(xhr, segment, downloadedPieces);
-        if (this.settings.xhrSetup) {
-            this.settings.xhrSetup(xhr, segmentUrl);
-        }
-        this.xhrRequests.set(segment.id, { xhr, segment });
-        xhr.send();
-    }
-    abort(segment) {
-        const request = this.xhrRequests.get(segment.id);
-        if (request) {
-            request.xhr.abort();
-            this.xhrRequests.delete(segment.id);
-            this.debug("http segment abort", segment.id);
-        }
-    }
-    isDownloading(segment) {
-        return this.xhrRequests.has(segment.id);
-    }
-    isFailed(segment) {
-        const time = this.failedSegments.get(segment.id);
-        return time !== undefined && time > this.now();
-    }
-    getActiveDownloads() {
-        return this.xhrRequests;
-    }
-    getActiveDownloadsCount() {
-        return this.xhrRequests.size;
-    }
-    destroy() {
-        this.xhrRequests.forEach(request => request.xhr.abort());
-        this.xhrRequests.clear();
-    }
-    setupXhrEvents(xhr, segment, downloadedPieces) {
-        let prevBytesLoaded = 0;
-        xhr.addEventListener("progress", (event) => {
-            const bytesLoaded = event.loaded - prevBytesLoaded;
-            this.emit("bytes-downloaded", bytesLoaded);
-            prevBytesLoaded = event.loaded;
-        });
-        xhr.addEventListener("load", async (event) => {
-            if ((event.target.status < 200) || (event.target.status >= 300)) {
-                this.segmentFailure(segment, event, xhr);
+        this.debug = debug_1.default("p2pml:http-media-manager");
+        this.download = (segment, downloadedPieces) => {
+            if (this.isDownloading(segment)) {
                 return;
             }
-            let data = event.target.response;
-            if ((downloadedPieces !== undefined) && (event.target.status === 206)) {
+            this.cleanTimedOutFailedSegments();
+            const segmentUrl = this.settings.segmentUrlBuilder ? this.settings.segmentUrlBuilder(segment) : segment.url;
+            this.debug("http segment download", segmentUrl);
+            segment.requestUrl = segmentUrl;
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", segmentUrl, true);
+            xhr.responseType = "arraybuffer";
+            if (segment.range) {
+                xhr.setRequestHeader("Range", segment.range);
+                downloadedPieces = undefined; // TODO: process downloadedPieces for segments with range headers too
+            }
+            else if (downloadedPieces !== undefined && this.settings.httpUseRanges) {
                 let bytesDownloaded = 0;
                 for (const piece of downloadedPieces) {
                     bytesDownloaded += piece.byteLength;
                 }
-                const segmentData = new Uint8Array(bytesDownloaded + data.byteLength);
-                let offset = 0;
-                for (const piece of downloadedPieces) {
-                    segmentData.set(new Uint8Array(piece), offset);
-                    offset += piece.byteLength;
+                xhr.setRequestHeader("Range", `bytes=${bytesDownloaded}-`);
+                this.debug("continue download from", bytesDownloaded);
+            }
+            else {
+                downloadedPieces = undefined;
+            }
+            this.setupXhrEvents(xhr, segment, downloadedPieces);
+            if (this.settings.xhrSetup) {
+                this.settings.xhrSetup(xhr, segmentUrl);
+            }
+            this.xhrRequests.set(segment.id, { xhr, segment });
+            xhr.send();
+        };
+        this.abort = (segment) => {
+            const request = this.xhrRequests.get(segment.id);
+            if (request) {
+                request.xhr.abort();
+                this.xhrRequests.delete(segment.id);
+                this.debug("http segment abort", segment.id);
+            }
+        };
+        this.isDownloading = (segment) => {
+            return this.xhrRequests.has(segment.id);
+        };
+        this.isFailed = (segment) => {
+            const time = this.failedSegments.get(segment.id);
+            return time !== undefined && time > this.now();
+        };
+        this.getActiveDownloads = () => {
+            return this.xhrRequests;
+        };
+        this.getActiveDownloadsCount = () => {
+            return this.xhrRequests.size;
+        };
+        this.destroy = () => {
+            this.xhrRequests.forEach((request) => request.xhr.abort());
+            this.xhrRequests.clear();
+        };
+        this.setupXhrEvents = (xhr, segment, downloadedPieces) => {
+            let prevBytesLoaded = 0;
+            xhr.addEventListener("progress", (event) => {
+                const bytesLoaded = event.loaded - prevBytesLoaded;
+                this.emit("bytes-downloaded", bytesLoaded);
+                prevBytesLoaded = event.loaded;
+            });
+            xhr.addEventListener("load", async (event) => {
+                if (xhr.status < 200 || xhr.status >= 300) {
+                    this.segmentFailure(segment, event, xhr);
+                    return;
                 }
-                segmentData.set(new Uint8Array(data), offset);
-                data = segmentData.buffer;
+                let data = xhr.response;
+                if (downloadedPieces !== undefined && xhr.status === 206) {
+                    let bytesDownloaded = 0;
+                    for (const piece of downloadedPieces) {
+                        bytesDownloaded += piece.byteLength;
+                    }
+                    const segmentData = new Uint8Array(bytesDownloaded + data.byteLength);
+                    let offset = 0;
+                    for (const piece of downloadedPieces) {
+                        segmentData.set(new Uint8Array(piece), offset);
+                        offset += piece.byteLength;
+                    }
+                    segmentData.set(new Uint8Array(data), offset);
+                    data = segmentData.buffer;
+                }
+                await this.segmentDownloadFinished(segment, data, xhr);
+            });
+            xhr.addEventListener("error", (event) => {
+                this.segmentFailure(segment, event, xhr);
+            });
+            xhr.addEventListener("timeout", (event) => {
+                this.segmentFailure(segment, event, xhr);
+            });
+        };
+        this.segmentDownloadFinished = async (segment, data, xhr) => {
+            segment.responseUrl = xhr.responseURL === null ? undefined : xhr.responseURL;
+            if (this.settings.segmentValidator) {
+                try {
+                    await this.settings.segmentValidator(Object.assign(Object.assign({}, segment), { data: data }), "http");
+                }
+                catch (error) {
+                    this.debug("segment validator failed", error);
+                    this.segmentFailure(segment, error, xhr);
+                    return;
+                }
             }
-            await this.segmentDownloadFinished(segment, data, xhr);
-        });
-        xhr.addEventListener("error", (event) => {
-            this.segmentFailure(segment, event, xhr);
-        });
-        xhr.addEventListener("timeout", (event) => {
-            this.segmentFailure(segment, event, xhr);
-        });
-    }
-    async segmentDownloadFinished(segment, data, xhr) {
-        segment.responseUrl = xhr.responseURL === null ? undefined : xhr.responseURL;
-        if (this.settings.segmentValidator) {
-            try {
-                await this.settings.segmentValidator(Object.assign(Object.assign({}, segment), { data: data }), "http");
-            }
-            catch (error) {
-                this.debug("segment validator failed", error);
-                this.segmentFailure(segment, error, xhr);
-                return;
-            }
-        }
-        this.xhrRequests.delete(segment.id);
-        this.emit("segment-loaded", segment, data);
-    }
-    segmentFailure(segment, error, xhr) {
-        segment.responseUrl = xhr.responseURL === null ? undefined : xhr.responseURL;
-        this.xhrRequests.delete(segment.id);
-        this.failedSegments.set(segment.id, this.now() + this.settings.httpFailedSegmentTimeout);
-        this.emit("segment-error", segment, error);
-    }
-    cleanTimedOutFailedSegments() {
-        const now = this.now();
-        const candidates = [];
-        this.failedSegments.forEach((time, id) => {
-            if (time < now) {
-                candidates.push(id);
-            }
-        });
-        candidates.forEach(id => this.failedSegments.delete(id));
+            this.xhrRequests.delete(segment.id);
+            this.emit("segment-loaded", segment, data);
+        };
+        this.segmentFailure = (segment, error, xhr) => {
+            segment.responseUrl = xhr.responseURL === null ? undefined : xhr.responseURL;
+            this.xhrRequests.delete(segment.id);
+            this.failedSegments.set(segment.id, this.now() + this.settings.httpFailedSegmentTimeout);
+            this.emit("segment-error", segment, error);
+        };
+        this.cleanTimedOutFailedSegments = () => {
+            const now = this.now();
+            const candidates = [];
+            this.failedSegments.forEach((time, id) => {
+                if (time < now) {
+                    candidates.push(id);
+                }
+            });
+            candidates.forEach((id) => this.failedSegments.delete(id));
+        };
+        this.now = () => performance.now();
     }
 }
 exports.HttpMediaManager = HttpMediaManager;
@@ -259,17 +284,20 @@ exports.HttpMediaManager = HttpMediaManager;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const Debug = require("debug");
-const loader_interface_1 = require("./loader-interface");
+exports.HybridLoader = void 0;
+const debug_1 = __importDefault(require("debug"));
 const events_1 = require("events");
+const simple_peer_1 = __importDefault(require("simple-peer"));
+const loader_interface_1 = require("./loader-interface");
 const http_media_manager_1 = require("./http-media-manager");
 const p2p_media_manager_1 = require("./p2p-media-manager");
 const media_peer_1 = require("./media-peer");
 const bandwidth_approximator_1 = require("./bandwidth-approximator");
 const segments_memory_storage_1 = require("./segments-memory-storage");
-const getBrowserRTC = require("get-browser-rtc");
-const Peer = require("simple-peer");
 const defaultSettings = {
     cachedSegmentExpiration: 5 * 60 * 1000,
     cachedSegmentsCount: 30,
@@ -291,16 +319,100 @@ const defaultSettings = {
     webRtcMaxMessageSize: 64 * 1024 - 1,
     trackerAnnounce: ["wss://tracker.novage.com.ua", "wss://tracker.openwebtorrent.com"],
     peerRequestsPerAnnounce: 10,
-    rtcConfig: Peer.config
+    rtcConfig: simple_peer_1.default.config,
 };
 class HybridLoader extends events_1.EventEmitter {
     constructor(settings = {}) {
         super();
-        this.debug = Debug("p2pml:hybrid-loader");
-        this.debugSegments = Debug("p2pml:hybrid-loader-segments");
+        this.debug = debug_1.default("p2pml:hybrid-loader");
+        this.debugSegments = debug_1.default("p2pml:hybrid-loader-segments");
         this.segmentsQueue = [];
         this.bandwidthApproximator = new bandwidth_approximator_1.BandwidthApproximator();
         this.httpDownloadInitialTimeoutTimestamp = -Infinity;
+        this.createHttpManager = () => {
+            return new http_media_manager_1.HttpMediaManager(this.settings);
+        };
+        this.createP2PManager = () => {
+            return new p2p_media_manager_1.P2PMediaManager(this.segmentsStorage, this.settings);
+        };
+        this.load = async (segments, streamSwarmId) => {
+            if (this.httpRandomDownloadInterval === undefined) {
+                // Do once on first call
+                this.httpRandomDownloadInterval = setInterval(this.downloadRandomSegmentOverHttp, this.settings.httpDownloadProbabilityInterval);
+                if (this.settings.httpDownloadInitialTimeout > 0 &&
+                    this.settings.httpDownloadInitialTimeoutPerSegment > 0) {
+                    // Initialize initial HTTP download timeout (i.e. download initial segments over P2P)
+                    this.debugSegments("enable initial HTTP download timeout", this.settings.httpDownloadInitialTimeout, "per segment", this.settings.httpDownloadInitialTimeoutPerSegment);
+                    this.httpDownloadInitialTimeoutTimestamp = this.now();
+                    setTimeout(this.processInitialSegmentTimeout, this.settings.httpDownloadInitialTimeoutPerSegment + 100);
+                }
+            }
+            if (segments.length > 0) {
+                this.masterSwarmId = segments[0].masterSwarmId;
+            }
+            if (this.masterSwarmId !== undefined) {
+                this.p2pManager.setStreamSwarmId(streamSwarmId, this.masterSwarmId);
+            }
+            this.debug("load segments");
+            let updateSegmentsMap = false;
+            // stop all http requests and p2p downloads for segments that are not in the new load
+            for (const segment of this.segmentsQueue) {
+                if (!segments.find((f) => f.url === segment.url)) {
+                    this.debug("remove segment", segment.url);
+                    if (this.httpManager.isDownloading(segment)) {
+                        updateSegmentsMap = true;
+                        this.httpManager.abort(segment);
+                    }
+                    else {
+                        this.p2pManager.abort(segment);
+                    }
+                    this.emit(loader_interface_1.Events.SegmentAbort, segment);
+                }
+            }
+            if (this.debug.enabled) {
+                for (const segment of segments) {
+                    if (!this.segmentsQueue.find((f) => f.url === segment.url)) {
+                        this.debug("add segment", segment.url);
+                    }
+                }
+            }
+            this.segmentsQueue = segments;
+            if (this.masterSwarmId === undefined) {
+                return;
+            }
+            let storageSegments = await this.segmentsStorage.getSegmentsMap(this.masterSwarmId);
+            updateSegmentsMap = this.processSegmentsQueue(storageSegments) || updateSegmentsMap;
+            if (await this.cleanSegmentsStorage()) {
+                storageSegments = await this.segmentsStorage.getSegmentsMap(this.masterSwarmId);
+                updateSegmentsMap = true;
+            }
+            if (updateSegmentsMap && !this.settings.consumeOnly) {
+                this.p2pManager.sendSegmentsMapToAll(this.createSegmentsMap(storageSegments));
+            }
+        };
+        this.getSegment = async (id) => {
+            return this.masterSwarmId === undefined ? undefined : this.segmentsStorage.getSegment(id, this.masterSwarmId);
+        };
+        this.getSettings = () => {
+            return this.settings;
+        };
+        this.getDetails = () => {
+            return {
+                peerId: this.p2pManager.getPeerId(),
+            };
+        };
+        this.destroy = async () => {
+            if (this.httpRandomDownloadInterval !== undefined) {
+                clearInterval(this.httpRandomDownloadInterval);
+                this.httpRandomDownloadInterval = undefined;
+            }
+            this.httpDownloadInitialTimeoutTimestamp = -Infinity;
+            this.segmentsQueue = [];
+            this.httpManager.destroy();
+            this.p2pManager.destroy();
+            this.masterSwarmId = undefined;
+            await this.segmentsStorage.destroy();
+        };
         this.processInitialSegmentTimeout = async () => {
             if (this.httpRandomDownloadInterval === undefined) {
                 return; // Instance destroyed
@@ -316,6 +428,99 @@ class HybridLoader extends events_1.EventEmitter {
                 setTimeout(this.processInitialSegmentTimeout, this.settings.httpDownloadInitialTimeoutPerSegment);
             }
         };
+        this.processSegmentsQueue = (storageSegments) => {
+            this.debugSegments("process segments queue. priority", this.segmentsQueue.length > 0 ? this.segmentsQueue[0].priority : 0);
+            if (this.masterSwarmId === undefined || this.segmentsQueue.length === 0) {
+                return false;
+            }
+            let updateSegmentsMap = false;
+            let segmentsMap;
+            let httpAllowed = true;
+            if (this.httpDownloadInitialTimeoutTimestamp !== -Infinity) {
+                let firstNotDownloadePriority;
+                for (const segment of this.segmentsQueue) {
+                    if (!storageSegments.has(segment.id)) {
+                        firstNotDownloadePriority = segment.priority;
+                        break;
+                    }
+                }
+                const httpTimeout = this.now() - this.httpDownloadInitialTimeoutTimestamp;
+                httpAllowed =
+                    httpTimeout >= this.settings.httpDownloadInitialTimeout ||
+                        (firstNotDownloadePriority !== undefined &&
+                            httpTimeout > this.settings.httpDownloadInitialTimeoutPerSegment &&
+                            firstNotDownloadePriority <= 0);
+                if (httpAllowed) {
+                    this.debugSegments("cancel initial HTTP download timeout - timed out");
+                    this.httpDownloadInitialTimeoutTimestamp = -Infinity;
+                }
+            }
+            for (let index = 0; index < this.segmentsQueue.length; index++) {
+                const segment = this.segmentsQueue[index];
+                if (storageSegments.has(segment.id) || this.httpManager.isDownloading(segment)) {
+                    continue;
+                }
+                if (segment.priority <= this.settings.requiredSegmentsPriority &&
+                    httpAllowed &&
+                    !this.httpManager.isFailed(segment)) {
+                    // Download required segments over HTTP
+                    if (this.httpManager.getActiveDownloadsCount() >= this.settings.simultaneousHttpDownloads) {
+                        // Not enough HTTP download resources. Abort one of the HTTP downloads.
+                        for (let i = this.segmentsQueue.length - 1; i > index; i--) {
+                            const segmentToAbort = this.segmentsQueue[i];
+                            if (this.httpManager.isDownloading(segmentToAbort)) {
+                                this.debugSegments("cancel HTTP download", segmentToAbort.priority, segmentToAbort.url);
+                                this.httpManager.abort(segmentToAbort);
+                                break;
+                            }
+                        }
+                    }
+                    if (this.httpManager.getActiveDownloadsCount() < this.settings.simultaneousHttpDownloads) {
+                        // Abort P2P download of the required segment if any and force HTTP download
+                        const downloadedPieces = this.p2pManager.abort(segment);
+                        this.httpManager.download(segment, downloadedPieces);
+                        this.debugSegments("HTTP download (priority)", segment.priority, segment.url);
+                        updateSegmentsMap = true;
+                        continue;
+                    }
+                }
+                if (this.p2pManager.isDownloading(segment)) {
+                    continue;
+                }
+                if (segment.priority <= this.settings.requiredSegmentsPriority) {
+                    // Download required segments over P2P
+                    segmentsMap = segmentsMap ? segmentsMap : this.p2pManager.getOverallSegmentsMap();
+                    if (segmentsMap.get(segment.id) !== media_peer_1.MediaPeerSegmentStatus.Loaded) {
+                        continue;
+                    }
+                    if (this.p2pManager.getActiveDownloadsCount() >= this.settings.simultaneousP2PDownloads) {
+                        // Not enough P2P download resources. Abort one of the P2P downloads.
+                        for (let i = this.segmentsQueue.length - 1; i > index; i--) {
+                            const segmentToAbort = this.segmentsQueue[i];
+                            if (this.p2pManager.isDownloading(segmentToAbort)) {
+                                this.debugSegments("cancel P2P download", segmentToAbort.priority, segmentToAbort.url);
+                                this.p2pManager.abort(segmentToAbort);
+                                break;
+                            }
+                        }
+                    }
+                    if (this.p2pManager.getActiveDownloadsCount() < this.settings.simultaneousP2PDownloads) {
+                        if (this.p2pManager.download(segment)) {
+                            this.debugSegments("P2P download (priority)", segment.priority, segment.url);
+                            continue;
+                        }
+                    }
+                    continue;
+                }
+                if (this.p2pManager.getActiveDownloadsCount() < this.settings.simultaneousP2PDownloads &&
+                    segment.priority <= this.settings.p2pDownloadMaxPriority) {
+                    if (this.p2pManager.download(segment)) {
+                        this.debugSegments("P2P download", segment.priority, segment.url);
+                    }
+                }
+            }
+            return updateSegmentsMap;
+        };
         this.downloadRandomSegmentOverHttp = async () => {
             if (this.masterSwarmId === undefined ||
                 this.httpRandomDownloadInterval === undefined ||
@@ -326,14 +531,14 @@ class HybridLoader extends events_1.EventEmitter {
                 return;
             }
             const storageSegments = await this.segmentsStorage.getSegmentsMap(this.masterSwarmId);
-            const segmentsMap = this.p2pManager.getOvrallSegmentsMap();
-            const pendingQueue = this.segmentsQueue.filter(s => !this.p2pManager.isDownloading(s) &&
+            const segmentsMap = this.p2pManager.getOverallSegmentsMap();
+            const pendingQueue = this.segmentsQueue.filter((s) => !this.p2pManager.isDownloading(s) &&
                 !this.httpManager.isDownloading(s) &&
                 !segmentsMap.has(s.id) &&
                 !this.httpManager.isFailed(s) &&
-                (s.priority <= this.settings.httpDownloadMaxPriority) &&
+                s.priority <= this.settings.httpDownloadMaxPriority &&
                 !storageSegments.has(s.id));
-            if (pendingQueue.length == 0) {
+            if (pendingQueue.length === 0) {
                 return;
             }
             if (Math.random() > this.settings.httpDownloadProbability * pendingQueue.length) {
@@ -360,8 +565,7 @@ class HybridLoader extends events_1.EventEmitter {
             segment.downloadBandwidth = this.bandwidthApproximator.getBandwidth(this.now());
             await this.segmentsStorage.storeSegment(segment);
             this.emit(loader_interface_1.Events.SegmentLoaded, segment, peerId);
-            let storageSegments;
-            storageSegments = (storageSegments === undefined ? await this.segmentsStorage.getSegmentsMap(this.masterSwarmId) : storageSegments);
+            const storageSegments = await this.segmentsStorage.getSegmentsMap(this.masterSwarmId);
             this.processSegmentsQueue(storageSegments);
             if (!this.settings.consumeOnly) {
                 this.p2pManager.sendSegmentsMapToAll(this.createSegmentsMap(storageSegments));
@@ -377,6 +581,31 @@ class HybridLoader extends events_1.EventEmitter {
                 }
             }
         };
+        this.getStreamSwarmId = (segment) => {
+            return segment.streamId === undefined ? segment.masterSwarmId : `${segment.masterSwarmId}+${segment.streamId}`;
+        };
+        this.createSegmentsMap = (storageSegments) => {
+            const segmentsMap = {};
+            const addSegmentToMap = (segment, status) => {
+                const streamSwarmId = this.getStreamSwarmId(segment);
+                const segmentId = segment.sequence;
+                let segmentsIdsAndStatuses = segmentsMap[streamSwarmId];
+                if (segmentsIdsAndStatuses === undefined) {
+                    segmentsIdsAndStatuses = ["", []];
+                    segmentsMap[streamSwarmId] = segmentsIdsAndStatuses;
+                }
+                const segmentsStatuses = segmentsIdsAndStatuses[1];
+                segmentsIdsAndStatuses[0] += segmentsStatuses.length === 0 ? segmentId : `|${segmentId}`;
+                segmentsStatuses.push(status);
+            };
+            for (const storageSegment of storageSegments.values()) {
+                addSegmentToMap(storageSegment.segment, media_peer_1.MediaPeerSegmentStatus.Loaded);
+            }
+            for (const download of this.httpManager.getActiveDownloads().values()) {
+                addSegmentToMap(download.segment, media_peer_1.MediaPeerSegmentStatus.LoadingByHttp);
+            }
+            return segmentsMap;
+        };
         this.onPeerConnect = async (peer) => {
             this.emit(loader_interface_1.Events.PeerConnect, peer);
             if (!this.settings.consumeOnly && this.masterSwarmId !== undefined) {
@@ -388,7 +617,8 @@ class HybridLoader extends events_1.EventEmitter {
         };
         this.onTrackerUpdate = async (data) => {
             if (this.httpDownloadInitialTimeoutTimestamp !== -Infinity &&
-                data.incomplete !== undefined && data.incomplete <= 1) {
+                data.incomplete !== undefined &&
+                data.incomplete <= 1) {
                 this.debugSegments("cancel initial HTTP download timeout - no peers");
                 this.httpDownloadInitialTimeoutTimestamp = -Infinity;
                 if (this.masterSwarmId !== undefined) {
@@ -399,19 +629,29 @@ class HybridLoader extends events_1.EventEmitter {
                 }
             }
         };
+        this.cleanSegmentsStorage = async () => {
+            if (this.masterSwarmId === undefined) {
+                return false;
+            }
+            return this.segmentsStorage.clean(this.masterSwarmId, (id) => this.segmentsQueue.find((queueSegment) => queueSegment.id === id) !== undefined);
+        };
+        this.now = () => {
+            return performance.now();
+        };
         this.settings = Object.assign(Object.assign({}, defaultSettings), settings);
-        if (settings.bufferedSegmentsCount) {
+        const { bufferedSegmentsCount } = settings;
+        if (typeof bufferedSegmentsCount === "number") {
             if (settings.p2pDownloadMaxPriority === undefined) {
-                this.settings.p2pDownloadMaxPriority = settings.bufferedSegmentsCount;
+                this.settings.p2pDownloadMaxPriority = bufferedSegmentsCount;
             }
             if (settings.httpDownloadMaxPriority === undefined) {
-                this.settings.p2pDownloadMaxPriority = settings.bufferedSegmentsCount;
+                this.settings.p2pDownloadMaxPriority = bufferedSegmentsCount;
             }
-            delete this.settings.bufferedSegmentsCount;
         }
-        this.segmentsStorage = (this.settings.segmentsStorage === undefined
-            ? new segments_memory_storage_1.SegmentsMemoryStorage(this.settings)
-            : this.settings.segmentsStorage);
+        this.segmentsStorage =
+            this.settings.segmentsStorage === undefined
+                ? new segments_memory_storage_1.SegmentsMemoryStorage(this.settings)
+                : this.settings.segmentsStorage;
         this.debug("loader settings", this.settings);
         this.httpManager = this.createHttpManager();
         this.httpManager.on("segment-loaded", this.onSegmentLoaded);
@@ -435,219 +675,13 @@ class HybridLoader extends events_1.EventEmitter {
         this.p2pManager.on("peer-closed", this.onPeerClose);
         this.p2pManager.on("tracker-update", this.onTrackerUpdate);
     }
-    static isSupported() {
-        const browserRtc = getBrowserRTC();
-        return (browserRtc && (browserRtc.RTCPeerConnection.prototype.createDataChannel !== undefined));
-    }
-    createHttpManager() {
-        return new http_media_manager_1.HttpMediaManager(this.settings);
-    }
-    createP2PManager() {
-        return new p2p_media_manager_1.P2PMediaManager(this.segmentsStorage, this.settings);
-    }
-    async load(segments, streamSwarmId) {
-        if (this.httpRandomDownloadInterval === undefined) { // Do once on first call
-            this.httpRandomDownloadInterval = setInterval(this.downloadRandomSegmentOverHttp, this.settings.httpDownloadProbabilityInterval);
-            if (this.settings.httpDownloadInitialTimeout > 0 && this.settings.httpDownloadInitialTimeoutPerSegment > 0) {
-                // Initialize initial HTTP download timeout (i.e. download initial segments over P2P)
-                this.debugSegments("enable initial HTTP download timeout", this.settings.httpDownloadInitialTimeout, "per segment", this.settings.httpDownloadInitialTimeoutPerSegment);
-                this.httpDownloadInitialTimeoutTimestamp = this.now();
-                setTimeout(this.processInitialSegmentTimeout, this.settings.httpDownloadInitialTimeoutPerSegment + 100);
-            }
-        }
-        if (segments.length > 0) {
-            this.masterSwarmId = segments[0].masterSwarmId;
-        }
-        if (this.masterSwarmId !== undefined) {
-            this.p2pManager.setStreamSwarmId(streamSwarmId, this.masterSwarmId);
-        }
-        this.debug("load segments");
-        let updateSegmentsMap = false;
-        // stop all http requests and p2p downloads for segments that are not in the new load
-        for (const segment of this.segmentsQueue) {
-            if (!segments.find(f => f.url == segment.url)) {
-                this.debug("remove segment", segment.url);
-                if (this.httpManager.isDownloading(segment)) {
-                    updateSegmentsMap = true;
-                    this.httpManager.abort(segment);
-                }
-                else {
-                    this.p2pManager.abort(segment);
-                }
-                this.emit(loader_interface_1.Events.SegmentAbort, segment);
-            }
-        }
-        if (this.debug.enabled) {
-            for (const segment of segments) {
-                if (!this.segmentsQueue.find(f => f.url == segment.url)) {
-                    this.debug("add segment", segment.url);
-                }
-            }
-        }
-        this.segmentsQueue = segments;
-        if (this.masterSwarmId === undefined) {
-            return;
-        }
-        let storageSegments = await this.segmentsStorage.getSegmentsMap(this.masterSwarmId);
-        updateSegmentsMap = (this.processSegmentsQueue(storageSegments) || updateSegmentsMap);
-        if (await this.cleanSegmentsStorage()) {
-            storageSegments = await this.segmentsStorage.getSegmentsMap(this.masterSwarmId);
-            updateSegmentsMap = true;
-        }
-        if (updateSegmentsMap && !this.settings.consumeOnly) {
-            this.p2pManager.sendSegmentsMapToAll(this.createSegmentsMap(storageSegments));
-        }
-    }
-    async getSegment(id) {
-        return this.masterSwarmId === undefined
-            ? undefined
-            : this.segmentsStorage.getSegment(id, this.masterSwarmId);
-    }
-    getSettings() {
-        return this.settings;
-    }
-    getDetails() {
-        return {
-            peerId: this.p2pManager.getPeerId()
-        };
-    }
-    async destroy() {
-        if (this.httpRandomDownloadInterval !== undefined) {
-            clearInterval(this.httpRandomDownloadInterval);
-            this.httpRandomDownloadInterval = undefined;
-        }
-        this.httpDownloadInitialTimeoutTimestamp = -Infinity;
-        this.segmentsQueue = [];
-        this.httpManager.destroy();
-        this.p2pManager.destroy();
-        this.masterSwarmId = undefined;
-        await this.segmentsStorage.destroy();
-    }
-    processSegmentsQueue(storageSegments) {
-        this.debugSegments("process segments queue. priority", this.segmentsQueue.length > 0 ? this.segmentsQueue[0].priority : 0);
-        if (this.masterSwarmId === undefined || this.segmentsQueue.length === 0) {
-            return false;
-        }
-        let updateSegmentsMap = false;
-        let segmentsMap;
-        let httpAllowed = true;
-        if (this.httpDownloadInitialTimeoutTimestamp !== -Infinity) {
-            let firstNotDownloadePriority;
-            for (const segment of this.segmentsQueue) {
-                if (!storageSegments.has(segment.id)) {
-                    firstNotDownloadePriority = segment.priority;
-                    break;
-                }
-            }
-            const httpTimeout = this.now() - this.httpDownloadInitialTimeoutTimestamp;
-            httpAllowed = (httpTimeout >= this.settings.httpDownloadInitialTimeout)
-                || ((firstNotDownloadePriority !== undefined) && (httpTimeout > this.settings.httpDownloadInitialTimeoutPerSegment) && (firstNotDownloadePriority <= 0));
-            if (httpAllowed) {
-                this.debugSegments("cancel initial HTTP download timeout - timed out");
-                this.httpDownloadInitialTimeoutTimestamp = -Infinity;
-            }
-        }
-        for (let index = 0; index < this.segmentsQueue.length; index++) {
-            const segment = this.segmentsQueue[index];
-            if (storageSegments.has(segment.id) || this.httpManager.isDownloading(segment)) {
-                continue;
-            }
-            if (segment.priority <= this.settings.requiredSegmentsPriority && httpAllowed && !this.httpManager.isFailed(segment)) {
-                // Download required segments over HTTP
-                if (this.httpManager.getActiveDownloadsCount() >= this.settings.simultaneousHttpDownloads) {
-                    // Not enough HTTP download resources. Abort one of the HTTP downloads.
-                    for (let i = this.segmentsQueue.length - 1; i > index; i--) {
-                        const segmentToAbort = this.segmentsQueue[i];
-                        if (this.httpManager.isDownloading(segmentToAbort)) {
-                            this.debugSegments("cancel HTTP download", segmentToAbort.priority, segmentToAbort.url);
-                            this.httpManager.abort(segmentToAbort);
-                            break;
-                        }
-                    }
-                }
-                if (this.httpManager.getActiveDownloadsCount() < this.settings.simultaneousHttpDownloads) {
-                    // Abort P2P download of the required segment if any and force HTTP download
-                    const downloadedPieces = this.p2pManager.abort(segment);
-                    this.httpManager.download(segment, downloadedPieces);
-                    this.debugSegments("HTTP download (priority)", segment.priority, segment.url);
-                    updateSegmentsMap = true;
-                    continue;
-                }
-            }
-            if (this.p2pManager.isDownloading(segment)) {
-                continue;
-            }
-            if (segment.priority <= this.settings.requiredSegmentsPriority) { // Download required segments over P2P
-                segmentsMap = segmentsMap ? segmentsMap : this.p2pManager.getOvrallSegmentsMap();
-                if (segmentsMap.get(segment.id) !== media_peer_1.MediaPeerSegmentStatus.Loaded) {
-                    continue;
-                }
-                if (this.p2pManager.getActiveDownloadsCount() >= this.settings.simultaneousP2PDownloads) {
-                    // Not enough P2P download resources. Abort one of the P2P downloads.
-                    for (let i = this.segmentsQueue.length - 1; i > index; i--) {
-                        const segmentToAbort = this.segmentsQueue[i];
-                        if (this.p2pManager.isDownloading(segmentToAbort)) {
-                            this.debugSegments("cancel P2P download", segmentToAbort.priority, segmentToAbort.url);
-                            this.p2pManager.abort(segmentToAbort);
-                            break;
-                        }
-                    }
-                }
-                if (this.p2pManager.getActiveDownloadsCount() < this.settings.simultaneousP2PDownloads) {
-                    if (this.p2pManager.download(segment)) {
-                        this.debugSegments("P2P download (priority)", segment.priority, segment.url);
-                        continue;
-                    }
-                }
-                continue;
-            }
-            if (this.p2pManager.getActiveDownloadsCount() < this.settings.simultaneousP2PDownloads &&
-                segment.priority <= this.settings.p2pDownloadMaxPriority) {
-                if (this.p2pManager.download(segment)) {
-                    this.debugSegments("P2P download", segment.priority, segment.url);
-                }
-            }
-        }
-        return updateSegmentsMap;
-    }
-    getStreamSwarmId(segment) {
-        return segment.streamId === undefined ? segment.masterSwarmId : `${segment.masterSwarmId}+${segment.streamId}`;
-    }
-    createSegmentsMap(storageSegments) {
-        const segmentsMap = {};
-        const addSegmentToMap = (segment, status) => {
-            const streamSwarmId = this.getStreamSwarmId(segment);
-            const segmentId = segment.sequence;
-            let segmentsIdsAndStatuses = segmentsMap[streamSwarmId];
-            if (segmentsIdsAndStatuses === undefined) {
-                segmentsIdsAndStatuses = ["", []];
-                segmentsMap[streamSwarmId] = segmentsIdsAndStatuses;
-            }
-            const segmentsStatuses = segmentsIdsAndStatuses[1];
-            segmentsIdsAndStatuses[0] += ((segmentsStatuses.length == 0) ? segmentId : `|${segmentId}`);
-            segmentsStatuses.push(status);
-        };
-        for (const storageSegment of storageSegments.values()) {
-            addSegmentToMap(storageSegment.segment, media_peer_1.MediaPeerSegmentStatus.Loaded);
-        }
-        for (const download of this.httpManager.getActiveDownloads().values()) {
-            addSegmentToMap(download.segment, media_peer_1.MediaPeerSegmentStatus.LoadingByHttp);
-        }
-        return segmentsMap;
-    }
-    async cleanSegmentsStorage() {
-        if (this.masterSwarmId === undefined) {
-            return false;
-        }
-        return this.segmentsStorage.clean(this.masterSwarmId, (id) => this.segmentsQueue.find(queueSegment => queueSegment.id === id) !== undefined);
-    }
-    now() {
-        return performance.now();
-    }
 }
 exports.HybridLoader = HybridLoader;
+HybridLoader.isSupported = () => {
+    return window.RTCPeerConnection.prototype.createDataChannel !== undefined;
+};
 
-},{"./bandwidth-approximator":1,"./http-media-manager":3,"./loader-interface":5,"./media-peer":6,"./p2p-media-manager":7,"./segments-memory-storage":8,"debug":"debug","events":"events","get-browser-rtc":18,"simple-peer":44}],5:[function(require,module,exports){
+},{"./bandwidth-approximator":1,"./http-media-manager":3,"./loader-interface":5,"./media-peer":6,"./p2p-media-manager":7,"./segments-memory-storage":8,"debug":"debug","events":"events","simple-peer":45}],5:[function(require,module,exports){
 "use strict";
 /**
  * Copyright 2018 Novage LLC.
@@ -665,6 +699,7 @@ exports.HybridLoader = HybridLoader;
  * limitations under the License.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Events = void 0;
 var Events;
 (function (Events) {
     /**
@@ -721,10 +756,17 @@ var Events;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const Debug = require("debug");
-const stringly_typed_event_emitter_1 = require("./stringly-typed-event-emitter");
+exports.MediaPeer = exports.MediaPeerSegmentStatus = void 0;
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+const debug_1 = __importDefault(require("debug"));
 const buffer_1 = require("buffer");
+const stringly_typed_event_emitter_1 = require("./stringly-typed-event-emitter");
 var MediaPeerCommands;
 (function (MediaPeerCommands) {
     MediaPeerCommands[MediaPeerCommands["SegmentData"] = 0] = "SegmentData";
@@ -747,7 +789,9 @@ class DownloadingSegment {
     }
 }
 class MediaPeer extends stringly_typed_event_emitter_1.STEEmitter {
-    constructor(peer, settings) {
+    constructor(
+    // eslint-disable-next-line
+    peer, settings) {
         super();
         this.peer = peer;
         this.settings = settings;
@@ -755,7 +799,7 @@ class MediaPeer extends stringly_typed_event_emitter_1.STEEmitter {
         this.downloadingSegmentId = null;
         this.downloadingSegment = null;
         this.segmentsMap = new Map();
-        this.debug = Debug("p2pml:media-peer");
+        this.debug = debug_1.default("p2pml:media-peer");
         this.timer = null;
         this.onPeerConnect = () => {
             this.debug("peer connect", this.id, this);
@@ -770,9 +814,49 @@ class MediaPeer extends stringly_typed_event_emitter_1.STEEmitter {
         this.onPeerError = (error) => {
             this.debug("peer error", this.id, error, this);
         };
+        this.receiveSegmentPiece = (data) => {
+            if (!this.downloadingSegment) {
+                // The segment was not requested or canceled
+                this.debug("peer segment not requested", this.id, this);
+                return;
+            }
+            this.downloadingSegment.bytesDownloaded += data.byteLength;
+            this.downloadingSegment.pieces.push(data);
+            this.emit("bytes-downloaded", this, data.byteLength);
+            const segmentId = this.downloadingSegment.id;
+            if (this.downloadingSegment.bytesDownloaded === this.downloadingSegment.size) {
+                const segmentData = new Uint8Array(this.downloadingSegment.size);
+                let offset = 0;
+                for (const piece of this.downloadingSegment.pieces) {
+                    segmentData.set(new Uint8Array(piece), offset);
+                    offset += piece.byteLength;
+                }
+                this.debug("peer segment download done", this.id, segmentId, this);
+                this.terminateSegmentRequest();
+                this.emit("segment-loaded", this, segmentId, segmentData.buffer);
+            }
+            else if (this.downloadingSegment.bytesDownloaded > this.downloadingSegment.size) {
+                this.debug("peer segment download bytes mismatch", this.id, segmentId, this);
+                this.terminateSegmentRequest();
+                this.emit("segment-error", this, segmentId, "Too many bytes received for segment");
+            }
+        };
+        this.getJsonCommand = (data) => {
+            const bytes = new Uint8Array(data);
+            // Serialized JSON string check by first, second and last characters: '{" .... }'
+            if (bytes[0] === 123 && bytes[1] === 34 && bytes[data.byteLength - 1] === 125) {
+                try {
+                    return JSON.parse(new TextDecoder().decode(data));
+                }
+                catch (_a) {
+                    return null;
+                }
+            }
+            return null;
+        };
         this.onPeerData = (data) => {
             const command = this.getJsonCommand(data);
-            if (command == null) {
+            if (command === null) {
                 this.receiveSegmentPiece(data);
                 return;
             }
@@ -793,13 +877,16 @@ class MediaPeer extends stringly_typed_event_emitter_1.STEEmitter {
                     this.emit("segment-request", this, command.i);
                     break;
                 case MediaPeerCommands.SegmentData:
-                    if (this.downloadingSegmentId === command.i) {
+                    if (this.downloadingSegmentId &&
+                        this.downloadingSegmentId === command.i &&
+                        typeof command.s === "number" &&
+                        command.s >= 0) {
                         this.downloadingSegment = new DownloadingSegment(command.i, command.s);
                         this.cancelResponseTimeoutTimer();
                     }
                     break;
                 case MediaPeerCommands.SegmentAbsent:
-                    if (this.downloadingSegmentId === command.i) {
+                    if (this.downloadingSegmentId && this.downloadingSegmentId === command.i) {
                         this.terminateSegmentRequest();
                         this.segmentsMap.delete(command.i);
                         this.emit("segment-absent", this, command.i);
@@ -812,159 +899,120 @@ class MediaPeer extends stringly_typed_event_emitter_1.STEEmitter {
                     break;
             }
         };
+        this.createSegmentsMap = (segments) => {
+            if (!(segments instanceof Object)) {
+                return new Map();
+            }
+            const segmentsMap = new Map();
+            for (const streamSwarmId of Object.keys(segments)) {
+                const swarmData = segments[streamSwarmId];
+                if (!(swarmData instanceof Array) ||
+                    swarmData.length !== 2 ||
+                    typeof swarmData[0] !== "string" ||
+                    !(swarmData[1] instanceof Array)) {
+                    return new Map();
+                }
+                const segmentsIds = swarmData[0].split("|");
+                const segmentsStatuses = swarmData[1];
+                if (segmentsIds.length !== segmentsStatuses.length) {
+                    return new Map();
+                }
+                for (let i = 0; i < segmentsIds.length; i++) {
+                    const segmentStatus = segmentsStatuses[i];
+                    if (typeof segmentStatus !== "number" || MediaPeerSegmentStatus[segmentStatus] === undefined) {
+                        return new Map();
+                    }
+                    segmentsMap.set(`${streamSwarmId}+${segmentsIds[i]}`, segmentStatus);
+                }
+            }
+            return segmentsMap;
+        };
+        this.sendCommand = (command) => {
+            this.debug("peer send command", this.id, command, this);
+            this.peer.write(JSON.stringify(command));
+        };
+        this.destroy = () => {
+            this.debug("peer destroy", this.id, this);
+            this.terminateSegmentRequest();
+            this.peer.destroy();
+        };
+        this.getDownloadingSegmentId = () => {
+            return this.downloadingSegmentId;
+        };
+        this.getSegmentsMap = () => {
+            return this.segmentsMap;
+        };
+        this.sendSegmentsMap = (segmentsMap) => {
+            this.sendCommand({ c: MediaPeerCommands.SegmentsMap, m: segmentsMap });
+        };
+        this.sendSegmentData = (segmentId, data) => {
+            this.sendCommand({
+                c: MediaPeerCommands.SegmentData,
+                i: segmentId,
+                s: data.byteLength,
+            });
+            let bytesLeft = data.byteLength;
+            while (bytesLeft > 0) {
+                const bytesToSend = bytesLeft >= this.settings.webRtcMaxMessageSize ? this.settings.webRtcMaxMessageSize : bytesLeft;
+                const buffer = buffer_1.Buffer.from(data, data.byteLength - bytesLeft, bytesToSend);
+                this.peer.write(buffer);
+                bytesLeft -= bytesToSend;
+            }
+            this.emit("bytes-uploaded", this, data.byteLength);
+        };
+        this.sendSegmentAbsent = (segmentId) => {
+            this.sendCommand({ c: MediaPeerCommands.SegmentAbsent, i: segmentId });
+        };
+        this.requestSegment = (segmentId) => {
+            if (this.downloadingSegmentId) {
+                throw new Error("A segment is already downloading: " + this.downloadingSegmentId);
+            }
+            this.sendCommand({ c: MediaPeerCommands.SegmentRequest, i: segmentId });
+            this.downloadingSegmentId = segmentId;
+            this.runResponseTimeoutTimer();
+        };
+        this.cancelSegmentRequest = () => {
+            let downloadingSegment;
+            if (this.downloadingSegmentId) {
+                const segmentId = this.downloadingSegmentId;
+                downloadingSegment = this.downloadingSegment ? this.downloadingSegment.pieces : undefined;
+                this.terminateSegmentRequest();
+                this.sendCommand({ c: MediaPeerCommands.CancelSegmentRequest, i: segmentId });
+            }
+            return downloadingSegment;
+        };
+        this.runResponseTimeoutTimer = () => {
+            this.timer = setTimeout(() => {
+                this.timer = null;
+                if (!this.downloadingSegmentId) {
+                    return;
+                }
+                const segmentId = this.downloadingSegmentId;
+                this.cancelSegmentRequest();
+                this.emit("segment-timeout", this, segmentId); // TODO: send peer not responding event
+            }, this.settings.p2pSegmentDownloadTimeout);
+        };
+        this.cancelResponseTimeoutTimer = () => {
+            if (this.timer) {
+                clearTimeout(this.timer);
+                this.timer = null;
+            }
+        };
+        this.terminateSegmentRequest = () => {
+            this.downloadingSegmentId = null;
+            this.downloadingSegment = null;
+            this.cancelResponseTimeoutTimer();
+        };
         this.peer.on("connect", this.onPeerConnect);
         this.peer.on("close", this.onPeerClose);
         this.peer.on("error", this.onPeerError);
         this.peer.on("data", this.onPeerData);
         this.id = peer.id;
     }
-    receiveSegmentPiece(data) {
-        if (!this.downloadingSegment) {
-            // The segment was not requested or canceled
-            this.debug("peer segment not requested", this.id, this);
-            return;
-        }
-        this.downloadingSegment.bytesDownloaded += data.byteLength;
-        this.downloadingSegment.pieces.push(data);
-        this.emit("bytes-downloaded", this, data.byteLength);
-        const segmentId = this.downloadingSegment.id;
-        if (this.downloadingSegment.bytesDownloaded == this.downloadingSegment.size) {
-            const segmentData = new Uint8Array(this.downloadingSegment.size);
-            let offset = 0;
-            for (const piece of this.downloadingSegment.pieces) {
-                segmentData.set(new Uint8Array(piece), offset);
-                offset += piece.byteLength;
-            }
-            this.debug("peer segment download done", this.id, segmentId, this);
-            this.terminateSegmentRequest();
-            this.emit("segment-loaded", this, segmentId, segmentData.buffer);
-        }
-        else if (this.downloadingSegment.bytesDownloaded > this.downloadingSegment.size) {
-            this.debug("peer segment download bytes mismatch", this.id, segmentId, this);
-            this.terminateSegmentRequest();
-            this.emit("segment-error", this, segmentId, "Too many bytes received for segment");
-        }
-    }
-    getJsonCommand(data) {
-        const bytes = new Uint8Array(data);
-        // Serialized JSON string check by first, second and last characters: '{" .... }'
-        if (bytes[0] == 123 && bytes[1] == 34 && bytes[data.byteLength - 1] == 125) {
-            try {
-                return JSON.parse(new TextDecoder().decode(data));
-            }
-            catch (_a) {
-            }
-        }
-        return null;
-    }
-    createSegmentsMap(segments) {
-        if (segments == undefined || !(segments instanceof Object)) {
-            return new Map();
-        }
-        const segmentsMap = new Map();
-        for (const streamSwarmId of Object.keys(segments)) {
-            const swarmData = segments[streamSwarmId];
-            if (!(swarmData instanceof Array) ||
-                (swarmData.length !== 2) ||
-                (typeof swarmData[0] !== "string") ||
-                !(swarmData[1] instanceof Array)) {
-                return new Map();
-            }
-            const segmentsIds = swarmData[0].split("|");
-            const segmentsStatuses = swarmData[1];
-            if (segmentsIds.length !== segmentsStatuses.length) {
-                return new Map();
-            }
-            for (let i = 0; i < segmentsIds.length; i++) {
-                const segmentStatus = segmentsStatuses[i];
-                if (typeof segmentStatus !== "number" || MediaPeerSegmentStatus[segmentStatus] === undefined) {
-                    return new Map();
-                }
-                segmentsMap.set(`${streamSwarmId}+${segmentsIds[i]}`, segmentStatus);
-            }
-        }
-        return segmentsMap;
-    }
-    sendCommand(command) {
-        this.debug("peer send command", this.id, command, this);
-        this.peer.write(JSON.stringify(command));
-    }
-    destroy() {
-        this.debug("peer destroy", this.id, this);
-        this.terminateSegmentRequest();
-        this.peer.destroy();
-    }
-    getDownloadingSegmentId() {
-        return this.downloadingSegmentId;
-    }
-    getSegmentsMap() {
-        return this.segmentsMap;
-    }
-    sendSegmentsMap(segmentsMap) {
-        this.sendCommand({ c: MediaPeerCommands.SegmentsMap, m: segmentsMap });
-    }
-    sendSegmentData(segmentId, data) {
-        this.sendCommand({
-            c: MediaPeerCommands.SegmentData,
-            i: segmentId,
-            s: data.byteLength
-        });
-        let bytesLeft = data.byteLength;
-        while (bytesLeft > 0) {
-            const bytesToSend = (bytesLeft >= this.settings.webRtcMaxMessageSize ? this.settings.webRtcMaxMessageSize : bytesLeft);
-            const buffer = buffer_1.Buffer.from(data, data.byteLength - bytesLeft, bytesToSend);
-            this.peer.write(buffer);
-            bytesLeft -= bytesToSend;
-        }
-        this.emit("bytes-uploaded", this, data.byteLength);
-    }
-    sendSegmentAbsent(segmentId) {
-        this.sendCommand({ c: MediaPeerCommands.SegmentAbsent, i: segmentId });
-    }
-    requestSegment(segmentId) {
-        if (this.downloadingSegmentId) {
-            throw new Error("A segment is already downloading: " + this.downloadingSegmentId);
-        }
-        this.sendCommand({ c: MediaPeerCommands.SegmentRequest, i: segmentId });
-        this.downloadingSegmentId = segmentId;
-        this.runResponseTimeoutTimer();
-    }
-    cancelSegmentRequest() {
-        let downloadingSegment;
-        if (this.downloadingSegmentId) {
-            const segmentId = this.downloadingSegmentId;
-            downloadingSegment = this.downloadingSegment ? this.downloadingSegment.pieces : undefined;
-            this.terminateSegmentRequest();
-            this.sendCommand({ c: MediaPeerCommands.CancelSegmentRequest, i: segmentId });
-        }
-        return downloadingSegment;
-    }
-    runResponseTimeoutTimer() {
-        this.timer = setTimeout(() => {
-            this.timer = null;
-            if (!this.downloadingSegmentId) {
-                return;
-            }
-            const segmentId = this.downloadingSegmentId;
-            this.cancelSegmentRequest();
-            this.emit("segment-timeout", this, segmentId); // TODO: send peer not responding event
-        }, this.settings.p2pSegmentDownloadTimeout);
-    }
-    cancelResponseTimeoutTimer() {
-        if (this.timer) {
-            clearTimeout(this.timer);
-            this.timer = null;
-        }
-    }
-    terminateSegmentRequest() {
-        this.downloadingSegmentId = null;
-        this.downloadingSegment = null;
-        this.cancelResponseTimeoutTimer();
-    }
 }
 exports.MediaPeer = MediaPeer;
 
-},{"./stringly-typed-event-emitter":9,"buffer":16,"debug":"debug"}],7:[function(require,module,exports){
+},{"./stringly-typed-event-emitter":9,"buffer":"buffer","debug":"debug"}],7:[function(require,module,exports){
 "use strict";
 /**
  * Copyright 2018 Novage LLC.
@@ -981,16 +1029,23 @@ exports.MediaPeer = MediaPeer;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const Debug = require("debug");
-const Client = require("bittorrent-tracker/client");
+exports.P2PMediaManager = void 0;
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+const debug_1 = __importDefault(require("debug"));
+const client_1 = __importDefault(require("bittorrent-tracker/client"));
+const buffer_1 = require("buffer");
+const sha1_1 = __importDefault(require("sha.js/sha1"));
 const stringly_typed_event_emitter_1 = require("./stringly-typed-event-emitter");
 const media_peer_1 = require("./media-peer");
-const buffer_1 = require("buffer");
-const sha1 = require("sha.js/sha1");
 const index_1 = require("./index");
 const PEER_PROTOCOL_VERSION = 2;
-const PEER_ID_VERSION_STRING = index_1.version.replace(/\d*./g, v => `0${parseInt(v, 10) % 100}`.slice(-2)).slice(0, 4);
+const PEER_ID_VERSION_STRING = index_1.version.replace(/\d*./g, (v) => `0${parseInt(v, 10) % 100}`.slice(-2)).slice(0, 4);
 const PEER_ID_VERSION_PREFIX = `-WW${PEER_ID_VERSION_STRING}-`; // Using WebTorrent client ID in order to not be banned by websocket trackers
 class PeerSegmentRequest {
     constructor(peerId, segment) {
@@ -1008,17 +1063,76 @@ function generatePeerId() {
     return new TextEncoder().encode(peerId).buffer;
 }
 class P2PMediaManager extends stringly_typed_event_emitter_1.STEEmitter {
-    constructor(sementsStorage, settings) {
+    constructor(segmentsStorage, settings) {
         super();
-        this.sementsStorage = sementsStorage;
+        this.segmentsStorage = segmentsStorage;
         this.settings = settings;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.trackerClient = null;
         this.peers = new Map();
         this.peerCandidates = new Map();
         this.peerSegmentRequests = new Map();
         this.streamSwarmId = null;
-        this.debug = Debug("p2pml:p2p-media-manager");
+        this.debug = debug_1.default("p2pml:p2p-media-manager");
         this.pendingTrackerClient = null;
+        this.getPeers = () => {
+            return this.peers;
+        };
+        this.getPeerId = () => {
+            return buffer_1.Buffer.from(this.peerId).toString("hex");
+        };
+        this.setStreamSwarmId = (streamSwarmId, masterSwarmId) => {
+            if (this.streamSwarmId === streamSwarmId) {
+                return;
+            }
+            this.destroy(true);
+            this.streamSwarmId = streamSwarmId;
+            this.masterSwarmId = masterSwarmId;
+            this.debug("stream swarm ID", this.streamSwarmId);
+            this.pendingTrackerClient = {
+                isDestroyed: false,
+            };
+            const pendingTrackerClient = this.pendingTrackerClient;
+            // TODO: native browser 'crypto.subtle' implementation doesn't work in Chrome in insecure pages
+            // TODO: Edge doesn't support SHA-1. Change to SHA-256 once Edge support is required.
+            // const infoHash = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(PEER_PROTOCOL_VERSION + this.streamSwarmId));
+            const infoHash = new sha1_1.default().update(`${PEER_PROTOCOL_VERSION}${this.streamSwarmId}`).digest();
+            // destroy may be called while waiting for the hash to be calculated
+            if (!pendingTrackerClient.isDestroyed) {
+                this.pendingTrackerClient = null;
+                this.createClient(infoHash);
+            }
+            else if (this.trackerClient !== null) {
+                this.trackerClient.destroy();
+                this.trackerClient = null;
+            }
+        };
+        this.createClient = (infoHash) => {
+            if (!this.settings.useP2P) {
+                return;
+            }
+            const clientOptions = {
+                infoHash: buffer_1.Buffer.from(infoHash, 0, 20),
+                peerId: buffer_1.Buffer.from(this.peerId, 0, 20),
+                announce: this.settings.trackerAnnounce,
+                rtcConfig: this.settings.rtcConfig,
+                port: 6881,
+                getAnnounceOpts: () => {
+                    return { numwant: this.settings.peerRequestsPerAnnounce };
+                },
+            };
+            let oldTrackerClient = this.trackerClient;
+            this.trackerClient = new client_1.default(clientOptions);
+            this.trackerClient.on("error", this.onTrackerError);
+            this.trackerClient.on("warning", this.onTrackerWarning);
+            this.trackerClient.on("update", this.onTrackerUpdate);
+            this.trackerClient.on("peer", this.onTrackerPeer);
+            this.trackerClient.start();
+            if (oldTrackerClient !== null) {
+                oldTrackerClient.destroy();
+                oldTrackerClient = null;
+            }
+        };
         this.onTrackerError = (error) => {
             this.debug("tracker error", error);
         };
@@ -1029,6 +1143,7 @@ class P2PMediaManager extends stringly_typed_event_emitter_1.STEEmitter {
             this.debug("tracker update", data);
             this.emit("tracker-update", data);
         };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.onTrackerPeer = (trackerPeer) => {
             this.debug("tracker peer", trackerPeer.id, trackerPeer);
             if (this.peers.has(trackerPeer.id)) {
@@ -1054,6 +1169,96 @@ class P2PMediaManager extends stringly_typed_event_emitter_1.STEEmitter {
             }
             peerCandidatesById.push(peer);
         };
+        this.download = (segment) => {
+            if (this.isDownloading(segment)) {
+                return false;
+            }
+            const candidates = [];
+            for (const peer of this.peers.values()) {
+                if (peer.getDownloadingSegmentId() === null &&
+                    peer.getSegmentsMap().get(segment.id) === media_peer_1.MediaPeerSegmentStatus.Loaded) {
+                    candidates.push(peer);
+                }
+            }
+            if (candidates.length === 0) {
+                return false;
+            }
+            const peer = candidates[Math.floor(Math.random() * candidates.length)];
+            peer.requestSegment(segment.id);
+            this.peerSegmentRequests.set(segment.id, new PeerSegmentRequest(peer.id, segment));
+            return true;
+        };
+        this.abort = (segment) => {
+            let downloadingSegment;
+            const peerSegmentRequest = this.peerSegmentRequests.get(segment.id);
+            if (peerSegmentRequest) {
+                const peer = this.peers.get(peerSegmentRequest.peerId);
+                if (peer) {
+                    downloadingSegment = peer.cancelSegmentRequest();
+                }
+                this.peerSegmentRequests.delete(segment.id);
+            }
+            return downloadingSegment;
+        };
+        this.isDownloading = (segment) => {
+            return this.peerSegmentRequests.has(segment.id);
+        };
+        this.getActiveDownloadsCount = () => {
+            return this.peerSegmentRequests.size;
+        };
+        this.destroy = (swarmChange = false) => {
+            this.streamSwarmId = null;
+            if (this.trackerClient) {
+                this.trackerClient.stop();
+                if (swarmChange) {
+                    // Don't destroy trackerClient to reuse its WebSocket connection to the tracker server
+                    this.trackerClient.removeAllListeners("error");
+                    this.trackerClient.removeAllListeners("warning");
+                    this.trackerClient.removeAllListeners("update");
+                    this.trackerClient.removeAllListeners("peer");
+                }
+                else {
+                    this.trackerClient.destroy();
+                    this.trackerClient = null;
+                }
+            }
+            if (this.pendingTrackerClient) {
+                this.pendingTrackerClient.isDestroyed = true;
+                this.pendingTrackerClient = null;
+            }
+            this.peers.forEach((peer) => peer.destroy());
+            this.peers.clear();
+            this.peerSegmentRequests.clear();
+            for (const peerCandidateById of this.peerCandidates.values()) {
+                for (const peerCandidate of peerCandidateById) {
+                    peerCandidate.destroy();
+                }
+            }
+            this.peerCandidates.clear();
+        };
+        this.sendSegmentsMapToAll = (segmentsMap) => {
+            this.peers.forEach((peer) => peer.sendSegmentsMap(segmentsMap));
+        };
+        this.sendSegmentsMap = (peerId, segmentsMap) => {
+            const peer = this.peers.get(peerId);
+            if (peer) {
+                peer.sendSegmentsMap(segmentsMap);
+            }
+        };
+        this.getOverallSegmentsMap = () => {
+            const overallSegmentsMap = new Map();
+            for (const peer of this.peers.values()) {
+                for (const [segmentId, segmentStatus] of peer.getSegmentsMap()) {
+                    if (segmentStatus === media_peer_1.MediaPeerSegmentStatus.Loaded) {
+                        overallSegmentsMap.set(segmentId, media_peer_1.MediaPeerSegmentStatus.Loaded);
+                    }
+                    else if (!overallSegmentsMap.get(segmentId)) {
+                        overallSegmentsMap.set(segmentId, media_peer_1.MediaPeerSegmentStatus.LoadingByHttp);
+                    }
+                }
+            }
+            return overallSegmentsMap;
+        };
         this.onPieceBytesDownloaded = (peer, bytes) => {
             this.emit("bytes-downloaded", bytes, peer.id);
         };
@@ -1073,7 +1278,7 @@ class P2PMediaManager extends stringly_typed_event_emitter_1.STEEmitter {
             const peerCandidatesById = this.peerCandidates.get(peer.id);
             if (peerCandidatesById) {
                 for (const peerCandidate of peerCandidatesById) {
-                    if (peerCandidate != peer) {
+                    if (peerCandidate !== peer) {
                         peerCandidate.destroy();
                     }
                 }
@@ -1082,23 +1287,23 @@ class P2PMediaManager extends stringly_typed_event_emitter_1.STEEmitter {
             this.emit("peer-connected", { id: peer.id, remoteAddress: peer.remoteAddress });
         };
         this.onPeerClose = (peer) => {
-            if (this.peers.get(peer.id) != peer) {
+            if (this.peers.get(peer.id) !== peer) {
                 // Try to delete the peer candidate
                 const peerCandidatesById = this.peerCandidates.get(peer.id);
                 if (!peerCandidatesById) {
                     return;
                 }
                 const index = peerCandidatesById.indexOf(peer);
-                if (index != -1) {
+                if (index !== -1) {
                     peerCandidatesById.splice(index, 1);
                 }
-                if (peerCandidatesById.length == 0) {
+                if (peerCandidatesById.length === 0) {
                     this.peerCandidates.delete(peer.id);
                 }
                 return;
             }
             for (const [key, value] of this.peerSegmentRequests) {
-                if (value.peerId == peer.id) {
+                if (value.peerId === peer.id) {
                     this.peerSegmentRequests.delete(key);
                 }
             }
@@ -1113,8 +1318,8 @@ class P2PMediaManager extends stringly_typed_event_emitter_1.STEEmitter {
             if (this.masterSwarmId === undefined) {
                 return;
             }
-            const segment = await this.sementsStorage.getSegment(segmentId, this.masterSwarmId);
-            if (segment) {
+            const segment = await this.segmentsStorage.getSegment(segmentId, this.masterSwarmId);
+            if (segment && segment.data) {
                 peer.sendSegmentData(segmentId, segment.data);
             }
             else {
@@ -1168,158 +1373,10 @@ class P2PMediaManager extends stringly_typed_event_emitter_1.STEEmitter {
             this.debug("peer ID", this.getPeerId(), new TextDecoder().decode(this.peerId));
         }
     }
-    getPeers() {
-        return this.peers;
-    }
-    getPeerId() {
-        return buffer_1.Buffer.from(this.peerId).toString("hex");
-    }
-    async setStreamSwarmId(streamSwarmId, masterSwarmId) {
-        if (this.streamSwarmId === streamSwarmId) {
-            return;
-        }
-        this.destroy(true);
-        this.streamSwarmId = streamSwarmId;
-        this.masterSwarmId = masterSwarmId;
-        this.debug("stream swarm ID", this.streamSwarmId);
-        this.pendingTrackerClient = {
-            isDestroyed: false
-        };
-        const pendingTrackerClient = this.pendingTrackerClient;
-        // TODO: native browser 'crypto.subtle' implementation doesn't work in Chrome in insecure pages
-        // TODO: Edge doesn't support SHA-1. Change to SHA-256 once Edge support is required.
-        // const infoHash = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(PEER_PROTOCOL_VERSION + this.streamSwarmId));
-        const infoHash = new sha1().update(PEER_PROTOCOL_VERSION + this.streamSwarmId).digest();
-        // destroy may be called while waiting for the hash to be calculated
-        if (!pendingTrackerClient.isDestroyed) {
-            this.pendingTrackerClient = null;
-            this.createClient(infoHash);
-        }
-        else if (this.trackerClient != null) {
-            this.trackerClient.destroy();
-            this.trackerClient = null;
-        }
-    }
-    createClient(infoHash) {
-        if (!this.settings.useP2P) {
-            return;
-        }
-        const clientOptions = {
-            infoHash: buffer_1.Buffer.from(infoHash, 0, 20),
-            peerId: buffer_1.Buffer.from(this.peerId, 0, 20),
-            announce: this.settings.trackerAnnounce,
-            rtcConfig: this.settings.rtcConfig,
-            port: 6881,
-            getAnnounceOpts: () => {
-                return { numwant: this.settings.peerRequestsPerAnnounce };
-            }
-        };
-        let oldTrackerClient = this.trackerClient;
-        this.trackerClient = new Client(clientOptions);
-        this.trackerClient.on("error", this.onTrackerError);
-        this.trackerClient.on("warning", this.onTrackerWarning);
-        this.trackerClient.on("update", this.onTrackerUpdate);
-        this.trackerClient.on("peer", this.onTrackerPeer);
-        this.trackerClient.start();
-        if (oldTrackerClient != null) {
-            oldTrackerClient.destroy();
-            oldTrackerClient = null;
-        }
-    }
-    download(segment) {
-        if (this.isDownloading(segment)) {
-            return false;
-        }
-        const candidates = [];
-        for (const peer of this.peers.values()) {
-            if ((peer.getDownloadingSegmentId() == null) &&
-                (peer.getSegmentsMap().get(segment.id) === media_peer_1.MediaPeerSegmentStatus.Loaded)) {
-                candidates.push(peer);
-            }
-        }
-        if (candidates.length === 0) {
-            return false;
-        }
-        const peer = candidates[Math.floor(Math.random() * candidates.length)];
-        peer.requestSegment(segment.id);
-        this.peerSegmentRequests.set(segment.id, new PeerSegmentRequest(peer.id, segment));
-        return true;
-    }
-    abort(segment) {
-        let downloadingSegment;
-        const peerSegmentRequest = this.peerSegmentRequests.get(segment.id);
-        if (peerSegmentRequest) {
-            const peer = this.peers.get(peerSegmentRequest.peerId);
-            if (peer) {
-                downloadingSegment = peer.cancelSegmentRequest();
-            }
-            this.peerSegmentRequests.delete(segment.id);
-        }
-        return downloadingSegment;
-    }
-    isDownloading(segment) {
-        return this.peerSegmentRequests.has(segment.id);
-    }
-    getActiveDownloadsCount() {
-        return this.peerSegmentRequests.size;
-    }
-    destroy(swarmChange = false) {
-        this.streamSwarmId = null;
-        if (this.trackerClient) {
-            this.trackerClient.stop();
-            if (swarmChange) {
-                // Don't destroy trackerClient to reuse its WebSocket connection to the tracker server
-                this.trackerClient.removeAllListeners("error");
-                this.trackerClient.removeAllListeners("warning");
-                this.trackerClient.removeAllListeners("update");
-                this.trackerClient.removeAllListeners("peer");
-            }
-            else {
-                this.trackerClient.destroy();
-                this.trackerClient = null;
-            }
-        }
-        if (this.pendingTrackerClient) {
-            this.pendingTrackerClient.isDestroyed = true;
-            this.pendingTrackerClient = null;
-        }
-        this.peers.forEach(peer => peer.destroy());
-        this.peers.clear();
-        this.peerSegmentRequests.clear();
-        for (const peerCandidateById of this.peerCandidates.values()) {
-            for (const peerCandidate of peerCandidateById) {
-                peerCandidate.destroy();
-            }
-        }
-        this.peerCandidates.clear();
-    }
-    sendSegmentsMapToAll(segmentsMap) {
-        this.peers.forEach(peer => peer.sendSegmentsMap(segmentsMap));
-    }
-    sendSegmentsMap(peerId, segmentsMap) {
-        const peer = this.peers.get(peerId);
-        if (peer) {
-            peer.sendSegmentsMap(segmentsMap);
-        }
-    }
-    getOvrallSegmentsMap() {
-        const overallSegmentsMap = new Map();
-        for (const peer of this.peers.values()) {
-            for (const [segmentId, segmentStatus] of peer.getSegmentsMap()) {
-                if (segmentStatus === media_peer_1.MediaPeerSegmentStatus.Loaded) {
-                    overallSegmentsMap.set(segmentId, media_peer_1.MediaPeerSegmentStatus.Loaded);
-                }
-                else if (!overallSegmentsMap.get(segmentId)) {
-                    overallSegmentsMap.set(segmentId, media_peer_1.MediaPeerSegmentStatus.LoadingByHttp);
-                }
-            }
-        }
-        return overallSegmentsMap;
-    }
 }
 exports.P2PMediaManager = P2PMediaManager;
 
-},{"./index":"p2p-media-loader-core","./media-peer":6,"./stringly-typed-event-emitter":9,"bittorrent-tracker/client":11,"buffer":16,"debug":"debug","sha.js/sha1":43}],8:[function(require,module,exports){
+},{"./index":"p2p-media-loader-core","./media-peer":6,"./stringly-typed-event-emitter":9,"bittorrent-tracker/client":11,"buffer":"buffer","debug":"debug","sha.js/sha1":44}],8:[function(require,module,exports){
 "use strict";
 /**
  * Copyright 2019 Novage LLC.
@@ -1337,60 +1394,61 @@ exports.P2PMediaManager = P2PMediaManager;
  * limitations under the License.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SegmentsMemoryStorage = void 0;
 class SegmentsMemoryStorage {
     constructor(settings) {
         this.settings = settings;
         this.cache = new Map();
-    }
-    async storeSegment(segment) {
-        this.cache.set(segment.id, { segment, lastAccessed: performance.now() });
-    }
-    async getSegmentsMap(masterSwarmId) {
-        return this.cache;
-    }
-    async getSegment(id, masterSwarmId) {
-        const cacheItem = this.cache.get(id);
-        if (cacheItem === undefined) {
-            return undefined;
-        }
-        cacheItem.lastAccessed = performance.now();
-        return cacheItem.segment;
-    }
-    async hasSegment(id, masterSwarmId) {
-        return this.cache.has(id);
-    }
-    async clean(masterSwarmId, lockedSementsfilter) {
-        const segmentsToDelete = [];
-        const remainingSegments = [];
-        // Delete old segments
-        const now = performance.now();
-        for (const cachedSegment of this.cache.values()) {
-            if (now - cachedSegment.lastAccessed > this.settings.cachedSegmentExpiration) {
-                segmentsToDelete.push(cachedSegment.segment.id);
+        this.storeSegment = async (segment) => {
+            this.cache.set(segment.id, { segment, lastAccessed: performance.now() });
+        };
+        this.getSegmentsMap = async () => {
+            return this.cache;
+        };
+        this.getSegment = async (id) => {
+            const cacheItem = this.cache.get(id);
+            if (cacheItem === undefined) {
+                return undefined;
             }
-            else {
-                remainingSegments.push(cachedSegment);
-            }
-        }
-        // Delete segments over cached count
-        let countOverhead = remainingSegments.length - this.settings.cachedSegmentsCount;
-        if (countOverhead > 0) {
-            remainingSegments.sort((a, b) => a.lastAccessed - b.lastAccessed);
-            for (const cachedSegment of remainingSegments) {
-                if ((lockedSementsfilter === undefined) || !lockedSementsfilter(cachedSegment.segment.id)) {
+            cacheItem.lastAccessed = performance.now();
+            return cacheItem.segment;
+        };
+        this.hasSegment = async (id) => {
+            return this.cache.has(id);
+        };
+        this.clean = async (masterSwarmId, lockedSegmentsFilter) => {
+            const segmentsToDelete = [];
+            const remainingSegments = [];
+            // Delete old segments
+            const now = performance.now();
+            for (const cachedSegment of this.cache.values()) {
+                if (now - cachedSegment.lastAccessed > this.settings.cachedSegmentExpiration) {
                     segmentsToDelete.push(cachedSegment.segment.id);
-                    countOverhead--;
-                    if (countOverhead == 0) {
-                        break;
+                }
+                else {
+                    remainingSegments.push(cachedSegment);
+                }
+            }
+            // Delete segments over cached count
+            let countOverhead = remainingSegments.length - this.settings.cachedSegmentsCount;
+            if (countOverhead > 0) {
+                remainingSegments.sort((a, b) => a.lastAccessed - b.lastAccessed);
+                for (const cachedSegment of remainingSegments) {
+                    if (lockedSegmentsFilter === undefined || !lockedSegmentsFilter(cachedSegment.segment.id)) {
+                        segmentsToDelete.push(cachedSegment.segment.id);
+                        countOverhead--;
+                        if (countOverhead === 0) {
+                            break;
+                        }
                     }
                 }
             }
-        }
-        segmentsToDelete.forEach(id => this.cache.delete(id));
-        return segmentsToDelete.length > 0;
-    }
-    async destroy() {
-        this.cache.clear();
+            segmentsToDelete.forEach((id) => this.cache.delete(id));
+            return segmentsToDelete.length > 0;
+        };
+        this.destroy = async () => {
+            this.cache.clear();
+        };
     }
 }
 exports.SegmentsMemoryStorage = SegmentsMemoryStorage;
@@ -1413,10 +1471,15 @@ exports.SegmentsMemoryStorage = SegmentsMemoryStorage;
  * limitations under the License.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.STEEmitter = void 0;
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const events_1 = require("events");
 class STEEmitter extends events_1.EventEmitter {
-    on(event, listener) { return super.on(event, listener); }
-    emit(event, ...args) { return super.emit(event, ...args); }
+    constructor() {
+        super(...arguments);
+        this.on = (event, listener) => super.on(event, listener);
+        this.emit = (event, ...args) => super.emit(event, ...args);
+    }
 }
 exports.STEEmitter = STEEmitter;
 
@@ -1548,9 +1611,7 @@ function fromByteArray (uint8) {
 
   // go through the array every three bytes, we'll deal with trailing stuff later
   for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
-    parts.push(encodeChunk(
-      uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)
-    ))
+    parts.push(encodeChunk(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)))
   }
 
   // pad the end with zeros, but make sure to not forget the extra bytes
@@ -1575,13 +1636,13 @@ function fromByteArray (uint8) {
 }
 
 },{}],11:[function(require,module,exports){
-(function (process,Buffer){
+(function (process,Buffer){(function (){
 const debug = require('debug')('bittorrent-tracker:client')
 const EventEmitter = require('events')
 const once = require('once')
 const parallel = require('run-parallel')
 const Peer = require('simple-peer')
-const uniq = require('uniq')
+const queueMicrotask = require('queue-microtask')
 
 const common = require('./lib/common')
 const HTTPTracker = require('./lib/client/http-tracker') // empty object in browser
@@ -1649,12 +1710,13 @@ class Client extends EventEmitter {
       }
       return announceUrl
     })
-    announce = uniq(announce)
+    // remove duplicates by converting to Set and back
+    announce = Array.from(new Set(announce))
 
     const webrtcSupport = this._wrtc !== false && (!!this._wrtc || Peer.WEBRTC_SUPPORT)
 
     const nextTickWarn = err => {
-      process.nextTick(() => {
+      queueMicrotask(() => {
         this.emit('warning', err)
       })
     }
@@ -1859,8 +1921,8 @@ Client.scrape = (opts, cb) => {
 
   opts.infoHash = Array.isArray(opts.infoHash)
     ? opts.infoHash.map(infoHash => {
-      return Buffer.from(infoHash, 'hex')
-    })
+        return Buffer.from(infoHash, 'hex')
+      })
     : Buffer.from(opts.infoHash, 'hex')
   client.scrape({ infoHash: opts.infoHash })
   return client
@@ -1868,8 +1930,8 @@ Client.scrape = (opts, cb) => {
 
 module.exports = Client
 
-}).call(this,require('_process'),require("buffer").Buffer)
-},{"./lib/client/http-tracker":15,"./lib/client/udp-tracker":15,"./lib/client/websocket-tracker":13,"./lib/common":14,"_process":23,"buffer":16,"debug":"debug","events":"events","once":22,"run-parallel":40,"simple-peer":44,"uniq":47}],12:[function(require,module,exports){
+}).call(this)}).call(this,require('_process'),require("buffer").Buffer)
+},{"./lib/client/http-tracker":15,"./lib/client/udp-tracker":15,"./lib/client/websocket-tracker":13,"./lib/common":14,"_process":23,"buffer":"buffer","debug":"debug","events":"events","once":22,"queue-microtask":24,"run-parallel":41,"simple-peer":45}],12:[function(require,module,exports){
 const EventEmitter = require('events')
 
 class Tracker extends EventEmitter {
@@ -1914,8 +1976,8 @@ const Tracker = require('./tracker')
 const socketPool = {}
 
 const RECONNECT_MINIMUM = 10 * 1000
-const RECONNECT_MAXIMUM = 30 * 60 * 1000
-const RECONNECT_VARIANCE = 2 * 60 * 1000
+const RECONNECT_MAXIMUM = 60 * 60 * 1000
+const RECONNECT_VARIANCE = 5 * 60 * 1000
 const OFFER_TIMEOUT = 50 * 1000
 
 class WebSocketTracker extends Tracker {
@@ -1979,8 +2041,8 @@ class WebSocketTracker extends Tracker {
 
     const infoHashes = (Array.isArray(opts.infoHash) && opts.infoHash.length > 0)
       ? opts.infoHash.map(infoHash => {
-        return infoHash.toString('binary')
-      })
+          return infoHash.toString('binary')
+        })
       : (opts.infoHash && opts.infoHash.toString('binary')) || this.client._infoHashBinary
     const params = {
       action: 'scrape',
@@ -2031,12 +2093,14 @@ class WebSocketTracker extends Tracker {
     socket.on('error', noop) // ignore all future errors
     socket.once('close', cb)
 
+    let timeout
+
     // If there is no data response expected, destroy immediately.
     if (!this.expectingResponse) return destroyCleanup()
 
     // Otherwise, wait a short time for potential responses to come in from the
     // server, then force close the socket.
-    var timeout = setTimeout(destroyCleanup, common.DESTROY_TIMEOUT)
+    timeout = setTimeout(destroyCleanup, common.DESTROY_TIMEOUT)
 
     // But, if a response comes from the server before the timeout fires, do cleanup
     // right away.
@@ -2333,8 +2397,8 @@ function noop () {}
 
 module.exports = WebSocketTracker
 
-},{"../common":14,"./tracker":12,"debug":"debug","randombytes":24,"simple-peer":44,"simple-websocket":45}],14:[function(require,module,exports){
-(function (Buffer){
+},{"../common":14,"./tracker":12,"debug":"debug","randombytes":25,"simple-peer":45,"simple-websocket":46}],14:[function(require,module,exports){
+(function (Buffer){(function (){
 /**
  * Functions/constants needed by both the client and server.
  */
@@ -2356,1807 +2420,13 @@ exports.hexToBinary = function (str) {
   return Buffer.from(str, 'hex').toString('binary')
 }
 
-var config = require('./common-node')
+const config = require('./common-node')
 Object.assign(exports, config)
 
-}).call(this,require("buffer").Buffer)
-},{"./common-node":15,"buffer":16}],15:[function(require,module,exports){
+}).call(this)}).call(this,require("buffer").Buffer)
+},{"./common-node":15,"buffer":"buffer"}],15:[function(require,module,exports){
 
 },{}],16:[function(require,module,exports){
-(function (Buffer){
-/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <https://feross.org>
- * @license  MIT
- */
-/* eslint-disable no-proto */
-
-'use strict'
-
-var base64 = require('base64-js')
-var ieee754 = require('ieee754')
-var customInspectSymbol =
-  (typeof Symbol === 'function' && typeof Symbol.for === 'function')
-    ? Symbol.for('nodejs.util.inspect.custom')
-    : null
-
-exports.Buffer = Buffer
-exports.SlowBuffer = SlowBuffer
-exports.INSPECT_MAX_BYTES = 50
-
-var K_MAX_LENGTH = 0x7fffffff
-exports.kMaxLength = K_MAX_LENGTH
-
-/**
- * If `Buffer.TYPED_ARRAY_SUPPORT`:
- *   === true    Use Uint8Array implementation (fastest)
- *   === false   Print warning and recommend using `buffer` v4.x which has an Object
- *               implementation (most compatible, even IE6)
- *
- * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
- * Opera 11.6+, iOS 4.2+.
- *
- * We report that the browser does not support typed arrays if the are not subclassable
- * using __proto__. Firefox 4-29 lacks support for adding new properties to `Uint8Array`
- * (See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438). IE 10 lacks support
- * for __proto__ and has a buggy typed array implementation.
- */
-Buffer.TYPED_ARRAY_SUPPORT = typedArraySupport()
-
-if (!Buffer.TYPED_ARRAY_SUPPORT && typeof console !== 'undefined' &&
-    typeof console.error === 'function') {
-  console.error(
-    'This browser lacks typed array (Uint8Array) support which is required by ' +
-    '`buffer` v5.x. Use `buffer` v4.x if you require old browser support.'
-  )
-}
-
-function typedArraySupport () {
-  // Can typed array instances can be augmented?
-  try {
-    var arr = new Uint8Array(1)
-    var proto = { foo: function () { return 42 } }
-    Object.setPrototypeOf(proto, Uint8Array.prototype)
-    Object.setPrototypeOf(arr, proto)
-    return arr.foo() === 42
-  } catch (e) {
-    return false
-  }
-}
-
-Object.defineProperty(Buffer.prototype, 'parent', {
-  enumerable: true,
-  get: function () {
-    if (!Buffer.isBuffer(this)) return undefined
-    return this.buffer
-  }
-})
-
-Object.defineProperty(Buffer.prototype, 'offset', {
-  enumerable: true,
-  get: function () {
-    if (!Buffer.isBuffer(this)) return undefined
-    return this.byteOffset
-  }
-})
-
-function createBuffer (length) {
-  if (length > K_MAX_LENGTH) {
-    throw new RangeError('The value "' + length + '" is invalid for option "size"')
-  }
-  // Return an augmented `Uint8Array` instance
-  var buf = new Uint8Array(length)
-  Object.setPrototypeOf(buf, Buffer.prototype)
-  return buf
-}
-
-/**
- * The Buffer constructor returns instances of `Uint8Array` that have their
- * prototype changed to `Buffer.prototype`. Furthermore, `Buffer` is a subclass of
- * `Uint8Array`, so the returned instances will have all the node `Buffer` methods
- * and the `Uint8Array` methods. Square bracket notation works as expected -- it
- * returns a single octet.
- *
- * The `Uint8Array` prototype remains unmodified.
- */
-
-function Buffer (arg, encodingOrOffset, length) {
-  // Common case.
-  if (typeof arg === 'number') {
-    if (typeof encodingOrOffset === 'string') {
-      throw new TypeError(
-        'The "string" argument must be of type string. Received type number'
-      )
-    }
-    return allocUnsafe(arg)
-  }
-  return from(arg, encodingOrOffset, length)
-}
-
-// Fix subarray() in ES2016. See: https://github.com/feross/buffer/pull/97
-if (typeof Symbol !== 'undefined' && Symbol.species != null &&
-    Buffer[Symbol.species] === Buffer) {
-  Object.defineProperty(Buffer, Symbol.species, {
-    value: null,
-    configurable: true,
-    enumerable: false,
-    writable: false
-  })
-}
-
-Buffer.poolSize = 8192 // not used by this implementation
-
-function from (value, encodingOrOffset, length) {
-  if (typeof value === 'string') {
-    return fromString(value, encodingOrOffset)
-  }
-
-  if (ArrayBuffer.isView(value)) {
-    return fromArrayLike(value)
-  }
-
-  if (value == null) {
-    throw new TypeError(
-      'The first argument must be one of type string, Buffer, ArrayBuffer, Array, ' +
-      'or Array-like Object. Received type ' + (typeof value)
-    )
-  }
-
-  if (isInstance(value, ArrayBuffer) ||
-      (value && isInstance(value.buffer, ArrayBuffer))) {
-    return fromArrayBuffer(value, encodingOrOffset, length)
-  }
-
-  if (typeof value === 'number') {
-    throw new TypeError(
-      'The "value" argument must not be of type number. Received type number'
-    )
-  }
-
-  var valueOf = value.valueOf && value.valueOf()
-  if (valueOf != null && valueOf !== value) {
-    return Buffer.from(valueOf, encodingOrOffset, length)
-  }
-
-  var b = fromObject(value)
-  if (b) return b
-
-  if (typeof Symbol !== 'undefined' && Symbol.toPrimitive != null &&
-      typeof value[Symbol.toPrimitive] === 'function') {
-    return Buffer.from(
-      value[Symbol.toPrimitive]('string'), encodingOrOffset, length
-    )
-  }
-
-  throw new TypeError(
-    'The first argument must be one of type string, Buffer, ArrayBuffer, Array, ' +
-    'or Array-like Object. Received type ' + (typeof value)
-  )
-}
-
-/**
- * Functionally equivalent to Buffer(arg, encoding) but throws a TypeError
- * if value is a number.
- * Buffer.from(str[, encoding])
- * Buffer.from(array)
- * Buffer.from(buffer)
- * Buffer.from(arrayBuffer[, byteOffset[, length]])
- **/
-Buffer.from = function (value, encodingOrOffset, length) {
-  return from(value, encodingOrOffset, length)
-}
-
-// Note: Change prototype *after* Buffer.from is defined to workaround Chrome bug:
-// https://github.com/feross/buffer/pull/148
-Object.setPrototypeOf(Buffer.prototype, Uint8Array.prototype)
-Object.setPrototypeOf(Buffer, Uint8Array)
-
-function assertSize (size) {
-  if (typeof size !== 'number') {
-    throw new TypeError('"size" argument must be of type number')
-  } else if (size < 0) {
-    throw new RangeError('The value "' + size + '" is invalid for option "size"')
-  }
-}
-
-function alloc (size, fill, encoding) {
-  assertSize(size)
-  if (size <= 0) {
-    return createBuffer(size)
-  }
-  if (fill !== undefined) {
-    // Only pay attention to encoding if it's a string. This
-    // prevents accidentally sending in a number that would
-    // be interpretted as a start offset.
-    return typeof encoding === 'string'
-      ? createBuffer(size).fill(fill, encoding)
-      : createBuffer(size).fill(fill)
-  }
-  return createBuffer(size)
-}
-
-/**
- * Creates a new filled Buffer instance.
- * alloc(size[, fill[, encoding]])
- **/
-Buffer.alloc = function (size, fill, encoding) {
-  return alloc(size, fill, encoding)
-}
-
-function allocUnsafe (size) {
-  assertSize(size)
-  return createBuffer(size < 0 ? 0 : checked(size) | 0)
-}
-
-/**
- * Equivalent to Buffer(num), by default creates a non-zero-filled Buffer instance.
- * */
-Buffer.allocUnsafe = function (size) {
-  return allocUnsafe(size)
-}
-/**
- * Equivalent to SlowBuffer(num), by default creates a non-zero-filled Buffer instance.
- */
-Buffer.allocUnsafeSlow = function (size) {
-  return allocUnsafe(size)
-}
-
-function fromString (string, encoding) {
-  if (typeof encoding !== 'string' || encoding === '') {
-    encoding = 'utf8'
-  }
-
-  if (!Buffer.isEncoding(encoding)) {
-    throw new TypeError('Unknown encoding: ' + encoding)
-  }
-
-  var length = byteLength(string, encoding) | 0
-  var buf = createBuffer(length)
-
-  var actual = buf.write(string, encoding)
-
-  if (actual !== length) {
-    // Writing a hex string, for example, that contains invalid characters will
-    // cause everything after the first invalid character to be ignored. (e.g.
-    // 'abxxcd' will be treated as 'ab')
-    buf = buf.slice(0, actual)
-  }
-
-  return buf
-}
-
-function fromArrayLike (array) {
-  var length = array.length < 0 ? 0 : checked(array.length) | 0
-  var buf = createBuffer(length)
-  for (var i = 0; i < length; i += 1) {
-    buf[i] = array[i] & 255
-  }
-  return buf
-}
-
-function fromArrayBuffer (array, byteOffset, length) {
-  if (byteOffset < 0 || array.byteLength < byteOffset) {
-    throw new RangeError('"offset" is outside of buffer bounds')
-  }
-
-  if (array.byteLength < byteOffset + (length || 0)) {
-    throw new RangeError('"length" is outside of buffer bounds')
-  }
-
-  var buf
-  if (byteOffset === undefined && length === undefined) {
-    buf = new Uint8Array(array)
-  } else if (length === undefined) {
-    buf = new Uint8Array(array, byteOffset)
-  } else {
-    buf = new Uint8Array(array, byteOffset, length)
-  }
-
-  // Return an augmented `Uint8Array` instance
-  Object.setPrototypeOf(buf, Buffer.prototype)
-
-  return buf
-}
-
-function fromObject (obj) {
-  if (Buffer.isBuffer(obj)) {
-    var len = checked(obj.length) | 0
-    var buf = createBuffer(len)
-
-    if (buf.length === 0) {
-      return buf
-    }
-
-    obj.copy(buf, 0, 0, len)
-    return buf
-  }
-
-  if (obj.length !== undefined) {
-    if (typeof obj.length !== 'number' || numberIsNaN(obj.length)) {
-      return createBuffer(0)
-    }
-    return fromArrayLike(obj)
-  }
-
-  if (obj.type === 'Buffer' && Array.isArray(obj.data)) {
-    return fromArrayLike(obj.data)
-  }
-}
-
-function checked (length) {
-  // Note: cannot use `length < K_MAX_LENGTH` here because that fails when
-  // length is NaN (which is otherwise coerced to zero.)
-  if (length >= K_MAX_LENGTH) {
-    throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
-                         'size: 0x' + K_MAX_LENGTH.toString(16) + ' bytes')
-  }
-  return length | 0
-}
-
-function SlowBuffer (length) {
-  if (+length != length) { // eslint-disable-line eqeqeq
-    length = 0
-  }
-  return Buffer.alloc(+length)
-}
-
-Buffer.isBuffer = function isBuffer (b) {
-  return b != null && b._isBuffer === true &&
-    b !== Buffer.prototype // so Buffer.isBuffer(Buffer.prototype) will be false
-}
-
-Buffer.compare = function compare (a, b) {
-  if (isInstance(a, Uint8Array)) a = Buffer.from(a, a.offset, a.byteLength)
-  if (isInstance(b, Uint8Array)) b = Buffer.from(b, b.offset, b.byteLength)
-  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b)) {
-    throw new TypeError(
-      'The "buf1", "buf2" arguments must be one of type Buffer or Uint8Array'
-    )
-  }
-
-  if (a === b) return 0
-
-  var x = a.length
-  var y = b.length
-
-  for (var i = 0, len = Math.min(x, y); i < len; ++i) {
-    if (a[i] !== b[i]) {
-      x = a[i]
-      y = b[i]
-      break
-    }
-  }
-
-  if (x < y) return -1
-  if (y < x) return 1
-  return 0
-}
-
-Buffer.isEncoding = function isEncoding (encoding) {
-  switch (String(encoding).toLowerCase()) {
-    case 'hex':
-    case 'utf8':
-    case 'utf-8':
-    case 'ascii':
-    case 'latin1':
-    case 'binary':
-    case 'base64':
-    case 'ucs2':
-    case 'ucs-2':
-    case 'utf16le':
-    case 'utf-16le':
-      return true
-    default:
-      return false
-  }
-}
-
-Buffer.concat = function concat (list, length) {
-  if (!Array.isArray(list)) {
-    throw new TypeError('"list" argument must be an Array of Buffers')
-  }
-
-  if (list.length === 0) {
-    return Buffer.alloc(0)
-  }
-
-  var i
-  if (length === undefined) {
-    length = 0
-    for (i = 0; i < list.length; ++i) {
-      length += list[i].length
-    }
-  }
-
-  var buffer = Buffer.allocUnsafe(length)
-  var pos = 0
-  for (i = 0; i < list.length; ++i) {
-    var buf = list[i]
-    if (isInstance(buf, Uint8Array)) {
-      buf = Buffer.from(buf)
-    }
-    if (!Buffer.isBuffer(buf)) {
-      throw new TypeError('"list" argument must be an Array of Buffers')
-    }
-    buf.copy(buffer, pos)
-    pos += buf.length
-  }
-  return buffer
-}
-
-function byteLength (string, encoding) {
-  if (Buffer.isBuffer(string)) {
-    return string.length
-  }
-  if (ArrayBuffer.isView(string) || isInstance(string, ArrayBuffer)) {
-    return string.byteLength
-  }
-  if (typeof string !== 'string') {
-    throw new TypeError(
-      'The "string" argument must be one of type string, Buffer, or ArrayBuffer. ' +
-      'Received type ' + typeof string
-    )
-  }
-
-  var len = string.length
-  var mustMatch = (arguments.length > 2 && arguments[2] === true)
-  if (!mustMatch && len === 0) return 0
-
-  // Use a for loop to avoid recursion
-  var loweredCase = false
-  for (;;) {
-    switch (encoding) {
-      case 'ascii':
-      case 'latin1':
-      case 'binary':
-        return len
-      case 'utf8':
-      case 'utf-8':
-        return utf8ToBytes(string).length
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return len * 2
-      case 'hex':
-        return len >>> 1
-      case 'base64':
-        return base64ToBytes(string).length
-      default:
-        if (loweredCase) {
-          return mustMatch ? -1 : utf8ToBytes(string).length // assume utf8
-        }
-        encoding = ('' + encoding).toLowerCase()
-        loweredCase = true
-    }
-  }
-}
-Buffer.byteLength = byteLength
-
-function slowToString (encoding, start, end) {
-  var loweredCase = false
-
-  // No need to verify that "this.length <= MAX_UINT32" since it's a read-only
-  // property of a typed array.
-
-  // This behaves neither like String nor Uint8Array in that we set start/end
-  // to their upper/lower bounds if the value passed is out of range.
-  // undefined is handled specially as per ECMA-262 6th Edition,
-  // Section 13.3.3.7 Runtime Semantics: KeyedBindingInitialization.
-  if (start === undefined || start < 0) {
-    start = 0
-  }
-  // Return early if start > this.length. Done here to prevent potential uint32
-  // coercion fail below.
-  if (start > this.length) {
-    return ''
-  }
-
-  if (end === undefined || end > this.length) {
-    end = this.length
-  }
-
-  if (end <= 0) {
-    return ''
-  }
-
-  // Force coersion to uint32. This will also coerce falsey/NaN values to 0.
-  end >>>= 0
-  start >>>= 0
-
-  if (end <= start) {
-    return ''
-  }
-
-  if (!encoding) encoding = 'utf8'
-
-  while (true) {
-    switch (encoding) {
-      case 'hex':
-        return hexSlice(this, start, end)
-
-      case 'utf8':
-      case 'utf-8':
-        return utf8Slice(this, start, end)
-
-      case 'ascii':
-        return asciiSlice(this, start, end)
-
-      case 'latin1':
-      case 'binary':
-        return latin1Slice(this, start, end)
-
-      case 'base64':
-        return base64Slice(this, start, end)
-
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return utf16leSlice(this, start, end)
-
-      default:
-        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
-        encoding = (encoding + '').toLowerCase()
-        loweredCase = true
-    }
-  }
-}
-
-// This property is used by `Buffer.isBuffer` (and the `is-buffer` npm package)
-// to detect a Buffer instance. It's not possible to use `instanceof Buffer`
-// reliably in a browserify context because there could be multiple different
-// copies of the 'buffer' package in use. This method works even for Buffer
-// instances that were created from another copy of the `buffer` package.
-// See: https://github.com/feross/buffer/issues/154
-Buffer.prototype._isBuffer = true
-
-function swap (b, n, m) {
-  var i = b[n]
-  b[n] = b[m]
-  b[m] = i
-}
-
-Buffer.prototype.swap16 = function swap16 () {
-  var len = this.length
-  if (len % 2 !== 0) {
-    throw new RangeError('Buffer size must be a multiple of 16-bits')
-  }
-  for (var i = 0; i < len; i += 2) {
-    swap(this, i, i + 1)
-  }
-  return this
-}
-
-Buffer.prototype.swap32 = function swap32 () {
-  var len = this.length
-  if (len % 4 !== 0) {
-    throw new RangeError('Buffer size must be a multiple of 32-bits')
-  }
-  for (var i = 0; i < len; i += 4) {
-    swap(this, i, i + 3)
-    swap(this, i + 1, i + 2)
-  }
-  return this
-}
-
-Buffer.prototype.swap64 = function swap64 () {
-  var len = this.length
-  if (len % 8 !== 0) {
-    throw new RangeError('Buffer size must be a multiple of 64-bits')
-  }
-  for (var i = 0; i < len; i += 8) {
-    swap(this, i, i + 7)
-    swap(this, i + 1, i + 6)
-    swap(this, i + 2, i + 5)
-    swap(this, i + 3, i + 4)
-  }
-  return this
-}
-
-Buffer.prototype.toString = function toString () {
-  var length = this.length
-  if (length === 0) return ''
-  if (arguments.length === 0) return utf8Slice(this, 0, length)
-  return slowToString.apply(this, arguments)
-}
-
-Buffer.prototype.toLocaleString = Buffer.prototype.toString
-
-Buffer.prototype.equals = function equals (b) {
-  if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
-  if (this === b) return true
-  return Buffer.compare(this, b) === 0
-}
-
-Buffer.prototype.inspect = function inspect () {
-  var str = ''
-  var max = exports.INSPECT_MAX_BYTES
-  str = this.toString('hex', 0, max).replace(/(.{2})/g, '$1 ').trim()
-  if (this.length > max) str += ' ... '
-  return '<Buffer ' + str + '>'
-}
-if (customInspectSymbol) {
-  Buffer.prototype[customInspectSymbol] = Buffer.prototype.inspect
-}
-
-Buffer.prototype.compare = function compare (target, start, end, thisStart, thisEnd) {
-  if (isInstance(target, Uint8Array)) {
-    target = Buffer.from(target, target.offset, target.byteLength)
-  }
-  if (!Buffer.isBuffer(target)) {
-    throw new TypeError(
-      'The "target" argument must be one of type Buffer or Uint8Array. ' +
-      'Received type ' + (typeof target)
-    )
-  }
-
-  if (start === undefined) {
-    start = 0
-  }
-  if (end === undefined) {
-    end = target ? target.length : 0
-  }
-  if (thisStart === undefined) {
-    thisStart = 0
-  }
-  if (thisEnd === undefined) {
-    thisEnd = this.length
-  }
-
-  if (start < 0 || end > target.length || thisStart < 0 || thisEnd > this.length) {
-    throw new RangeError('out of range index')
-  }
-
-  if (thisStart >= thisEnd && start >= end) {
-    return 0
-  }
-  if (thisStart >= thisEnd) {
-    return -1
-  }
-  if (start >= end) {
-    return 1
-  }
-
-  start >>>= 0
-  end >>>= 0
-  thisStart >>>= 0
-  thisEnd >>>= 0
-
-  if (this === target) return 0
-
-  var x = thisEnd - thisStart
-  var y = end - start
-  var len = Math.min(x, y)
-
-  var thisCopy = this.slice(thisStart, thisEnd)
-  var targetCopy = target.slice(start, end)
-
-  for (var i = 0; i < len; ++i) {
-    if (thisCopy[i] !== targetCopy[i]) {
-      x = thisCopy[i]
-      y = targetCopy[i]
-      break
-    }
-  }
-
-  if (x < y) return -1
-  if (y < x) return 1
-  return 0
-}
-
-// Finds either the first index of `val` in `buffer` at offset >= `byteOffset`,
-// OR the last index of `val` in `buffer` at offset <= `byteOffset`.
-//
-// Arguments:
-// - buffer - a Buffer to search
-// - val - a string, Buffer, or number
-// - byteOffset - an index into `buffer`; will be clamped to an int32
-// - encoding - an optional encoding, relevant is val is a string
-// - dir - true for indexOf, false for lastIndexOf
-function bidirectionalIndexOf (buffer, val, byteOffset, encoding, dir) {
-  // Empty buffer means no match
-  if (buffer.length === 0) return -1
-
-  // Normalize byteOffset
-  if (typeof byteOffset === 'string') {
-    encoding = byteOffset
-    byteOffset = 0
-  } else if (byteOffset > 0x7fffffff) {
-    byteOffset = 0x7fffffff
-  } else if (byteOffset < -0x80000000) {
-    byteOffset = -0x80000000
-  }
-  byteOffset = +byteOffset // Coerce to Number.
-  if (numberIsNaN(byteOffset)) {
-    // byteOffset: it it's undefined, null, NaN, "foo", etc, search whole buffer
-    byteOffset = dir ? 0 : (buffer.length - 1)
-  }
-
-  // Normalize byteOffset: negative offsets start from the end of the buffer
-  if (byteOffset < 0) byteOffset = buffer.length + byteOffset
-  if (byteOffset >= buffer.length) {
-    if (dir) return -1
-    else byteOffset = buffer.length - 1
-  } else if (byteOffset < 0) {
-    if (dir) byteOffset = 0
-    else return -1
-  }
-
-  // Normalize val
-  if (typeof val === 'string') {
-    val = Buffer.from(val, encoding)
-  }
-
-  // Finally, search either indexOf (if dir is true) or lastIndexOf
-  if (Buffer.isBuffer(val)) {
-    // Special case: looking for empty string/buffer always fails
-    if (val.length === 0) {
-      return -1
-    }
-    return arrayIndexOf(buffer, val, byteOffset, encoding, dir)
-  } else if (typeof val === 'number') {
-    val = val & 0xFF // Search for a byte value [0-255]
-    if (typeof Uint8Array.prototype.indexOf === 'function') {
-      if (dir) {
-        return Uint8Array.prototype.indexOf.call(buffer, val, byteOffset)
-      } else {
-        return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset)
-      }
-    }
-    return arrayIndexOf(buffer, [val], byteOffset, encoding, dir)
-  }
-
-  throw new TypeError('val must be string, number or Buffer')
-}
-
-function arrayIndexOf (arr, val, byteOffset, encoding, dir) {
-  var indexSize = 1
-  var arrLength = arr.length
-  var valLength = val.length
-
-  if (encoding !== undefined) {
-    encoding = String(encoding).toLowerCase()
-    if (encoding === 'ucs2' || encoding === 'ucs-2' ||
-        encoding === 'utf16le' || encoding === 'utf-16le') {
-      if (arr.length < 2 || val.length < 2) {
-        return -1
-      }
-      indexSize = 2
-      arrLength /= 2
-      valLength /= 2
-      byteOffset /= 2
-    }
-  }
-
-  function read (buf, i) {
-    if (indexSize === 1) {
-      return buf[i]
-    } else {
-      return buf.readUInt16BE(i * indexSize)
-    }
-  }
-
-  var i
-  if (dir) {
-    var foundIndex = -1
-    for (i = byteOffset; i < arrLength; i++) {
-      if (read(arr, i) === read(val, foundIndex === -1 ? 0 : i - foundIndex)) {
-        if (foundIndex === -1) foundIndex = i
-        if (i - foundIndex + 1 === valLength) return foundIndex * indexSize
-      } else {
-        if (foundIndex !== -1) i -= i - foundIndex
-        foundIndex = -1
-      }
-    }
-  } else {
-    if (byteOffset + valLength > arrLength) byteOffset = arrLength - valLength
-    for (i = byteOffset; i >= 0; i--) {
-      var found = true
-      for (var j = 0; j < valLength; j++) {
-        if (read(arr, i + j) !== read(val, j)) {
-          found = false
-          break
-        }
-      }
-      if (found) return i
-    }
-  }
-
-  return -1
-}
-
-Buffer.prototype.includes = function includes (val, byteOffset, encoding) {
-  return this.indexOf(val, byteOffset, encoding) !== -1
-}
-
-Buffer.prototype.indexOf = function indexOf (val, byteOffset, encoding) {
-  return bidirectionalIndexOf(this, val, byteOffset, encoding, true)
-}
-
-Buffer.prototype.lastIndexOf = function lastIndexOf (val, byteOffset, encoding) {
-  return bidirectionalIndexOf(this, val, byteOffset, encoding, false)
-}
-
-function hexWrite (buf, string, offset, length) {
-  offset = Number(offset) || 0
-  var remaining = buf.length - offset
-  if (!length) {
-    length = remaining
-  } else {
-    length = Number(length)
-    if (length > remaining) {
-      length = remaining
-    }
-  }
-
-  var strLen = string.length
-
-  if (length > strLen / 2) {
-    length = strLen / 2
-  }
-  for (var i = 0; i < length; ++i) {
-    var parsed = parseInt(string.substr(i * 2, 2), 16)
-    if (numberIsNaN(parsed)) return i
-    buf[offset + i] = parsed
-  }
-  return i
-}
-
-function utf8Write (buf, string, offset, length) {
-  return blitBuffer(utf8ToBytes(string, buf.length - offset), buf, offset, length)
-}
-
-function asciiWrite (buf, string, offset, length) {
-  return blitBuffer(asciiToBytes(string), buf, offset, length)
-}
-
-function latin1Write (buf, string, offset, length) {
-  return asciiWrite(buf, string, offset, length)
-}
-
-function base64Write (buf, string, offset, length) {
-  return blitBuffer(base64ToBytes(string), buf, offset, length)
-}
-
-function ucs2Write (buf, string, offset, length) {
-  return blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length)
-}
-
-Buffer.prototype.write = function write (string, offset, length, encoding) {
-  // Buffer#write(string)
-  if (offset === undefined) {
-    encoding = 'utf8'
-    length = this.length
-    offset = 0
-  // Buffer#write(string, encoding)
-  } else if (length === undefined && typeof offset === 'string') {
-    encoding = offset
-    length = this.length
-    offset = 0
-  // Buffer#write(string, offset[, length][, encoding])
-  } else if (isFinite(offset)) {
-    offset = offset >>> 0
-    if (isFinite(length)) {
-      length = length >>> 0
-      if (encoding === undefined) encoding = 'utf8'
-    } else {
-      encoding = length
-      length = undefined
-    }
-  } else {
-    throw new Error(
-      'Buffer.write(string, encoding, offset[, length]) is no longer supported'
-    )
-  }
-
-  var remaining = this.length - offset
-  if (length === undefined || length > remaining) length = remaining
-
-  if ((string.length > 0 && (length < 0 || offset < 0)) || offset > this.length) {
-    throw new RangeError('Attempt to write outside buffer bounds')
-  }
-
-  if (!encoding) encoding = 'utf8'
-
-  var loweredCase = false
-  for (;;) {
-    switch (encoding) {
-      case 'hex':
-        return hexWrite(this, string, offset, length)
-
-      case 'utf8':
-      case 'utf-8':
-        return utf8Write(this, string, offset, length)
-
-      case 'ascii':
-        return asciiWrite(this, string, offset, length)
-
-      case 'latin1':
-      case 'binary':
-        return latin1Write(this, string, offset, length)
-
-      case 'base64':
-        // Warning: maxLength not taken into account in base64Write
-        return base64Write(this, string, offset, length)
-
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return ucs2Write(this, string, offset, length)
-
-      default:
-        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
-        encoding = ('' + encoding).toLowerCase()
-        loweredCase = true
-    }
-  }
-}
-
-Buffer.prototype.toJSON = function toJSON () {
-  return {
-    type: 'Buffer',
-    data: Array.prototype.slice.call(this._arr || this, 0)
-  }
-}
-
-function base64Slice (buf, start, end) {
-  if (start === 0 && end === buf.length) {
-    return base64.fromByteArray(buf)
-  } else {
-    return base64.fromByteArray(buf.slice(start, end))
-  }
-}
-
-function utf8Slice (buf, start, end) {
-  end = Math.min(buf.length, end)
-  var res = []
-
-  var i = start
-  while (i < end) {
-    var firstByte = buf[i]
-    var codePoint = null
-    var bytesPerSequence = (firstByte > 0xEF) ? 4
-      : (firstByte > 0xDF) ? 3
-        : (firstByte > 0xBF) ? 2
-          : 1
-
-    if (i + bytesPerSequence <= end) {
-      var secondByte, thirdByte, fourthByte, tempCodePoint
-
-      switch (bytesPerSequence) {
-        case 1:
-          if (firstByte < 0x80) {
-            codePoint = firstByte
-          }
-          break
-        case 2:
-          secondByte = buf[i + 1]
-          if ((secondByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0x1F) << 0x6 | (secondByte & 0x3F)
-            if (tempCodePoint > 0x7F) {
-              codePoint = tempCodePoint
-            }
-          }
-          break
-        case 3:
-          secondByte = buf[i + 1]
-          thirdByte = buf[i + 2]
-          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | (thirdByte & 0x3F)
-            if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) {
-              codePoint = tempCodePoint
-            }
-          }
-          break
-        case 4:
-          secondByte = buf[i + 1]
-          thirdByte = buf[i + 2]
-          fourthByte = buf[i + 3]
-          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | (fourthByte & 0x3F)
-            if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
-              codePoint = tempCodePoint
-            }
-          }
-      }
-    }
-
-    if (codePoint === null) {
-      // we did not generate a valid codePoint so insert a
-      // replacement char (U+FFFD) and advance only 1 byte
-      codePoint = 0xFFFD
-      bytesPerSequence = 1
-    } else if (codePoint > 0xFFFF) {
-      // encode to utf16 (surrogate pair dance)
-      codePoint -= 0x10000
-      res.push(codePoint >>> 10 & 0x3FF | 0xD800)
-      codePoint = 0xDC00 | codePoint & 0x3FF
-    }
-
-    res.push(codePoint)
-    i += bytesPerSequence
-  }
-
-  return decodeCodePointsArray(res)
-}
-
-// Based on http://stackoverflow.com/a/22747272/680742, the browser with
-// the lowest limit is Chrome, with 0x10000 args.
-// We go 1 magnitude less, for safety
-var MAX_ARGUMENTS_LENGTH = 0x1000
-
-function decodeCodePointsArray (codePoints) {
-  var len = codePoints.length
-  if (len <= MAX_ARGUMENTS_LENGTH) {
-    return String.fromCharCode.apply(String, codePoints) // avoid extra slice()
-  }
-
-  // Decode in chunks to avoid "call stack size exceeded".
-  var res = ''
-  var i = 0
-  while (i < len) {
-    res += String.fromCharCode.apply(
-      String,
-      codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH)
-    )
-  }
-  return res
-}
-
-function asciiSlice (buf, start, end) {
-  var ret = ''
-  end = Math.min(buf.length, end)
-
-  for (var i = start; i < end; ++i) {
-    ret += String.fromCharCode(buf[i] & 0x7F)
-  }
-  return ret
-}
-
-function latin1Slice (buf, start, end) {
-  var ret = ''
-  end = Math.min(buf.length, end)
-
-  for (var i = start; i < end; ++i) {
-    ret += String.fromCharCode(buf[i])
-  }
-  return ret
-}
-
-function hexSlice (buf, start, end) {
-  var len = buf.length
-
-  if (!start || start < 0) start = 0
-  if (!end || end < 0 || end > len) end = len
-
-  var out = ''
-  for (var i = start; i < end; ++i) {
-    out += toHex(buf[i])
-  }
-  return out
-}
-
-function utf16leSlice (buf, start, end) {
-  var bytes = buf.slice(start, end)
-  var res = ''
-  for (var i = 0; i < bytes.length; i += 2) {
-    res += String.fromCharCode(bytes[i] + (bytes[i + 1] * 256))
-  }
-  return res
-}
-
-Buffer.prototype.slice = function slice (start, end) {
-  var len = this.length
-  start = ~~start
-  end = end === undefined ? len : ~~end
-
-  if (start < 0) {
-    start += len
-    if (start < 0) start = 0
-  } else if (start > len) {
-    start = len
-  }
-
-  if (end < 0) {
-    end += len
-    if (end < 0) end = 0
-  } else if (end > len) {
-    end = len
-  }
-
-  if (end < start) end = start
-
-  var newBuf = this.subarray(start, end)
-  // Return an augmented `Uint8Array` instance
-  Object.setPrototypeOf(newBuf, Buffer.prototype)
-
-  return newBuf
-}
-
-/*
- * Need to make sure that buffer isn't trying to write out of bounds.
- */
-function checkOffset (offset, ext, length) {
-  if ((offset % 1) !== 0 || offset < 0) throw new RangeError('offset is not uint')
-  if (offset + ext > length) throw new RangeError('Trying to access beyond buffer length')
-}
-
-Buffer.prototype.readUIntLE = function readUIntLE (offset, byteLength, noAssert) {
-  offset = offset >>> 0
-  byteLength = byteLength >>> 0
-  if (!noAssert) checkOffset(offset, byteLength, this.length)
-
-  var val = this[offset]
-  var mul = 1
-  var i = 0
-  while (++i < byteLength && (mul *= 0x100)) {
-    val += this[offset + i] * mul
-  }
-
-  return val
-}
-
-Buffer.prototype.readUIntBE = function readUIntBE (offset, byteLength, noAssert) {
-  offset = offset >>> 0
-  byteLength = byteLength >>> 0
-  if (!noAssert) {
-    checkOffset(offset, byteLength, this.length)
-  }
-
-  var val = this[offset + --byteLength]
-  var mul = 1
-  while (byteLength > 0 && (mul *= 0x100)) {
-    val += this[offset + --byteLength] * mul
-  }
-
-  return val
-}
-
-Buffer.prototype.readUInt8 = function readUInt8 (offset, noAssert) {
-  offset = offset >>> 0
-  if (!noAssert) checkOffset(offset, 1, this.length)
-  return this[offset]
-}
-
-Buffer.prototype.readUInt16LE = function readUInt16LE (offset, noAssert) {
-  offset = offset >>> 0
-  if (!noAssert) checkOffset(offset, 2, this.length)
-  return this[offset] | (this[offset + 1] << 8)
-}
-
-Buffer.prototype.readUInt16BE = function readUInt16BE (offset, noAssert) {
-  offset = offset >>> 0
-  if (!noAssert) checkOffset(offset, 2, this.length)
-  return (this[offset] << 8) | this[offset + 1]
-}
-
-Buffer.prototype.readUInt32LE = function readUInt32LE (offset, noAssert) {
-  offset = offset >>> 0
-  if (!noAssert) checkOffset(offset, 4, this.length)
-
-  return ((this[offset]) |
-      (this[offset + 1] << 8) |
-      (this[offset + 2] << 16)) +
-      (this[offset + 3] * 0x1000000)
-}
-
-Buffer.prototype.readUInt32BE = function readUInt32BE (offset, noAssert) {
-  offset = offset >>> 0
-  if (!noAssert) checkOffset(offset, 4, this.length)
-
-  return (this[offset] * 0x1000000) +
-    ((this[offset + 1] << 16) |
-    (this[offset + 2] << 8) |
-    this[offset + 3])
-}
-
-Buffer.prototype.readIntLE = function readIntLE (offset, byteLength, noAssert) {
-  offset = offset >>> 0
-  byteLength = byteLength >>> 0
-  if (!noAssert) checkOffset(offset, byteLength, this.length)
-
-  var val = this[offset]
-  var mul = 1
-  var i = 0
-  while (++i < byteLength && (mul *= 0x100)) {
-    val += this[offset + i] * mul
-  }
-  mul *= 0x80
-
-  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
-
-  return val
-}
-
-Buffer.prototype.readIntBE = function readIntBE (offset, byteLength, noAssert) {
-  offset = offset >>> 0
-  byteLength = byteLength >>> 0
-  if (!noAssert) checkOffset(offset, byteLength, this.length)
-
-  var i = byteLength
-  var mul = 1
-  var val = this[offset + --i]
-  while (i > 0 && (mul *= 0x100)) {
-    val += this[offset + --i] * mul
-  }
-  mul *= 0x80
-
-  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
-
-  return val
-}
-
-Buffer.prototype.readInt8 = function readInt8 (offset, noAssert) {
-  offset = offset >>> 0
-  if (!noAssert) checkOffset(offset, 1, this.length)
-  if (!(this[offset] & 0x80)) return (this[offset])
-  return ((0xff - this[offset] + 1) * -1)
-}
-
-Buffer.prototype.readInt16LE = function readInt16LE (offset, noAssert) {
-  offset = offset >>> 0
-  if (!noAssert) checkOffset(offset, 2, this.length)
-  var val = this[offset] | (this[offset + 1] << 8)
-  return (val & 0x8000) ? val | 0xFFFF0000 : val
-}
-
-Buffer.prototype.readInt16BE = function readInt16BE (offset, noAssert) {
-  offset = offset >>> 0
-  if (!noAssert) checkOffset(offset, 2, this.length)
-  var val = this[offset + 1] | (this[offset] << 8)
-  return (val & 0x8000) ? val | 0xFFFF0000 : val
-}
-
-Buffer.prototype.readInt32LE = function readInt32LE (offset, noAssert) {
-  offset = offset >>> 0
-  if (!noAssert) checkOffset(offset, 4, this.length)
-
-  return (this[offset]) |
-    (this[offset + 1] << 8) |
-    (this[offset + 2] << 16) |
-    (this[offset + 3] << 24)
-}
-
-Buffer.prototype.readInt32BE = function readInt32BE (offset, noAssert) {
-  offset = offset >>> 0
-  if (!noAssert) checkOffset(offset, 4, this.length)
-
-  return (this[offset] << 24) |
-    (this[offset + 1] << 16) |
-    (this[offset + 2] << 8) |
-    (this[offset + 3])
-}
-
-Buffer.prototype.readFloatLE = function readFloatLE (offset, noAssert) {
-  offset = offset >>> 0
-  if (!noAssert) checkOffset(offset, 4, this.length)
-  return ieee754.read(this, offset, true, 23, 4)
-}
-
-Buffer.prototype.readFloatBE = function readFloatBE (offset, noAssert) {
-  offset = offset >>> 0
-  if (!noAssert) checkOffset(offset, 4, this.length)
-  return ieee754.read(this, offset, false, 23, 4)
-}
-
-Buffer.prototype.readDoubleLE = function readDoubleLE (offset, noAssert) {
-  offset = offset >>> 0
-  if (!noAssert) checkOffset(offset, 8, this.length)
-  return ieee754.read(this, offset, true, 52, 8)
-}
-
-Buffer.prototype.readDoubleBE = function readDoubleBE (offset, noAssert) {
-  offset = offset >>> 0
-  if (!noAssert) checkOffset(offset, 8, this.length)
-  return ieee754.read(this, offset, false, 52, 8)
-}
-
-function checkInt (buf, value, offset, ext, max, min) {
-  if (!Buffer.isBuffer(buf)) throw new TypeError('"buffer" argument must be a Buffer instance')
-  if (value > max || value < min) throw new RangeError('"value" argument is out of bounds')
-  if (offset + ext > buf.length) throw new RangeError('Index out of range')
-}
-
-Buffer.prototype.writeUIntLE = function writeUIntLE (value, offset, byteLength, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  byteLength = byteLength >>> 0
-  if (!noAssert) {
-    var maxBytes = Math.pow(2, 8 * byteLength) - 1
-    checkInt(this, value, offset, byteLength, maxBytes, 0)
-  }
-
-  var mul = 1
-  var i = 0
-  this[offset] = value & 0xFF
-  while (++i < byteLength && (mul *= 0x100)) {
-    this[offset + i] = (value / mul) & 0xFF
-  }
-
-  return offset + byteLength
-}
-
-Buffer.prototype.writeUIntBE = function writeUIntBE (value, offset, byteLength, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  byteLength = byteLength >>> 0
-  if (!noAssert) {
-    var maxBytes = Math.pow(2, 8 * byteLength) - 1
-    checkInt(this, value, offset, byteLength, maxBytes, 0)
-  }
-
-  var i = byteLength - 1
-  var mul = 1
-  this[offset + i] = value & 0xFF
-  while (--i >= 0 && (mul *= 0x100)) {
-    this[offset + i] = (value / mul) & 0xFF
-  }
-
-  return offset + byteLength
-}
-
-Buffer.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
-  this[offset] = (value & 0xff)
-  return offset + 1
-}
-
-Buffer.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
-  this[offset] = (value & 0xff)
-  this[offset + 1] = (value >>> 8)
-  return offset + 2
-}
-
-Buffer.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
-  this[offset] = (value >>> 8)
-  this[offset + 1] = (value & 0xff)
-  return offset + 2
-}
-
-Buffer.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
-  this[offset + 3] = (value >>> 24)
-  this[offset + 2] = (value >>> 16)
-  this[offset + 1] = (value >>> 8)
-  this[offset] = (value & 0xff)
-  return offset + 4
-}
-
-Buffer.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
-  this[offset] = (value >>> 24)
-  this[offset + 1] = (value >>> 16)
-  this[offset + 2] = (value >>> 8)
-  this[offset + 3] = (value & 0xff)
-  return offset + 4
-}
-
-Buffer.prototype.writeIntLE = function writeIntLE (value, offset, byteLength, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  if (!noAssert) {
-    var limit = Math.pow(2, (8 * byteLength) - 1)
-
-    checkInt(this, value, offset, byteLength, limit - 1, -limit)
-  }
-
-  var i = 0
-  var mul = 1
-  var sub = 0
-  this[offset] = value & 0xFF
-  while (++i < byteLength && (mul *= 0x100)) {
-    if (value < 0 && sub === 0 && this[offset + i - 1] !== 0) {
-      sub = 1
-    }
-    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF
-  }
-
-  return offset + byteLength
-}
-
-Buffer.prototype.writeIntBE = function writeIntBE (value, offset, byteLength, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  if (!noAssert) {
-    var limit = Math.pow(2, (8 * byteLength) - 1)
-
-    checkInt(this, value, offset, byteLength, limit - 1, -limit)
-  }
-
-  var i = byteLength - 1
-  var mul = 1
-  var sub = 0
-  this[offset + i] = value & 0xFF
-  while (--i >= 0 && (mul *= 0x100)) {
-    if (value < 0 && sub === 0 && this[offset + i + 1] !== 0) {
-      sub = 1
-    }
-    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF
-  }
-
-  return offset + byteLength
-}
-
-Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
-  if (value < 0) value = 0xff + value + 1
-  this[offset] = (value & 0xff)
-  return offset + 1
-}
-
-Buffer.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
-  this[offset] = (value & 0xff)
-  this[offset + 1] = (value >>> 8)
-  return offset + 2
-}
-
-Buffer.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
-  this[offset] = (value >>> 8)
-  this[offset + 1] = (value & 0xff)
-  return offset + 2
-}
-
-Buffer.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
-  this[offset] = (value & 0xff)
-  this[offset + 1] = (value >>> 8)
-  this[offset + 2] = (value >>> 16)
-  this[offset + 3] = (value >>> 24)
-  return offset + 4
-}
-
-Buffer.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
-  if (value < 0) value = 0xffffffff + value + 1
-  this[offset] = (value >>> 24)
-  this[offset + 1] = (value >>> 16)
-  this[offset + 2] = (value >>> 8)
-  this[offset + 3] = (value & 0xff)
-  return offset + 4
-}
-
-function checkIEEE754 (buf, value, offset, ext, max, min) {
-  if (offset + ext > buf.length) throw new RangeError('Index out of range')
-  if (offset < 0) throw new RangeError('Index out of range')
-}
-
-function writeFloat (buf, value, offset, littleEndian, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  if (!noAssert) {
-    checkIEEE754(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38)
-  }
-  ieee754.write(buf, value, offset, littleEndian, 23, 4)
-  return offset + 4
-}
-
-Buffer.prototype.writeFloatLE = function writeFloatLE (value, offset, noAssert) {
-  return writeFloat(this, value, offset, true, noAssert)
-}
-
-Buffer.prototype.writeFloatBE = function writeFloatBE (value, offset, noAssert) {
-  return writeFloat(this, value, offset, false, noAssert)
-}
-
-function writeDouble (buf, value, offset, littleEndian, noAssert) {
-  value = +value
-  offset = offset >>> 0
-  if (!noAssert) {
-    checkIEEE754(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308)
-  }
-  ieee754.write(buf, value, offset, littleEndian, 52, 8)
-  return offset + 8
-}
-
-Buffer.prototype.writeDoubleLE = function writeDoubleLE (value, offset, noAssert) {
-  return writeDouble(this, value, offset, true, noAssert)
-}
-
-Buffer.prototype.writeDoubleBE = function writeDoubleBE (value, offset, noAssert) {
-  return writeDouble(this, value, offset, false, noAssert)
-}
-
-// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
-Buffer.prototype.copy = function copy (target, targetStart, start, end) {
-  if (!Buffer.isBuffer(target)) throw new TypeError('argument should be a Buffer')
-  if (!start) start = 0
-  if (!end && end !== 0) end = this.length
-  if (targetStart >= target.length) targetStart = target.length
-  if (!targetStart) targetStart = 0
-  if (end > 0 && end < start) end = start
-
-  // Copy 0 bytes; we're done
-  if (end === start) return 0
-  if (target.length === 0 || this.length === 0) return 0
-
-  // Fatal error conditions
-  if (targetStart < 0) {
-    throw new RangeError('targetStart out of bounds')
-  }
-  if (start < 0 || start >= this.length) throw new RangeError('Index out of range')
-  if (end < 0) throw new RangeError('sourceEnd out of bounds')
-
-  // Are we oob?
-  if (end > this.length) end = this.length
-  if (target.length - targetStart < end - start) {
-    end = target.length - targetStart + start
-  }
-
-  var len = end - start
-
-  if (this === target && typeof Uint8Array.prototype.copyWithin === 'function') {
-    // Use built-in when available, missing from IE11
-    this.copyWithin(targetStart, start, end)
-  } else if (this === target && start < targetStart && targetStart < end) {
-    // descending copy from end
-    for (var i = len - 1; i >= 0; --i) {
-      target[i + targetStart] = this[i + start]
-    }
-  } else {
-    Uint8Array.prototype.set.call(
-      target,
-      this.subarray(start, end),
-      targetStart
-    )
-  }
-
-  return len
-}
-
-// Usage:
-//    buffer.fill(number[, offset[, end]])
-//    buffer.fill(buffer[, offset[, end]])
-//    buffer.fill(string[, offset[, end]][, encoding])
-Buffer.prototype.fill = function fill (val, start, end, encoding) {
-  // Handle string cases:
-  if (typeof val === 'string') {
-    if (typeof start === 'string') {
-      encoding = start
-      start = 0
-      end = this.length
-    } else if (typeof end === 'string') {
-      encoding = end
-      end = this.length
-    }
-    if (encoding !== undefined && typeof encoding !== 'string') {
-      throw new TypeError('encoding must be a string')
-    }
-    if (typeof encoding === 'string' && !Buffer.isEncoding(encoding)) {
-      throw new TypeError('Unknown encoding: ' + encoding)
-    }
-    if (val.length === 1) {
-      var code = val.charCodeAt(0)
-      if ((encoding === 'utf8' && code < 128) ||
-          encoding === 'latin1') {
-        // Fast path: If `val` fits into a single byte, use that numeric value.
-        val = code
-      }
-    }
-  } else if (typeof val === 'number') {
-    val = val & 255
-  } else if (typeof val === 'boolean') {
-    val = Number(val)
-  }
-
-  // Invalid ranges are not set to a default, so can range check early.
-  if (start < 0 || this.length < start || this.length < end) {
-    throw new RangeError('Out of range index')
-  }
-
-  if (end <= start) {
-    return this
-  }
-
-  start = start >>> 0
-  end = end === undefined ? this.length : end >>> 0
-
-  if (!val) val = 0
-
-  var i
-  if (typeof val === 'number') {
-    for (i = start; i < end; ++i) {
-      this[i] = val
-    }
-  } else {
-    var bytes = Buffer.isBuffer(val)
-      ? val
-      : Buffer.from(val, encoding)
-    var len = bytes.length
-    if (len === 0) {
-      throw new TypeError('The value "' + val +
-        '" is invalid for argument "value"')
-    }
-    for (i = 0; i < end - start; ++i) {
-      this[i + start] = bytes[i % len]
-    }
-  }
-
-  return this
-}
-
-// HELPER FUNCTIONS
-// ================
-
-var INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g
-
-function base64clean (str) {
-  // Node takes equal signs as end of the Base64 encoding
-  str = str.split('=')[0]
-  // Node strips out invalid characters like \n and \t from the string, base64-js does not
-  str = str.trim().replace(INVALID_BASE64_RE, '')
-  // Node converts strings with length < 2 to ''
-  if (str.length < 2) return ''
-  // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
-  while (str.length % 4 !== 0) {
-    str = str + '='
-  }
-  return str
-}
-
-function toHex (n) {
-  if (n < 16) return '0' + n.toString(16)
-  return n.toString(16)
-}
-
-function utf8ToBytes (string, units) {
-  units = units || Infinity
-  var codePoint
-  var length = string.length
-  var leadSurrogate = null
-  var bytes = []
-
-  for (var i = 0; i < length; ++i) {
-    codePoint = string.charCodeAt(i)
-
-    // is surrogate component
-    if (codePoint > 0xD7FF && codePoint < 0xE000) {
-      // last char was a lead
-      if (!leadSurrogate) {
-        // no lead yet
-        if (codePoint > 0xDBFF) {
-          // unexpected trail
-          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
-          continue
-        } else if (i + 1 === length) {
-          // unpaired lead
-          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
-          continue
-        }
-
-        // valid lead
-        leadSurrogate = codePoint
-
-        continue
-      }
-
-      // 2 leads in a row
-      if (codePoint < 0xDC00) {
-        if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
-        leadSurrogate = codePoint
-        continue
-      }
-
-      // valid surrogate pair
-      codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000
-    } else if (leadSurrogate) {
-      // valid bmp char, but last char was a lead
-      if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
-    }
-
-    leadSurrogate = null
-
-    // encode utf8
-    if (codePoint < 0x80) {
-      if ((units -= 1) < 0) break
-      bytes.push(codePoint)
-    } else if (codePoint < 0x800) {
-      if ((units -= 2) < 0) break
-      bytes.push(
-        codePoint >> 0x6 | 0xC0,
-        codePoint & 0x3F | 0x80
-      )
-    } else if (codePoint < 0x10000) {
-      if ((units -= 3) < 0) break
-      bytes.push(
-        codePoint >> 0xC | 0xE0,
-        codePoint >> 0x6 & 0x3F | 0x80,
-        codePoint & 0x3F | 0x80
-      )
-    } else if (codePoint < 0x110000) {
-      if ((units -= 4) < 0) break
-      bytes.push(
-        codePoint >> 0x12 | 0xF0,
-        codePoint >> 0xC & 0x3F | 0x80,
-        codePoint >> 0x6 & 0x3F | 0x80,
-        codePoint & 0x3F | 0x80
-      )
-    } else {
-      throw new Error('Invalid code point')
-    }
-  }
-
-  return bytes
-}
-
-function asciiToBytes (str) {
-  var byteArray = []
-  for (var i = 0; i < str.length; ++i) {
-    // Node's code seems to be doing this and not & 0x7F..
-    byteArray.push(str.charCodeAt(i) & 0xFF)
-  }
-  return byteArray
-}
-
-function utf16leToBytes (str, units) {
-  var c, hi, lo
-  var byteArray = []
-  for (var i = 0; i < str.length; ++i) {
-    if ((units -= 2) < 0) break
-
-    c = str.charCodeAt(i)
-    hi = c >> 8
-    lo = c % 256
-    byteArray.push(lo)
-    byteArray.push(hi)
-  }
-
-  return byteArray
-}
-
-function base64ToBytes (str) {
-  return base64.toByteArray(base64clean(str))
-}
-
-function blitBuffer (src, dst, offset, length) {
-  for (var i = 0; i < length; ++i) {
-    if ((i + offset >= dst.length) || (i >= src.length)) break
-    dst[i + offset] = src[i]
-  }
-  return i
-}
-
-// ArrayBuffer or Uint8Array objects from other contexts (i.e. iframes) do not pass
-// the `instanceof` check but they should be treated as of that type.
-// See: https://github.com/feross/buffer/issues/166
-function isInstance (obj, type) {
-  return obj instanceof type ||
-    (obj != null && obj.constructor != null && obj.constructor.name != null &&
-      obj.constructor.name === type.name)
-}
-function numberIsNaN (obj) {
-  // For IE11 support
-  return obj !== obj // eslint-disable-line no-self-compare
-}
-
-}).call(this,require("buffer").Buffer)
-},{"base64-js":10,"buffer":16,"ieee754":19}],17:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -4171,15 +2441,11 @@ function setup(env) {
 	createDebug.enable = enable;
 	createDebug.enabled = enabled;
 	createDebug.humanize = require('ms');
+	createDebug.destroy = destroy;
 
 	Object.keys(env).forEach(key => {
 		createDebug[key] = env[key];
 	});
-
-	/**
-	* Active `debug` instances.
-	*/
-	createDebug.instances = [];
 
 	/**
 	* The currently active debug mode names, and names to skip.
@@ -4222,6 +2488,7 @@ function setup(env) {
 	*/
 	function createDebug(namespace) {
 		let prevTime;
+		let enableOverride = null;
 
 		function debug(...args) {
 			// Disabled?
@@ -4251,7 +2518,7 @@ function setup(env) {
 			args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
 				// If we encounter an escaped % then don't increase the array index
 				if (match === '%%') {
-					return match;
+					return '%';
 				}
 				index++;
 				const formatter = createDebug.formatters[format];
@@ -4274,31 +2541,26 @@ function setup(env) {
 		}
 
 		debug.namespace = namespace;
-		debug.enabled = createDebug.enabled(namespace);
 		debug.useColors = createDebug.useColors();
-		debug.color = selectColor(namespace);
-		debug.destroy = destroy;
+		debug.color = createDebug.selectColor(namespace);
 		debug.extend = extend;
-		// Debug.formatArgs = formatArgs;
-		// debug.rawLog = rawLog;
+		debug.destroy = createDebug.destroy; // XXX Temporary. Will be removed in the next major release.
 
-		// env-specific initialization logic for debug instances
+		Object.defineProperty(debug, 'enabled', {
+			enumerable: true,
+			configurable: false,
+			get: () => enableOverride === null ? createDebug.enabled(namespace) : enableOverride,
+			set: v => {
+				enableOverride = v;
+			}
+		});
+
+		// Env-specific initialization logic for debug instances
 		if (typeof createDebug.init === 'function') {
 			createDebug.init(debug);
 		}
 
-		createDebug.instances.push(debug);
-
 		return debug;
-	}
-
-	function destroy() {
-		const index = createDebug.instances.indexOf(this);
-		if (index !== -1) {
-			createDebug.instances.splice(index, 1);
-			return true;
-		}
-		return false;
 	}
 
 	function extend(namespace, delimiter) {
@@ -4337,11 +2599,6 @@ function setup(env) {
 			} else {
 				createDebug.names.push(new RegExp('^' + namespaces + '$'));
 			}
-		}
-
-		for (i = 0; i < createDebug.instances.length; i++) {
-			const instance = createDebug.instances[i];
-			instance.enabled = createDebug.enabled(instance.namespace);
 		}
 	}
 
@@ -4417,6 +2674,14 @@ function setup(env) {
 		return val;
 	}
 
+	/**
+	* XXX DO NOT USE. This is a temporary stub function.
+	* XXX It WILL be removed in the next major release.
+	*/
+	function destroy() {
+		console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
+	}
+
 	createDebug.enable(createDebug.load());
 
 	return createDebug;
@@ -4424,24 +2689,74 @@ function setup(env) {
 
 module.exports = setup;
 
-},{"ms":21}],18:[function(require,module,exports){
+},{"ms":21}],17:[function(require,module,exports){
+'use strict';
+
+function assign(obj, props) {
+    for (const key in props) {
+        Object.defineProperty(obj, key, {
+            value: props[key],
+            enumerable: true,
+            configurable: true,
+        });
+    }
+
+    return obj;
+}
+
+function createError(err, code, props) {
+    if (!err || typeof err === 'string') {
+        throw new TypeError('Please pass an Error to err-code');
+    }
+
+    if (!props) {
+        props = {};
+    }
+
+    if (typeof code === 'object') {
+        props = code;
+        code = undefined;
+    }
+
+    if (code != null) {
+        props.code = code;
+    }
+
+    try {
+        return assign(err, props);
+    } catch (_) {
+        props.message = err.message;
+        props.stack = err.stack;
+
+        const ErrClass = function () {};
+
+        ErrClass.prototype = Object.create(Object.getPrototypeOf(err));
+
+        return assign(new ErrClass(), props);
+    }
+}
+
+module.exports = createError;
+
+},{}],18:[function(require,module,exports){
 // originally pulled out of simple-peer
 
 module.exports = function getBrowserRTC () {
-  if (typeof window === 'undefined') return null
+  if (typeof globalThis === 'undefined') return null
   var wrtc = {
-    RTCPeerConnection: window.RTCPeerConnection || window.mozRTCPeerConnection ||
-      window.webkitRTCPeerConnection,
-    RTCSessionDescription: window.RTCSessionDescription ||
-      window.mozRTCSessionDescription || window.webkitRTCSessionDescription,
-    RTCIceCandidate: window.RTCIceCandidate || window.mozRTCIceCandidate ||
-      window.webkitRTCIceCandidate
+    RTCPeerConnection: globalThis.RTCPeerConnection || globalThis.mozRTCPeerConnection ||
+      globalThis.webkitRTCPeerConnection,
+    RTCSessionDescription: globalThis.RTCSessionDescription ||
+      globalThis.mozRTCSessionDescription || globalThis.webkitRTCSessionDescription,
+    RTCIceCandidate: globalThis.RTCIceCandidate || globalThis.mozRTCIceCandidate ||
+      globalThis.webkitRTCIceCandidate
   }
   if (!wrtc.RTCPeerConnection) return null
   return wrtc
 }
 
 },{}],19:[function(require,module,exports){
+/*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = (nBytes * 8) - mLen - 1
@@ -4951,7 +3266,20 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],24:[function(require,module,exports){
-(function (process,global){
+(function (global){(function (){
+/*! queue-microtask. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
+let promise
+
+module.exports = typeof queueMicrotask === 'function'
+  ? queueMicrotask.bind(typeof window !== 'undefined' ? window : global)
+  // reuse resolved promise, and allocate it lazily
+  : cb => (promise || (promise = Promise.resolve()))
+    .then(cb)
+    .catch(err => setTimeout(() => { throw err }, 0))
+
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],25:[function(require,module,exports){
+(function (process,global){(function (){
 'use strict'
 
 // limit of Crypto.getRandomValues()
@@ -5003,8 +3331,8 @@ function randomBytes (size, cb) {
   return bytes
 }
 
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":23,"safe-buffer":41}],25:[function(require,module,exports){
+}).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"_process":23,"safe-buffer":42}],26:[function(require,module,exports){
 'use strict';
 
 function _inheritsLoose(subClass, superClass) { subClass.prototype = Object.create(superClass.prototype); subClass.prototype.constructor = subClass; subClass.__proto__ = superClass; }
@@ -5133,29 +3461,8 @@ createErrorType('ERR_UNKNOWN_ENCODING', function (arg) {
 createErrorType('ERR_STREAM_UNSHIFT_AFTER_END_EVENT', 'stream.unshift() after end event');
 module.exports.codes = codes;
 
-},{}],26:[function(require,module,exports){
-(function (process){
-'use strict'
-
-var experimentalWarnings = new Set();
-
-function emitExperimentalWarning(feature) {
-  if (experimentalWarnings.has(feature)) return;
-  var msg = feature + ' is an experimental feature. This feature could ' +
-       'change at any time';
-  experimentalWarnings.add(feature);
-  process.emitWarning(msg, 'ExperimentalWarning');
-}
-
-function noop() {}
-
-module.exports.emitExperimentalWarning = process.emitWarning
-  ? emitExperimentalWarning
-  : noop;
-
-}).call(this,require('_process'))
-},{"_process":23}],27:[function(require,module,exports){
-(function (process){
+},{}],27:[function(require,module,exports){
+(function (process){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -5295,7 +3602,7 @@ Object.defineProperty(Duplex.prototype, 'destroyed', {
     this._writableState.destroyed = value;
   }
 });
-}).call(this,require('_process'))
+}).call(this)}).call(this,require('_process'))
 },{"./_stream_readable":29,"./_stream_writable":31,"_process":23,"inherits":20}],28:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -5337,7 +3644,7 @@ PassThrough.prototype._transform = function (chunk, encoding, cb) {
   cb(null, chunk);
 };
 },{"./_stream_transform":30,"inherits":20}],29:[function(require,module,exports){
-(function (process,global){
+(function (process,global){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -5420,17 +3727,16 @@ var _require$codes = require('../errors').codes,
     ERR_INVALID_ARG_TYPE = _require$codes.ERR_INVALID_ARG_TYPE,
     ERR_STREAM_PUSH_AFTER_EOF = _require$codes.ERR_STREAM_PUSH_AFTER_EOF,
     ERR_METHOD_NOT_IMPLEMENTED = _require$codes.ERR_METHOD_NOT_IMPLEMENTED,
-    ERR_STREAM_UNSHIFT_AFTER_END_EVENT = _require$codes.ERR_STREAM_UNSHIFT_AFTER_END_EVENT;
-
-var _require2 = require('../experimentalWarning'),
-    emitExperimentalWarning = _require2.emitExperimentalWarning; // Lazy loaded to improve the startup performance.
+    ERR_STREAM_UNSHIFT_AFTER_END_EVENT = _require$codes.ERR_STREAM_UNSHIFT_AFTER_END_EVENT; // Lazy loaded to improve the startup performance.
 
 
 var StringDecoder;
 var createReadableStreamAsyncIterator;
+var from;
 
 require('inherits')(Readable, Stream);
 
+var errorOrDestroy = destroyImpl.errorOrDestroy;
 var kProxyEvents = ['error', 'close', 'destroy', 'pause', 'resume'];
 
 function prependListener(emitter, event, fn) {
@@ -5484,7 +3790,9 @@ function ReadableState(options, stream, isDuplex) {
   this.resumeScheduled = false;
   this.paused = true; // Should close be emitted on destroy. Defaults to true.
 
-  this.emitClose = options.emitClose !== false; // has it been destroyed
+  this.emitClose = options.emitClose !== false; // Should .destroy() be called after 'end' (and potentially 'finish')
+
+  this.autoDestroy = !!options.autoDestroy; // has it been destroyed
 
   this.destroyed = false; // Crypto is kind of old and crusty.  Historically, its default string
   // encoding is 'binary' so we have to make this configurable.
@@ -5597,16 +3905,16 @@ function readableAddChunk(stream, chunk, encoding, addToFront, skipChunkCheck) {
     if (!skipChunkCheck) er = chunkInvalid(state, chunk);
 
     if (er) {
-      stream.emit('error', er);
+      errorOrDestroy(stream, er);
     } else if (state.objectMode || chunk && chunk.length > 0) {
       if (typeof chunk !== 'string' && !state.objectMode && Object.getPrototypeOf(chunk) !== Buffer.prototype) {
         chunk = _uint8ArrayToBuffer(chunk);
       }
 
       if (addToFront) {
-        if (state.endEmitted) stream.emit('error', new ERR_STREAM_UNSHIFT_AFTER_END_EVENT());else addChunk(stream, state, chunk, true);
+        if (state.endEmitted) errorOrDestroy(stream, new ERR_STREAM_UNSHIFT_AFTER_END_EVENT());else addChunk(stream, state, chunk, true);
       } else if (state.ended) {
-        stream.emit('error', new ERR_STREAM_PUSH_AFTER_EOF());
+        errorOrDestroy(stream, new ERR_STREAM_PUSH_AFTER_EOF());
       } else if (state.destroyed) {
         return false;
       } else {
@@ -5662,17 +3970,32 @@ Readable.prototype.isPaused = function () {
 
 Readable.prototype.setEncoding = function (enc) {
   if (!StringDecoder) StringDecoder = require('string_decoder/').StringDecoder;
-  this._readableState.decoder = new StringDecoder(enc); // if setEncoding(null), decoder.encoding equals utf8
+  var decoder = new StringDecoder(enc);
+  this._readableState.decoder = decoder; // If setEncoding(null), decoder.encoding equals utf8
 
-  this._readableState.encoding = this._readableState.decoder.encoding;
+  this._readableState.encoding = this._readableState.decoder.encoding; // Iterate over current buffer to convert already stored Buffers:
+
+  var p = this._readableState.buffer.head;
+  var content = '';
+
+  while (p !== null) {
+    content += decoder.write(p.data);
+    p = p.next;
+  }
+
+  this._readableState.buffer.clear();
+
+  if (content !== '') this._readableState.buffer.push(content);
+  this._readableState.length = content.length;
   return this;
-}; // Don't raise the hwm > 8MB
+}; // Don't raise the hwm > 1GB
 
 
-var MAX_HWM = 0x800000;
+var MAX_HWM = 0x40000000;
 
 function computeNewHighWaterMark(n) {
   if (n >= MAX_HWM) {
+    // TODO(ronag): Throw ERR_VALUE_OUT_OF_RANGE.
     n = MAX_HWM;
   } else {
     // Get the next highest power of 2 to prevent increasing hwm excessively in
@@ -5789,7 +4112,7 @@ Readable.prototype.read = function (n) {
   if (n > 0) ret = fromList(n, state);else ret = null;
 
   if (ret === null) {
-    state.needReadable = true;
+    state.needReadable = state.length <= state.highWaterMark;
     n = 0;
   } else {
     state.length -= n;
@@ -5809,6 +4132,7 @@ Readable.prototype.read = function (n) {
 };
 
 function onEofChunk(stream, state) {
+  debug('onEofChunk');
   if (state.ended) return;
 
   if (state.decoder) {
@@ -5843,6 +4167,7 @@ function onEofChunk(stream, state) {
 
 function emitReadable(stream) {
   var state = stream._readableState;
+  debug('emitReadable', state.needReadable, state.emittedReadable);
   state.needReadable = false;
 
   if (!state.emittedReadable) {
@@ -5858,6 +4183,7 @@ function emitReadable_(stream) {
 
   if (!state.destroyed && (state.length || state.ended)) {
     stream.emit('readable');
+    state.emittedReadable = false;
   } // The stream needs another readable event if
   // 1. It is not flowing, as the flow mechanism will take
   //    care of it.
@@ -5923,7 +4249,7 @@ function maybeReadMore_(stream, state) {
 
 
 Readable.prototype._read = function (n) {
-  this.emit('error', new ERR_METHOD_NOT_IMPLEMENTED('_read()'));
+  errorOrDestroy(this, new ERR_METHOD_NOT_IMPLEMENTED('_read()'));
 };
 
 Readable.prototype.pipe = function (dest, pipeOpts) {
@@ -6022,7 +4348,7 @@ Readable.prototype.pipe = function (dest, pipeOpts) {
     debug('onerror', er);
     unpipe();
     dest.removeListener('error', onerror);
-    if (EElistenerCount(dest, 'error') === 0) dest.emit('error', er);
+    if (EElistenerCount(dest, 'error') === 0) errorOrDestroy(dest, er);
   } // Make sure our error handler is attached before userland ones.
 
 
@@ -6326,8 +4652,6 @@ Readable.prototype.wrap = function (stream) {
 
 if (typeof Symbol === 'function') {
   Readable.prototype[Symbol.asyncIterator] = function () {
-    emitExperimentalWarning('Readable[Symbol.asyncIterator]');
-
     if (createReadableStreamAsyncIterator === undefined) {
       createReadableStreamAsyncIterator = require('./internal/streams/async_iterator');
     }
@@ -6415,7 +4739,27 @@ function endReadableNT(state, stream) {
     state.endEmitted = true;
     stream.readable = false;
     stream.emit('end');
+
+    if (state.autoDestroy) {
+      // In case of duplex streams we need a way to detect
+      // if the writable side is ready for autoDestroy as well
+      var wState = stream._writableState;
+
+      if (!wState || wState.autoDestroy && wState.finished) {
+        stream.destroy();
+      }
+    }
   }
+}
+
+if (typeof Symbol === 'function') {
+  Readable.from = function (iterable, opts) {
+    if (from === undefined) {
+      from = require('./internal/streams/from');
+    }
+
+    return from(Readable, iterable, opts);
+  };
 }
 
 function indexOf(xs, x) {
@@ -6425,8 +4769,8 @@ function indexOf(xs, x) {
 
   return -1;
 }
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../errors":25,"../experimentalWarning":26,"./_stream_duplex":27,"./internal/streams/async_iterator":32,"./internal/streams/buffer_list":33,"./internal/streams/destroy":34,"./internal/streams/state":37,"./internal/streams/stream":38,"_process":23,"buffer":16,"events":"events","inherits":20,"string_decoder/":46,"util":15}],30:[function(require,module,exports){
+}).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"../errors":26,"./_stream_duplex":27,"./internal/streams/async_iterator":32,"./internal/streams/buffer_list":33,"./internal/streams/destroy":34,"./internal/streams/from":36,"./internal/streams/state":38,"./internal/streams/stream":39,"_process":23,"buffer":"buffer","events":"events","inherits":20,"string_decoder/":47,"util":15}],30:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -6628,8 +4972,8 @@ function done(stream, er, data) {
   if (stream._transformState.transforming) throw new ERR_TRANSFORM_ALREADY_TRANSFORMING();
   return stream.push(null);
 }
-},{"../errors":25,"./_stream_duplex":27,"inherits":20}],31:[function(require,module,exports){
-(function (process,global){
+},{"../errors":26,"./_stream_duplex":27,"inherits":20}],31:[function(require,module,exports){
+(function (process,global){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -6726,6 +5070,8 @@ var _require$codes = require('../errors').codes,
     ERR_STREAM_WRITE_AFTER_END = _require$codes.ERR_STREAM_WRITE_AFTER_END,
     ERR_UNKNOWN_ENCODING = _require$codes.ERR_UNKNOWN_ENCODING;
 
+var errorOrDestroy = destroyImpl.errorOrDestroy;
+
 require('inherits')(Writable, Stream);
 
 function nop() {}
@@ -6805,7 +5151,9 @@ function WritableState(options, stream, isDuplex) {
 
   this.errorEmitted = false; // Should close be emitted on destroy. Defaults to true.
 
-  this.emitClose = options.emitClose !== false; // count buffered requests
+  this.emitClose = options.emitClose !== false; // Should .destroy() be called after 'finish' (and potentially 'end')
+
+  this.autoDestroy = !!options.autoDestroy; // count buffered requests
 
   this.bufferedRequestCount = 0; // allocate the first CorkedRequest, there is always
   // one allocated and free to use, and we maintain at most two
@@ -6882,13 +5230,13 @@ function Writable(options) {
 
 
 Writable.prototype.pipe = function () {
-  this.emit('error', new ERR_STREAM_CANNOT_PIPE());
+  errorOrDestroy(this, new ERR_STREAM_CANNOT_PIPE());
 };
 
 function writeAfterEnd(stream, cb) {
   var er = new ERR_STREAM_WRITE_AFTER_END(); // TODO: defer error events consistently everywhere, not just the cb
 
-  stream.emit('error', er);
+  errorOrDestroy(stream, er);
   process.nextTick(cb, er);
 } // Checks that a user-supplied chunk is valid, especially for the particular
 // mode the stream is in. Currently this means that `null` is never accepted
@@ -6905,7 +5253,7 @@ function validChunk(stream, state, chunk, cb) {
   }
 
   if (er) {
-    stream.emit('error', er);
+    errorOrDestroy(stream, er);
     process.nextTick(cb, er);
     return false;
   }
@@ -7049,13 +5397,13 @@ function onwriteError(stream, state, sync, er, cb) {
 
     process.nextTick(finishMaybe, stream, state);
     stream._writableState.errorEmitted = true;
-    stream.emit('error', er);
+    errorOrDestroy(stream, er);
   } else {
     // the caller expect this to happen before if
     // it is async
     cb(er);
     stream._writableState.errorEmitted = true;
-    stream.emit('error', er); // this can emit finish, but finish must
+    errorOrDestroy(stream, er); // this can emit finish, but finish must
     // always follow error
 
     finishMaybe(stream, state);
@@ -7219,7 +5567,7 @@ function callFinal(stream, state) {
     state.pendingcb--;
 
     if (err) {
-      stream.emit('error', err);
+      errorOrDestroy(stream, err);
     }
 
     state.prefinished = true;
@@ -7250,6 +5598,16 @@ function finishMaybe(stream, state) {
     if (state.pendingcb === 0) {
       state.finished = true;
       stream.emit('finish');
+
+      if (state.autoDestroy) {
+        // In case of duplex streams we need a way to detect
+        // if the readable side is ready for autoDestroy as well
+        var rState = stream._readableState;
+
+        if (!rState || rState.autoDestroy && rState.endEmitted) {
+          stream.destroy();
+        }
+      }
     }
   }
 
@@ -7313,9 +5671,9 @@ Writable.prototype._undestroy = destroyImpl.undestroy;
 Writable.prototype._destroy = function (err, cb) {
   cb(err);
 };
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../errors":25,"./_stream_duplex":27,"./internal/streams/destroy":34,"./internal/streams/state":37,"./internal/streams/stream":38,"_process":23,"buffer":16,"inherits":20,"util-deprecate":48}],32:[function(require,module,exports){
-(function (process){
+}).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"../errors":26,"./_stream_duplex":27,"./internal/streams/destroy":34,"./internal/streams/state":38,"./internal/streams/stream":39,"_process":23,"buffer":"buffer","inherits":20,"util-deprecate":48}],32:[function(require,module,exports){
+(function (process){(function (){
 'use strict';
 
 var _Object$setPrototypeO;
@@ -7523,13 +5881,21 @@ var createReadableStreamAsyncIterator = function createReadableStreamAsyncIterat
 };
 
 module.exports = createReadableStreamAsyncIterator;
-}).call(this,require('_process'))
+}).call(this)}).call(this,require('_process'))
 },{"./end-of-stream":35,"_process":23}],33:[function(require,module,exports){
 'use strict';
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 var _require = require('buffer'),
     Buffer = _require.Buffer;
@@ -7547,175 +5913,188 @@ module.exports =
 /*#__PURE__*/
 function () {
   function BufferList() {
+    _classCallCheck(this, BufferList);
+
     this.head = null;
     this.tail = null;
     this.length = 0;
   }
 
-  var _proto = BufferList.prototype;
-
-  _proto.push = function push(v) {
-    var entry = {
-      data: v,
-      next: null
-    };
-    if (this.length > 0) this.tail.next = entry;else this.head = entry;
-    this.tail = entry;
-    ++this.length;
-  };
-
-  _proto.unshift = function unshift(v) {
-    var entry = {
-      data: v,
-      next: this.head
-    };
-    if (this.length === 0) this.tail = entry;
-    this.head = entry;
-    ++this.length;
-  };
-
-  _proto.shift = function shift() {
-    if (this.length === 0) return;
-    var ret = this.head.data;
-    if (this.length === 1) this.head = this.tail = null;else this.head = this.head.next;
-    --this.length;
-    return ret;
-  };
-
-  _proto.clear = function clear() {
-    this.head = this.tail = null;
-    this.length = 0;
-  };
-
-  _proto.join = function join(s) {
-    if (this.length === 0) return '';
-    var p = this.head;
-    var ret = '' + p.data;
-
-    while (p = p.next) {
-      ret += s + p.data;
+  _createClass(BufferList, [{
+    key: "push",
+    value: function push(v) {
+      var entry = {
+        data: v,
+        next: null
+      };
+      if (this.length > 0) this.tail.next = entry;else this.head = entry;
+      this.tail = entry;
+      ++this.length;
     }
-
-    return ret;
-  };
-
-  _proto.concat = function concat(n) {
-    if (this.length === 0) return Buffer.alloc(0);
-    var ret = Buffer.allocUnsafe(n >>> 0);
-    var p = this.head;
-    var i = 0;
-
-    while (p) {
-      copyBuffer(p.data, ret, i);
-      i += p.data.length;
-      p = p.next;
+  }, {
+    key: "unshift",
+    value: function unshift(v) {
+      var entry = {
+        data: v,
+        next: this.head
+      };
+      if (this.length === 0) this.tail = entry;
+      this.head = entry;
+      ++this.length;
     }
-
-    return ret;
-  } // Consumes a specified amount of bytes or characters from the buffered data.
-  ;
-
-  _proto.consume = function consume(n, hasStrings) {
-    var ret;
-
-    if (n < this.head.data.length) {
-      // `slice` is the same for buffers and strings.
-      ret = this.head.data.slice(0, n);
-      this.head.data = this.head.data.slice(n);
-    } else if (n === this.head.data.length) {
-      // First chunk is a perfect match.
-      ret = this.shift();
-    } else {
-      // Result spans more than one buffer.
-      ret = hasStrings ? this._getString(n) : this._getBuffer(n);
+  }, {
+    key: "shift",
+    value: function shift() {
+      if (this.length === 0) return;
+      var ret = this.head.data;
+      if (this.length === 1) this.head = this.tail = null;else this.head = this.head.next;
+      --this.length;
+      return ret;
     }
+  }, {
+    key: "clear",
+    value: function clear() {
+      this.head = this.tail = null;
+      this.length = 0;
+    }
+  }, {
+    key: "join",
+    value: function join(s) {
+      if (this.length === 0) return '';
+      var p = this.head;
+      var ret = '' + p.data;
 
-    return ret;
-  };
-
-  _proto.first = function first() {
-    return this.head.data;
-  } // Consumes a specified amount of characters from the buffered data.
-  ;
-
-  _proto._getString = function _getString(n) {
-    var p = this.head;
-    var c = 1;
-    var ret = p.data;
-    n -= ret.length;
-
-    while (p = p.next) {
-      var str = p.data;
-      var nb = n > str.length ? str.length : n;
-      if (nb === str.length) ret += str;else ret += str.slice(0, n);
-      n -= nb;
-
-      if (n === 0) {
-        if (nb === str.length) {
-          ++c;
-          if (p.next) this.head = p.next;else this.head = this.tail = null;
-        } else {
-          this.head = p;
-          p.data = str.slice(nb);
-        }
-
-        break;
+      while (p = p.next) {
+        ret += s + p.data;
       }
 
-      ++c;
+      return ret;
     }
+  }, {
+    key: "concat",
+    value: function concat(n) {
+      if (this.length === 0) return Buffer.alloc(0);
+      var ret = Buffer.allocUnsafe(n >>> 0);
+      var p = this.head;
+      var i = 0;
 
-    this.length -= c;
-    return ret;
-  } // Consumes a specified amount of bytes from the buffered data.
-  ;
-
-  _proto._getBuffer = function _getBuffer(n) {
-    var ret = Buffer.allocUnsafe(n);
-    var p = this.head;
-    var c = 1;
-    p.data.copy(ret);
-    n -= p.data.length;
-
-    while (p = p.next) {
-      var buf = p.data;
-      var nb = n > buf.length ? buf.length : n;
-      buf.copy(ret, ret.length - n, 0, nb);
-      n -= nb;
-
-      if (n === 0) {
-        if (nb === buf.length) {
-          ++c;
-          if (p.next) this.head = p.next;else this.head = this.tail = null;
-        } else {
-          this.head = p;
-          p.data = buf.slice(nb);
-        }
-
-        break;
+      while (p) {
+        copyBuffer(p.data, ret, i);
+        i += p.data.length;
+        p = p.next;
       }
 
-      ++c;
+      return ret;
+    } // Consumes a specified amount of bytes or characters from the buffered data.
+
+  }, {
+    key: "consume",
+    value: function consume(n, hasStrings) {
+      var ret;
+
+      if (n < this.head.data.length) {
+        // `slice` is the same for buffers and strings.
+        ret = this.head.data.slice(0, n);
+        this.head.data = this.head.data.slice(n);
+      } else if (n === this.head.data.length) {
+        // First chunk is a perfect match.
+        ret = this.shift();
+      } else {
+        // Result spans more than one buffer.
+        ret = hasStrings ? this._getString(n) : this._getBuffer(n);
+      }
+
+      return ret;
     }
+  }, {
+    key: "first",
+    value: function first() {
+      return this.head.data;
+    } // Consumes a specified amount of characters from the buffered data.
 
-    this.length -= c;
-    return ret;
-  } // Make sure the linked list only shows the minimal necessary information.
-  ;
+  }, {
+    key: "_getString",
+    value: function _getString(n) {
+      var p = this.head;
+      var c = 1;
+      var ret = p.data;
+      n -= ret.length;
 
-  _proto[custom] = function (_, options) {
-    return inspect(this, _objectSpread({}, options, {
-      // Only inspect one level.
-      depth: 0,
-      // It should not recurse.
-      customInspect: false
-    }));
-  };
+      while (p = p.next) {
+        var str = p.data;
+        var nb = n > str.length ? str.length : n;
+        if (nb === str.length) ret += str;else ret += str.slice(0, n);
+        n -= nb;
+
+        if (n === 0) {
+          if (nb === str.length) {
+            ++c;
+            if (p.next) this.head = p.next;else this.head = this.tail = null;
+          } else {
+            this.head = p;
+            p.data = str.slice(nb);
+          }
+
+          break;
+        }
+
+        ++c;
+      }
+
+      this.length -= c;
+      return ret;
+    } // Consumes a specified amount of bytes from the buffered data.
+
+  }, {
+    key: "_getBuffer",
+    value: function _getBuffer(n) {
+      var ret = Buffer.allocUnsafe(n);
+      var p = this.head;
+      var c = 1;
+      p.data.copy(ret);
+      n -= p.data.length;
+
+      while (p = p.next) {
+        var buf = p.data;
+        var nb = n > buf.length ? buf.length : n;
+        buf.copy(ret, ret.length - n, 0, nb);
+        n -= nb;
+
+        if (n === 0) {
+          if (nb === buf.length) {
+            ++c;
+            if (p.next) this.head = p.next;else this.head = this.tail = null;
+          } else {
+            this.head = p;
+            p.data = buf.slice(nb);
+          }
+
+          break;
+        }
+
+        ++c;
+      }
+
+      this.length -= c;
+      return ret;
+    } // Make sure the linked list only shows the minimal necessary information.
+
+  }, {
+    key: custom,
+    value: function value(_, options) {
+      return inspect(this, _objectSpread({}, options, {
+        // Only inspect one level.
+        depth: 0,
+        // It should not recurse.
+        customInspect: false
+      }));
+    }
+  }]);
 
   return BufferList;
 }();
-},{"buffer":16,"util":15}],34:[function(require,module,exports){
-(function (process){
+},{"buffer":"buffer","util":15}],34:[function(require,module,exports){
+(function (process){(function (){
 'use strict'; // undocumented cb() API, needed for core, not for public API
 
 function destroy(err, cb) {
@@ -7727,8 +6106,13 @@ function destroy(err, cb) {
   if (readableDestroyed || writableDestroyed) {
     if (cb) {
       cb(err);
-    } else if (err && (!this._writableState || !this._writableState.errorEmitted)) {
-      process.nextTick(emitErrorNT, this, err);
+    } else if (err) {
+      if (!this._writableState) {
+        process.nextTick(emitErrorNT, this, err);
+      } else if (!this._writableState.errorEmitted) {
+        this._writableState.errorEmitted = true;
+        process.nextTick(emitErrorNT, this, err);
+      }
     }
 
     return this;
@@ -7747,10 +6131,13 @@ function destroy(err, cb) {
 
   this._destroy(err || null, function (err) {
     if (!cb && err) {
-      process.nextTick(emitErrorAndCloseNT, _this, err);
-
-      if (_this._writableState) {
+      if (!_this._writableState) {
+        process.nextTick(emitErrorAndCloseNT, _this, err);
+      } else if (!_this._writableState.errorEmitted) {
         _this._writableState.errorEmitted = true;
+        process.nextTick(emitErrorAndCloseNT, _this, err);
+      } else {
+        process.nextTick(emitCloseNT, _this);
       }
     } else if (cb) {
       process.nextTick(emitCloseNT, _this);
@@ -7797,11 +6184,23 @@ function emitErrorNT(self, err) {
   self.emit('error', err);
 }
 
+function errorOrDestroy(stream, err) {
+  // We have tests that rely on errors being emitted
+  // in the same tick, so changing this is semver major.
+  // For now when you opt-in to autoDestroy we allow
+  // the error to be emitted nextTick. In a future
+  // semver major update we should change the default to this.
+  var rState = stream._readableState;
+  var wState = stream._writableState;
+  if (rState && rState.autoDestroy || wState && wState.autoDestroy) stream.destroy(err);else stream.emit('error', err);
+}
+
 module.exports = {
   destroy: destroy,
-  undestroy: undestroy
+  undestroy: undestroy,
+  errorOrDestroy: errorOrDestroy
 };
-}).call(this,require('_process'))
+}).call(this)}).call(this,require('_process'))
 },{"_process":23}],35:[function(require,module,exports){
 // Ported from https://github.com/mafintosh/end-of-stream with
 // permission from the author, Mathias Buus (@mafintosh).
@@ -7907,7 +6306,12 @@ function eos(stream, opts, callback) {
 }
 
 module.exports = eos;
-},{"../../../errors":25}],36:[function(require,module,exports){
+},{"../../../errors":26}],36:[function(require,module,exports){
+module.exports = function () {
+  throw new Error('Readable.from is not available in the browser')
+};
+
+},{}],37:[function(require,module,exports){
 // Ported from https://github.com/mafintosh/pump with
 // permission from the author, Mathias Buus (@mafintosh).
 'use strict';
@@ -8005,7 +6409,7 @@ function pipeline() {
 }
 
 module.exports = pipeline;
-},{"../../../errors":25,"./end-of-stream":35}],37:[function(require,module,exports){
+},{"../../../errors":26,"./end-of-stream":35}],38:[function(require,module,exports){
 'use strict';
 
 var ERR_INVALID_OPT_VALUE = require('../../../errors').codes.ERR_INVALID_OPT_VALUE;
@@ -8033,10 +6437,10 @@ function getHighWaterMark(state, options, duplexKey, isDuplex) {
 module.exports = {
   getHighWaterMark: getHighWaterMark
 };
-},{"../../../errors":25}],38:[function(require,module,exports){
+},{"../../../errors":26}],39:[function(require,module,exports){
 module.exports = require('events').EventEmitter;
 
-},{"events":"events"}],39:[function(require,module,exports){
+},{"events":"events"}],40:[function(require,module,exports){
 exports = module.exports = require('./lib/_stream_readable.js');
 exports.Stream = exports;
 exports.Readable = exports;
@@ -8047,13 +6451,15 @@ exports.PassThrough = require('./lib/_stream_passthrough.js');
 exports.finished = require('./lib/internal/streams/end-of-stream.js');
 exports.pipeline = require('./lib/internal/streams/pipeline.js');
 
-},{"./lib/_stream_duplex.js":27,"./lib/_stream_passthrough.js":28,"./lib/_stream_readable.js":29,"./lib/_stream_transform.js":30,"./lib/_stream_writable.js":31,"./lib/internal/streams/end-of-stream.js":35,"./lib/internal/streams/pipeline.js":36}],40:[function(require,module,exports){
-(function (process){
+},{"./lib/_stream_duplex.js":27,"./lib/_stream_passthrough.js":28,"./lib/_stream_readable.js":29,"./lib/_stream_transform.js":30,"./lib/_stream_writable.js":31,"./lib/internal/streams/end-of-stream.js":35,"./lib/internal/streams/pipeline.js":37}],41:[function(require,module,exports){
+/*! run-parallel. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
 module.exports = runParallel
 
+const queueMicrotask = require('queue-microtask')
+
 function runParallel (tasks, cb) {
-  var results, pending, keys
-  var isSync = true
+  let results, pending, keys
+  let isSync = true
 
   if (Array.isArray(tasks)) {
     results = []
@@ -8069,7 +6475,7 @@ function runParallel (tasks, cb) {
       if (cb) cb(err, results)
       cb = null
     }
-    if (isSync) process.nextTick(end)
+    if (isSync) queueMicrotask(end)
     else end()
   }
 
@@ -8098,8 +6504,8 @@ function runParallel (tasks, cb) {
   isSync = false
 }
 
-}).call(this,require('_process'))
-},{"_process":23}],41:[function(require,module,exports){
+},{"queue-microtask":24}],42:[function(require,module,exports){
+/*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
 /* eslint-disable node/no-deprecated-api */
 var buffer = require('buffer')
 var Buffer = buffer.Buffer
@@ -8165,7 +6571,7 @@ SafeBuffer.allocUnsafeSlow = function (size) {
   return buffer.SlowBuffer(size)
 }
 
-},{"buffer":16}],42:[function(require,module,exports){
+},{"buffer":"buffer"}],43:[function(require,module,exports){
 var Buffer = require('safe-buffer').Buffer
 
 // prototype class for hash functions
@@ -8248,7 +6654,7 @@ Hash.prototype._update = function () {
 
 module.exports = Hash
 
-},{"safe-buffer":41}],43:[function(require,module,exports){
+},{"safe-buffer":42}],44:[function(require,module,exports){
 /*
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-1, as defined
  * in FIPS PUB 180-1
@@ -8349,156 +6755,1032 @@ Sha1.prototype._hash = function () {
 
 module.exports = Sha1
 
-},{"./hash":42,"inherits":20,"safe-buffer":41}],44:[function(require,module,exports){
-(function (Buffer){
-module.exports = Peer
+},{"./hash":43,"inherits":20,"safe-buffer":42}],45:[function(require,module,exports){
+/*! simple-peer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
+const debug = require('debug')('simple-peer')
+const getBrowserRTC = require('get-browser-rtc')
+const randombytes = require('randombytes')
+const stream = require('readable-stream')
+const queueMicrotask = require('queue-microtask') // TODO: remove when Node 10 is not supported
+const errCode = require('err-code')
+const { Buffer } = require('buffer')
 
-var debug = require('debug')('simple-peer')
-var getBrowserRTC = require('get-browser-rtc')
-var inherits = require('inherits')
-var randombytes = require('randombytes')
-var stream = require('readable-stream')
+const MAX_BUFFERED_AMOUNT = 64 * 1024
+const ICECOMPLETE_TIMEOUT = 5 * 1000
+const CHANNEL_CLOSING_TIMEOUT = 5 * 1000
 
-var MAX_BUFFERED_AMOUNT = 64 * 1024
-var ICECOMPLETE_TIMEOUT = 5 * 1000
-var CHANNEL_CLOSING_TIMEOUT = 5 * 1000
+// HACK: Filter trickle lines when trickle is disabled #354
+function filterTrickle (sdp) {
+  return sdp.replace(/a=ice-options:trickle\s\n/g, '')
+}
 
-inherits(Peer, stream.Duplex)
+function warn (message) {
+  console.warn(message)
+}
 
 /**
  * WebRTC peer connection. Same API as node core `net.Socket`, plus a few extra methods.
  * Duplex stream.
  * @param {Object} opts
  */
-function Peer (opts) {
-  var self = this
-  if (!(self instanceof Peer)) return new Peer(opts)
+class Peer extends stream.Duplex {
+  constructor (opts) {
+    opts = Object.assign({
+      allowHalfOpen: false
+    }, opts)
 
-  self._id = randombytes(4).toString('hex').slice(0, 7)
-  self._debug('new peer %o', opts)
+    super(opts)
 
-  opts = Object.assign({
-    allowHalfOpen: false
-  }, opts)
+    this._id = randombytes(4).toString('hex').slice(0, 7)
+    this._debug('new peer %o', opts)
 
-  stream.Duplex.call(self, opts)
+    this.channelName = opts.initiator
+      ? opts.channelName || randombytes(20).toString('hex')
+      : null
 
-  self.channelName = opts.initiator
-    ? opts.channelName || randombytes(20).toString('hex')
-    : null
+    this.initiator = opts.initiator || false
+    this.channelConfig = opts.channelConfig || Peer.channelConfig
+    this.channelNegotiated = this.channelConfig.negotiated
+    this.config = Object.assign({}, Peer.config, opts.config)
+    this.offerOptions = opts.offerOptions || {}
+    this.answerOptions = opts.answerOptions || {}
+    this.sdpTransform = opts.sdpTransform || (sdp => sdp)
+    this.streams = opts.streams || (opts.stream ? [opts.stream] : []) // support old "stream" option
+    this.trickle = opts.trickle !== undefined ? opts.trickle : true
+    this.allowHalfTrickle = opts.allowHalfTrickle !== undefined ? opts.allowHalfTrickle : false
+    this.iceCompleteTimeout = opts.iceCompleteTimeout || ICECOMPLETE_TIMEOUT
 
-  self.initiator = opts.initiator || false
-  self.channelConfig = opts.channelConfig || Peer.channelConfig
-  self.config = Object.assign({}, Peer.config, opts.config)
-  self.offerOptions = opts.offerOptions || {}
-  self.answerOptions = opts.answerOptions || {}
-  self.sdpTransform = opts.sdpTransform || function (sdp) { return sdp }
-  self.streams = opts.streams || (opts.stream ? [opts.stream] : []) // support old "stream" option
-  self.trickle = opts.trickle !== undefined ? opts.trickle : true
-  self.allowHalfTrickle = opts.allowHalfTrickle !== undefined ? opts.allowHalfTrickle : false
-  self.iceCompleteTimeout = opts.iceCompleteTimeout || ICECOMPLETE_TIMEOUT
+    this.destroyed = false
+    this.destroying = false
+    this._connected = false
 
-  self.destroyed = false
-  self._connected = false
+    this.remoteAddress = undefined
+    this.remoteFamily = undefined
+    this.remotePort = undefined
+    this.localAddress = undefined
+    this.localFamily = undefined
+    this.localPort = undefined
 
-  self.remoteAddress = undefined
-  self.remoteFamily = undefined
-  self.remotePort = undefined
-  self.localAddress = undefined
-  self.localFamily = undefined
-  self.localPort = undefined
+    this._wrtc = (opts.wrtc && typeof opts.wrtc === 'object')
+      ? opts.wrtc
+      : getBrowserRTC()
 
-  self._wrtc = (opts.wrtc && typeof opts.wrtc === 'object')
-    ? opts.wrtc
-    : getBrowserRTC()
+    if (!this._wrtc) {
+      if (typeof window === 'undefined') {
+        throw errCode(new Error('No WebRTC support: Specify `opts.wrtc` option in this environment'), 'ERR_WEBRTC_SUPPORT')
+      } else {
+        throw errCode(new Error('No WebRTC support: Not a supported browser'), 'ERR_WEBRTC_SUPPORT')
+      }
+    }
 
-  if (!self._wrtc) {
-    if (typeof window === 'undefined') {
-      throw makeError('No WebRTC support: Specify `opts.wrtc` option in this environment', 'ERR_WEBRTC_SUPPORT')
+    this._pcReady = false
+    this._channelReady = false
+    this._iceComplete = false // ice candidate trickle done (got null candidate)
+    this._iceCompleteTimer = null // send an offer/answer anyway after some timeout
+    this._channel = null
+    this._pendingCandidates = []
+
+    this._isNegotiating = false // is this peer waiting for negotiation to complete?
+    this._firstNegotiation = true
+    this._batchedNegotiation = false // batch synchronous negotiations
+    this._queuedNegotiation = false // is there a queued negotiation request?
+    this._sendersAwaitingStable = []
+    this._senderMap = new Map()
+    this._closingInterval = null
+
+    this._remoteTracks = []
+    this._remoteStreams = []
+
+    this._chunk = null
+    this._cb = null
+    this._interval = null
+
+    try {
+      this._pc = new (this._wrtc.RTCPeerConnection)(this.config)
+    } catch (err) {
+      this.destroy(errCode(err, 'ERR_PC_CONSTRUCTOR'))
+      return
+    }
+
+    // We prefer feature detection whenever possible, but sometimes that's not
+    // possible for certain implementations.
+    this._isReactNativeWebrtc = typeof this._pc._peerConnectionId === 'number'
+
+    this._pc.oniceconnectionstatechange = () => {
+      this._onIceStateChange()
+    }
+    this._pc.onicegatheringstatechange = () => {
+      this._onIceStateChange()
+    }
+    this._pc.onconnectionstatechange = () => {
+      this._onConnectionStateChange()
+    }
+    this._pc.onsignalingstatechange = () => {
+      this._onSignalingStateChange()
+    }
+    this._pc.onicecandidate = event => {
+      this._onIceCandidate(event)
+    }
+
+    // HACK: Fix for odd Firefox behavior, see: https://github.com/feross/simple-peer/pull/783
+    if (typeof this._pc.peerIdentity === 'object') {
+      this._pc.peerIdentity.catch(err => {
+        this.destroy(errCode(err, 'ERR_PC_PEER_IDENTITY'))
+      })
+    }
+
+    // Other spec events, unused by this implementation:
+    // - onconnectionstatechange
+    // - onicecandidateerror
+    // - onfingerprintfailure
+    // - onnegotiationneeded
+
+    if (this.initiator || this.channelNegotiated) {
+      this._setupData({
+        channel: this._pc.createDataChannel(this.channelName, this.channelConfig)
+      })
     } else {
-      throw makeError('No WebRTC support: Not a supported browser', 'ERR_WEBRTC_SUPPORT')
+      this._pc.ondatachannel = event => {
+        this._setupData(event)
+      }
+    }
+
+    if (this.streams) {
+      this.streams.forEach(stream => {
+        this.addStream(stream)
+      })
+    }
+    this._pc.ontrack = event => {
+      this._onTrack(event)
+    }
+
+    this._debug('initial negotiation')
+    this._needsNegotiation()
+
+    this._onFinishBound = () => {
+      this._onFinish()
+    }
+    this.once('finish', this._onFinishBound)
+  }
+
+  get bufferSize () {
+    return (this._channel && this._channel.bufferedAmount) || 0
+  }
+
+  // HACK: it's possible channel.readyState is "closing" before peer.destroy() fires
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=882743
+  get connected () {
+    return (this._connected && this._channel.readyState === 'open')
+  }
+
+  address () {
+    return { port: this.localPort, family: this.localFamily, address: this.localAddress }
+  }
+
+  signal (data) {
+    if (this.destroying) return
+    if (this.destroyed) throw errCode(new Error('cannot signal after peer is destroyed'), 'ERR_DESTROYED')
+    if (typeof data === 'string') {
+      try {
+        data = JSON.parse(data)
+      } catch (err) {
+        data = {}
+      }
+    }
+    this._debug('signal()')
+
+    if (data.renegotiate && this.initiator) {
+      this._debug('got request to renegotiate')
+      this._needsNegotiation()
+    }
+    if (data.transceiverRequest && this.initiator) {
+      this._debug('got request for transceiver')
+      this.addTransceiver(data.transceiverRequest.kind, data.transceiverRequest.init)
+    }
+    if (data.candidate) {
+      if (this._pc.remoteDescription && this._pc.remoteDescription.type) {
+        this._addIceCandidate(data.candidate)
+      } else {
+        this._pendingCandidates.push(data.candidate)
+      }
+    }
+    if (data.sdp) {
+      this._pc.setRemoteDescription(new (this._wrtc.RTCSessionDescription)(data))
+        .then(() => {
+          if (this.destroyed) return
+
+          this._pendingCandidates.forEach(candidate => {
+            this._addIceCandidate(candidate)
+          })
+          this._pendingCandidates = []
+
+          if (this._pc.remoteDescription.type === 'offer') this._createAnswer()
+        })
+        .catch(err => {
+          this.destroy(errCode(err, 'ERR_SET_REMOTE_DESCRIPTION'))
+        })
+    }
+    if (!data.sdp && !data.candidate && !data.renegotiate && !data.transceiverRequest) {
+      this.destroy(errCode(new Error('signal() called with invalid signal data'), 'ERR_SIGNALING'))
     }
   }
 
-  self._pcReady = false
-  self._channelReady = false
-  self._iceComplete = false // ice candidate trickle done (got null candidate)
-  self._iceCompleteTimer = null // send an offer/answer anyway after some timeout
-  self._channel = null
-  self._pendingCandidates = []
-
-  self._isNegotiating = !self.initiator // is this peer waiting for negotiation to complete?
-  self._batchedNegotiation = false // batch synchronous negotiations
-  self._queuedNegotiation = false // is there a queued negotiation request?
-  self._sendersAwaitingStable = []
-  self._senderMap = new Map()
-  self._firstStable = true
-  self._closingInterval = null
-
-  self._remoteTracks = []
-  self._remoteStreams = []
-
-  self._chunk = null
-  self._cb = null
-  self._interval = null
-
-  try {
-    self._pc = new (self._wrtc.RTCPeerConnection)(self.config)
-  } catch (err) {
-    setTimeout(() => self.destroy(err), 0)
-    return
+  _addIceCandidate (candidate) {
+    const iceCandidateObj = new this._wrtc.RTCIceCandidate(candidate)
+    this._pc.addIceCandidate(iceCandidateObj)
+      .catch(err => {
+        if (!iceCandidateObj.address || iceCandidateObj.address.endsWith('.local')) {
+          warn('Ignoring unsupported ICE candidate.')
+        } else {
+          this.destroy(errCode(err, 'ERR_ADD_ICE_CANDIDATE'))
+        }
+      })
   }
 
-  // We prefer feature detection whenever possible, but sometimes that's not
-  // possible for certain implementations.
-  self._isReactNativeWebrtc = typeof self._pc._peerConnectionId === 'number'
-
-  self._pc.oniceconnectionstatechange = function () {
-    self._onIceStateChange()
-  }
-  self._pc.onicegatheringstatechange = function () {
-    self._onIceStateChange()
-  }
-  self._pc.onsignalingstatechange = function () {
-    self._onSignalingStateChange()
-  }
-  self._pc.onicecandidate = function (event) {
-    self._onIceCandidate(event)
+  /**
+   * Send text/binary data to the remote peer.
+   * @param {ArrayBufferView|ArrayBuffer|Buffer|string|Blob} chunk
+   */
+  send (chunk) {
+    if (this.destroying) return
+    if (this.destroyed) throw errCode(new Error('cannot send after peer is destroyed'), 'ERR_DESTROYED')
+    this._channel.send(chunk)
   }
 
-  // Other spec events, unused by this implementation:
-  // - onconnectionstatechange
-  // - onicecandidateerror
-  // - onfingerprintfailure
-  // - onnegotiationneeded
+  /**
+   * Add a Transceiver to the connection.
+   * @param {String} kind
+   * @param {Object} init
+   */
+  addTransceiver (kind, init) {
+    if (this.destroying) return
+    if (this.destroyed) throw errCode(new Error('cannot addTransceiver after peer is destroyed'), 'ERR_DESTROYED')
+    this._debug('addTransceiver()')
 
-  if (self.initiator) {
-    self._setupData({
-      channel: self._pc.createDataChannel(self.channelName, self.channelConfig)
-    })
-  } else {
-    self._pc.ondatachannel = function (event) {
-      self._setupData(event)
+    if (this.initiator) {
+      try {
+        this._pc.addTransceiver(kind, init)
+        this._needsNegotiation()
+      } catch (err) {
+        this.destroy(errCode(err, 'ERR_ADD_TRANSCEIVER'))
+      }
+    } else {
+      this.emit('signal', { // request initiator to renegotiate
+        type: 'transceiverRequest',
+        transceiverRequest: { kind, init }
+      })
     }
   }
 
-  if (self.streams) {
-    self.streams.forEach(function (stream) {
-      self.addStream(stream)
+  /**
+   * Add a MediaStream to the connection.
+   * @param {MediaStream} stream
+   */
+  addStream (stream) {
+    if (this.destroying) return
+    if (this.destroyed) throw errCode(new Error('cannot addStream after peer is destroyed'), 'ERR_DESTROYED')
+    this._debug('addStream()')
+
+    stream.getTracks().forEach(track => {
+      this.addTrack(track, stream)
     })
   }
-  self._pc.ontrack = function (event) {
-    self._onTrack(event)
+
+  /**
+   * Add a MediaStreamTrack to the connection.
+   * @param {MediaStreamTrack} track
+   * @param {MediaStream} stream
+   */
+  addTrack (track, stream) {
+    if (this.destroying) return
+    if (this.destroyed) throw errCode(new Error('cannot addTrack after peer is destroyed'), 'ERR_DESTROYED')
+    this._debug('addTrack()')
+
+    const submap = this._senderMap.get(track) || new Map() // nested Maps map [track, stream] to sender
+    let sender = submap.get(stream)
+    if (!sender) {
+      sender = this._pc.addTrack(track, stream)
+      submap.set(stream, sender)
+      this._senderMap.set(track, submap)
+      this._needsNegotiation()
+    } else if (sender.removed) {
+      throw errCode(new Error('Track has been removed. You should enable/disable tracks that you want to re-add.'), 'ERR_SENDER_REMOVED')
+    } else {
+      throw errCode(new Error('Track has already been added to that stream.'), 'ERR_SENDER_ALREADY_ADDED')
+    }
   }
 
-  if (self.initiator) {
-    self._needsNegotiation()
+  /**
+   * Replace a MediaStreamTrack by another in the connection.
+   * @param {MediaStreamTrack} oldTrack
+   * @param {MediaStreamTrack} newTrack
+   * @param {MediaStream} stream
+   */
+  replaceTrack (oldTrack, newTrack, stream) {
+    if (this.destroying) return
+    if (this.destroyed) throw errCode(new Error('cannot replaceTrack after peer is destroyed'), 'ERR_DESTROYED')
+    this._debug('replaceTrack()')
+
+    const submap = this._senderMap.get(oldTrack)
+    const sender = submap ? submap.get(stream) : null
+    if (!sender) {
+      throw errCode(new Error('Cannot replace track that was never added.'), 'ERR_TRACK_NOT_ADDED')
+    }
+    if (newTrack) this._senderMap.set(newTrack, submap)
+
+    if (sender.replaceTrack != null) {
+      sender.replaceTrack(newTrack)
+    } else {
+      this.destroy(errCode(new Error('replaceTrack is not supported in this browser'), 'ERR_UNSUPPORTED_REPLACETRACK'))
+    }
   }
 
-  self._onFinishBound = function () {
-    self._onFinish()
+  /**
+   * Remove a MediaStreamTrack from the connection.
+   * @param {MediaStreamTrack} track
+   * @param {MediaStream} stream
+   */
+  removeTrack (track, stream) {
+    if (this.destroying) return
+    if (this.destroyed) throw errCode(new Error('cannot removeTrack after peer is destroyed'), 'ERR_DESTROYED')
+    this._debug('removeSender()')
+
+    const submap = this._senderMap.get(track)
+    const sender = submap ? submap.get(stream) : null
+    if (!sender) {
+      throw errCode(new Error('Cannot remove track that was never added.'), 'ERR_TRACK_NOT_ADDED')
+    }
+    try {
+      sender.removed = true
+      this._pc.removeTrack(sender)
+    } catch (err) {
+      if (err.name === 'NS_ERROR_UNEXPECTED') {
+        this._sendersAwaitingStable.push(sender) // HACK: Firefox must wait until (signalingState === stable) https://bugzilla.mozilla.org/show_bug.cgi?id=1133874
+      } else {
+        this.destroy(errCode(err, 'ERR_REMOVE_TRACK'))
+      }
+    }
+    this._needsNegotiation()
   }
-  self.once('finish', self._onFinishBound)
+
+  /**
+   * Remove a MediaStream from the connection.
+   * @param {MediaStream} stream
+   */
+  removeStream (stream) {
+    if (this.destroying) return
+    if (this.destroyed) throw errCode(new Error('cannot removeStream after peer is destroyed'), 'ERR_DESTROYED')
+    this._debug('removeSenders()')
+
+    stream.getTracks().forEach(track => {
+      this.removeTrack(track, stream)
+    })
+  }
+
+  _needsNegotiation () {
+    this._debug('_needsNegotiation')
+    if (this._batchedNegotiation) return // batch synchronous renegotiations
+    this._batchedNegotiation = true
+    queueMicrotask(() => {
+      this._batchedNegotiation = false
+      if (this.initiator || !this._firstNegotiation) {
+        this._debug('starting batched negotiation')
+        this.negotiate()
+      } else {
+        this._debug('non-initiator initial negotiation request discarded')
+      }
+      this._firstNegotiation = false
+    })
+  }
+
+  negotiate () {
+    if (this.destroying) return
+    if (this.destroyed) throw errCode(new Error('cannot negotiate after peer is destroyed'), 'ERR_DESTROYED')
+
+    if (this.initiator) {
+      if (this._isNegotiating) {
+        this._queuedNegotiation = true
+        this._debug('already negotiating, queueing')
+      } else {
+        this._debug('start negotiation')
+        setTimeout(() => { // HACK: Chrome crashes if we immediately call createOffer
+          this._createOffer()
+        }, 0)
+      }
+    } else {
+      if (this._isNegotiating) {
+        this._queuedNegotiation = true
+        this._debug('already negotiating, queueing')
+      } else {
+        this._debug('requesting negotiation from initiator')
+        this.emit('signal', { // request initiator to renegotiate
+          type: 'renegotiate',
+          renegotiate: true
+        })
+      }
+    }
+    this._isNegotiating = true
+  }
+
+  // TODO: Delete this method once readable-stream is updated to contain a default
+  // implementation of destroy() that automatically calls _destroy()
+  // See: https://github.com/nodejs/readable-stream/issues/283
+  destroy (err) {
+    this._destroy(err, () => {})
+  }
+
+  _destroy (err, cb) {
+    if (this.destroyed || this.destroying) return
+    this.destroying = true
+
+    this._debug('destroying (error: %s)', err && (err.message || err))
+
+    queueMicrotask(() => { // allow events concurrent with the call to _destroy() to fire (see #692)
+      this.destroyed = true
+      this.destroying = false
+
+      this._debug('destroy (error: %s)', err && (err.message || err))
+
+      this.readable = this.writable = false
+
+      if (!this._readableState.ended) this.push(null)
+      if (!this._writableState.finished) this.end()
+
+      this._connected = false
+      this._pcReady = false
+      this._channelReady = false
+      this._remoteTracks = null
+      this._remoteStreams = null
+      this._senderMap = null
+
+      clearInterval(this._closingInterval)
+      this._closingInterval = null
+
+      clearInterval(this._interval)
+      this._interval = null
+      this._chunk = null
+      this._cb = null
+
+      if (this._onFinishBound) this.removeListener('finish', this._onFinishBound)
+      this._onFinishBound = null
+
+      if (this._channel) {
+        try {
+          this._channel.close()
+        } catch (err) {}
+
+        // allow events concurrent with destruction to be handled
+        this._channel.onmessage = null
+        this._channel.onopen = null
+        this._channel.onclose = null
+        this._channel.onerror = null
+      }
+      if (this._pc) {
+        try {
+          this._pc.close()
+        } catch (err) {}
+
+        // allow events concurrent with destruction to be handled
+        this._pc.oniceconnectionstatechange = null
+        this._pc.onicegatheringstatechange = null
+        this._pc.onsignalingstatechange = null
+        this._pc.onicecandidate = null
+        this._pc.ontrack = null
+        this._pc.ondatachannel = null
+      }
+      this._pc = null
+      this._channel = null
+
+      if (err) this.emit('error', err)
+      this.emit('close')
+      cb()
+    })
+  }
+
+  _setupData (event) {
+    if (!event.channel) {
+      // In some situations `pc.createDataChannel()` returns `undefined` (in wrtc),
+      // which is invalid behavior. Handle it gracefully.
+      // See: https://github.com/feross/simple-peer/issues/163
+      return this.destroy(errCode(new Error('Data channel event is missing `channel` property'), 'ERR_DATA_CHANNEL'))
+    }
+
+    this._channel = event.channel
+    this._channel.binaryType = 'arraybuffer'
+
+    if (typeof this._channel.bufferedAmountLowThreshold === 'number') {
+      this._channel.bufferedAmountLowThreshold = MAX_BUFFERED_AMOUNT
+    }
+
+    this.channelName = this._channel.label
+
+    this._channel.onmessage = event => {
+      this._onChannelMessage(event)
+    }
+    this._channel.onbufferedamountlow = () => {
+      this._onChannelBufferedAmountLow()
+    }
+    this._channel.onopen = () => {
+      this._onChannelOpen()
+    }
+    this._channel.onclose = () => {
+      this._onChannelClose()
+    }
+    this._channel.onerror = err => {
+      this.destroy(errCode(err, 'ERR_DATA_CHANNEL'))
+    }
+
+    // HACK: Chrome will sometimes get stuck in readyState "closing", let's check for this condition
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=882743
+    let isClosing = false
+    this._closingInterval = setInterval(() => { // No "onclosing" event
+      if (this._channel && this._channel.readyState === 'closing') {
+        if (isClosing) this._onChannelClose() // closing timed out: equivalent to onclose firing
+        isClosing = true
+      } else {
+        isClosing = false
+      }
+    }, CHANNEL_CLOSING_TIMEOUT)
+  }
+
+  _read () {}
+
+  _write (chunk, encoding, cb) {
+    if (this.destroyed) return cb(errCode(new Error('cannot write after peer is destroyed'), 'ERR_DATA_CHANNEL'))
+
+    if (this._connected) {
+      try {
+        this.send(chunk)
+      } catch (err) {
+        return this.destroy(errCode(err, 'ERR_DATA_CHANNEL'))
+      }
+      if (this._channel.bufferedAmount > MAX_BUFFERED_AMOUNT) {
+        this._debug('start backpressure: bufferedAmount %d', this._channel.bufferedAmount)
+        this._cb = cb
+      } else {
+        cb(null)
+      }
+    } else {
+      this._debug('write before connect')
+      this._chunk = chunk
+      this._cb = cb
+    }
+  }
+
+  // When stream finishes writing, close socket. Half open connections are not
+  // supported.
+  _onFinish () {
+    if (this.destroyed) return
+
+    // Wait a bit before destroying so the socket flushes.
+    // TODO: is there a more reliable way to accomplish this?
+    const destroySoon = () => {
+      setTimeout(() => this.destroy(), 1000)
+    }
+
+    if (this._connected) {
+      destroySoon()
+    } else {
+      this.once('connect', destroySoon)
+    }
+  }
+
+  _startIceCompleteTimeout () {
+    if (this.destroyed) return
+    if (this._iceCompleteTimer) return
+    this._debug('started iceComplete timeout')
+    this._iceCompleteTimer = setTimeout(() => {
+      if (!this._iceComplete) {
+        this._iceComplete = true
+        this._debug('iceComplete timeout completed')
+        this.emit('iceTimeout')
+        this.emit('_iceComplete')
+      }
+    }, this.iceCompleteTimeout)
+  }
+
+  _createOffer () {
+    if (this.destroyed) return
+
+    this._pc.createOffer(this.offerOptions)
+      .then(offer => {
+        if (this.destroyed) return
+        if (!this.trickle && !this.allowHalfTrickle) offer.sdp = filterTrickle(offer.sdp)
+        offer.sdp = this.sdpTransform(offer.sdp)
+
+        const sendOffer = () => {
+          if (this.destroyed) return
+          const signal = this._pc.localDescription || offer
+          this._debug('signal')
+          this.emit('signal', {
+            type: signal.type,
+            sdp: signal.sdp
+          })
+        }
+
+        const onSuccess = () => {
+          this._debug('createOffer success')
+          if (this.destroyed) return
+          if (this.trickle || this._iceComplete) sendOffer()
+          else this.once('_iceComplete', sendOffer) // wait for candidates
+        }
+
+        const onError = err => {
+          this.destroy(errCode(err, 'ERR_SET_LOCAL_DESCRIPTION'))
+        }
+
+        this._pc.setLocalDescription(offer)
+          .then(onSuccess)
+          .catch(onError)
+      })
+      .catch(err => {
+        this.destroy(errCode(err, 'ERR_CREATE_OFFER'))
+      })
+  }
+
+  _requestMissingTransceivers () {
+    if (this._pc.getTransceivers) {
+      this._pc.getTransceivers().forEach(transceiver => {
+        if (!transceiver.mid && transceiver.sender.track && !transceiver.requested) {
+          transceiver.requested = true // HACK: Safari returns negotiated transceivers with a null mid
+          this.addTransceiver(transceiver.sender.track.kind)
+        }
+      })
+    }
+  }
+
+  _createAnswer () {
+    if (this.destroyed) return
+
+    this._pc.createAnswer(this.answerOptions)
+      .then(answer => {
+        if (this.destroyed) return
+        if (!this.trickle && !this.allowHalfTrickle) answer.sdp = filterTrickle(answer.sdp)
+        answer.sdp = this.sdpTransform(answer.sdp)
+
+        const sendAnswer = () => {
+          if (this.destroyed) return
+          const signal = this._pc.localDescription || answer
+          this._debug('signal')
+          this.emit('signal', {
+            type: signal.type,
+            sdp: signal.sdp
+          })
+          if (!this.initiator) this._requestMissingTransceivers()
+        }
+
+        const onSuccess = () => {
+          if (this.destroyed) return
+          if (this.trickle || this._iceComplete) sendAnswer()
+          else this.once('_iceComplete', sendAnswer)
+        }
+
+        const onError = err => {
+          this.destroy(errCode(err, 'ERR_SET_LOCAL_DESCRIPTION'))
+        }
+
+        this._pc.setLocalDescription(answer)
+          .then(onSuccess)
+          .catch(onError)
+      })
+      .catch(err => {
+        this.destroy(errCode(err, 'ERR_CREATE_ANSWER'))
+      })
+  }
+
+  _onConnectionStateChange () {
+    if (this.destroyed) return
+    if (this._pc.connectionState === 'failed') {
+      this.destroy(errCode(new Error('Connection failed.'), 'ERR_CONNECTION_FAILURE'))
+    }
+  }
+
+  _onIceStateChange () {
+    if (this.destroyed) return
+    const iceConnectionState = this._pc.iceConnectionState
+    const iceGatheringState = this._pc.iceGatheringState
+
+    this._debug(
+      'iceStateChange (connection: %s) (gathering: %s)',
+      iceConnectionState,
+      iceGatheringState
+    )
+    this.emit('iceStateChange', iceConnectionState, iceGatheringState)
+
+    if (iceConnectionState === 'connected' || iceConnectionState === 'completed') {
+      this._pcReady = true
+      this._maybeReady()
+    }
+    if (iceConnectionState === 'failed') {
+      this.destroy(errCode(new Error('Ice connection failed.'), 'ERR_ICE_CONNECTION_FAILURE'))
+    }
+    if (iceConnectionState === 'closed') {
+      this.destroy(errCode(new Error('Ice connection closed.'), 'ERR_ICE_CONNECTION_CLOSED'))
+    }
+  }
+
+  getStats (cb) {
+    // statreports can come with a value array instead of properties
+    const flattenValues = report => {
+      if (Object.prototype.toString.call(report.values) === '[object Array]') {
+        report.values.forEach(value => {
+          Object.assign(report, value)
+        })
+      }
+      return report
+    }
+
+    // Promise-based getStats() (standard)
+    if (this._pc.getStats.length === 0 || this._isReactNativeWebrtc) {
+      this._pc.getStats()
+        .then(res => {
+          const reports = []
+          res.forEach(report => {
+            reports.push(flattenValues(report))
+          })
+          cb(null, reports)
+        }, err => cb(err))
+
+    // Single-parameter callback-based getStats() (non-standard)
+    } else if (this._pc.getStats.length > 0) {
+      this._pc.getStats(res => {
+        // If we destroy connection in `connect` callback this code might happen to run when actual connection is already closed
+        if (this.destroyed) return
+
+        const reports = []
+        res.result().forEach(result => {
+          const report = {}
+          result.names().forEach(name => {
+            report[name] = result.stat(name)
+          })
+          report.id = result.id
+          report.type = result.type
+          report.timestamp = result.timestamp
+          reports.push(flattenValues(report))
+        })
+        cb(null, reports)
+      }, err => cb(err))
+
+    // Unknown browser, skip getStats() since it's anyone's guess which style of
+    // getStats() they implement.
+    } else {
+      cb(null, [])
+    }
+  }
+
+  _maybeReady () {
+    this._debug('maybeReady pc %s channel %s', this._pcReady, this._channelReady)
+    if (this._connected || this._connecting || !this._pcReady || !this._channelReady) return
+
+    this._connecting = true
+
+    // HACK: We can't rely on order here, for details see https://github.com/js-platform/node-webrtc/issues/339
+    const findCandidatePair = () => {
+      if (this.destroyed) return
+
+      this.getStats((err, items) => {
+        if (this.destroyed) return
+
+        // Treat getStats error as non-fatal. It's not essential.
+        if (err) items = []
+
+        const remoteCandidates = {}
+        const localCandidates = {}
+        const candidatePairs = {}
+        let foundSelectedCandidatePair = false
+
+        items.forEach(item => {
+          // TODO: Once all browsers support the hyphenated stats report types, remove
+          // the non-hypenated ones
+          if (item.type === 'remotecandidate' || item.type === 'remote-candidate') {
+            remoteCandidates[item.id] = item
+          }
+          if (item.type === 'localcandidate' || item.type === 'local-candidate') {
+            localCandidates[item.id] = item
+          }
+          if (item.type === 'candidatepair' || item.type === 'candidate-pair') {
+            candidatePairs[item.id] = item
+          }
+        })
+
+        const setSelectedCandidatePair = selectedCandidatePair => {
+          foundSelectedCandidatePair = true
+
+          let local = localCandidates[selectedCandidatePair.localCandidateId]
+
+          if (local && (local.ip || local.address)) {
+            // Spec
+            this.localAddress = local.ip || local.address
+            this.localPort = Number(local.port)
+          } else if (local && local.ipAddress) {
+            // Firefox
+            this.localAddress = local.ipAddress
+            this.localPort = Number(local.portNumber)
+          } else if (typeof selectedCandidatePair.googLocalAddress === 'string') {
+            // TODO: remove this once Chrome 58 is released
+            local = selectedCandidatePair.googLocalAddress.split(':')
+            this.localAddress = local[0]
+            this.localPort = Number(local[1])
+          }
+          if (this.localAddress) {
+            this.localFamily = this.localAddress.includes(':') ? 'IPv6' : 'IPv4'
+          }
+
+          let remote = remoteCandidates[selectedCandidatePair.remoteCandidateId]
+
+          if (remote && (remote.ip || remote.address)) {
+            // Spec
+            this.remoteAddress = remote.ip || remote.address
+            this.remotePort = Number(remote.port)
+          } else if (remote && remote.ipAddress) {
+            // Firefox
+            this.remoteAddress = remote.ipAddress
+            this.remotePort = Number(remote.portNumber)
+          } else if (typeof selectedCandidatePair.googRemoteAddress === 'string') {
+            // TODO: remove this once Chrome 58 is released
+            remote = selectedCandidatePair.googRemoteAddress.split(':')
+            this.remoteAddress = remote[0]
+            this.remotePort = Number(remote[1])
+          }
+          if (this.remoteAddress) {
+            this.remoteFamily = this.remoteAddress.includes(':') ? 'IPv6' : 'IPv4'
+          }
+
+          this._debug(
+            'connect local: %s:%s remote: %s:%s',
+            this.localAddress,
+            this.localPort,
+            this.remoteAddress,
+            this.remotePort
+          )
+        }
+
+        items.forEach(item => {
+          // Spec-compliant
+          if (item.type === 'transport' && item.selectedCandidatePairId) {
+            setSelectedCandidatePair(candidatePairs[item.selectedCandidatePairId])
+          }
+
+          // Old implementations
+          if (
+            (item.type === 'googCandidatePair' && item.googActiveConnection === 'true') ||
+            ((item.type === 'candidatepair' || item.type === 'candidate-pair') && item.selected)
+          ) {
+            setSelectedCandidatePair(item)
+          }
+        })
+
+        // Ignore candidate pair selection in browsers like Safari 11 that do not have any local or remote candidates
+        // But wait until at least 1 candidate pair is available
+        if (!foundSelectedCandidatePair && (!Object.keys(candidatePairs).length || Object.keys(localCandidates).length)) {
+          setTimeout(findCandidatePair, 100)
+          return
+        } else {
+          this._connecting = false
+          this._connected = true
+        }
+
+        if (this._chunk) {
+          try {
+            this.send(this._chunk)
+          } catch (err) {
+            return this.destroy(errCode(err, 'ERR_DATA_CHANNEL'))
+          }
+          this._chunk = null
+          this._debug('sent chunk from "write before connect"')
+
+          const cb = this._cb
+          this._cb = null
+          cb(null)
+        }
+
+        // If `bufferedAmountLowThreshold` and 'onbufferedamountlow' are unsupported,
+        // fallback to using setInterval to implement backpressure.
+        if (typeof this._channel.bufferedAmountLowThreshold !== 'number') {
+          this._interval = setInterval(() => this._onInterval(), 150)
+          if (this._interval.unref) this._interval.unref()
+        }
+
+        this._debug('connect')
+        this.emit('connect')
+      })
+    }
+    findCandidatePair()
+  }
+
+  _onInterval () {
+    if (!this._cb || !this._channel || this._channel.bufferedAmount > MAX_BUFFERED_AMOUNT) {
+      return
+    }
+    this._onChannelBufferedAmountLow()
+  }
+
+  _onSignalingStateChange () {
+    if (this.destroyed) return
+
+    if (this._pc.signalingState === 'stable') {
+      this._isNegotiating = false
+
+      // HACK: Firefox doesn't yet support removing tracks when signalingState !== 'stable'
+      this._debug('flushing sender queue', this._sendersAwaitingStable)
+      this._sendersAwaitingStable.forEach(sender => {
+        this._pc.removeTrack(sender)
+        this._queuedNegotiation = true
+      })
+      this._sendersAwaitingStable = []
+
+      if (this._queuedNegotiation) {
+        this._debug('flushing negotiation queue')
+        this._queuedNegotiation = false
+        this._needsNegotiation() // negotiate again
+      } else {
+        this._debug('negotiated')
+        this.emit('negotiated')
+      }
+    }
+
+    this._debug('signalingStateChange %s', this._pc.signalingState)
+    this.emit('signalingStateChange', this._pc.signalingState)
+  }
+
+  _onIceCandidate (event) {
+    if (this.destroyed) return
+    if (event.candidate && this.trickle) {
+      this.emit('signal', {
+        type: 'candidate',
+        candidate: {
+          candidate: event.candidate.candidate,
+          sdpMLineIndex: event.candidate.sdpMLineIndex,
+          sdpMid: event.candidate.sdpMid
+        }
+      })
+    } else if (!event.candidate && !this._iceComplete) {
+      this._iceComplete = true
+      this.emit('_iceComplete')
+    }
+    // as soon as we've received one valid candidate start timeout
+    if (event.candidate) {
+      this._startIceCompleteTimeout()
+    }
+  }
+
+  _onChannelMessage (event) {
+    if (this.destroyed) return
+    let data = event.data
+    if (data instanceof ArrayBuffer) data = Buffer.from(data)
+    this.push(data)
+  }
+
+  _onChannelBufferedAmountLow () {
+    if (this.destroyed || !this._cb) return
+    this._debug('ending backpressure: bufferedAmount %d', this._channel.bufferedAmount)
+    const cb = this._cb
+    this._cb = null
+    cb(null)
+  }
+
+  _onChannelOpen () {
+    if (this._connected || this.destroyed) return
+    this._debug('on channel open')
+    this._channelReady = true
+    this._maybeReady()
+  }
+
+  _onChannelClose () {
+    if (this.destroyed) return
+    this._debug('on channel close')
+    this.destroy()
+  }
+
+  _onTrack (event) {
+    if (this.destroyed) return
+
+    event.streams.forEach(eventStream => {
+      this._debug('on track')
+      this.emit('track', event.track, eventStream)
+
+      this._remoteTracks.push({
+        track: event.track,
+        stream: eventStream
+      })
+
+      if (this._remoteStreams.some(remoteStream => {
+        return remoteStream.id === eventStream.id
+      })) return // Only fire one 'stream' event, even though there may be multiple tracks per stream
+
+      this._remoteStreams.push(eventStream)
+      queueMicrotask(() => {
+        this._debug('on stream')
+        this.emit('stream', eventStream) // ensure all tracks have been added
+      })
+    })
+  }
+
+  _debug () {
+    const args = [].slice.call(arguments)
+    args[0] = '[' + this._id + '] ' + args[0]
+    debug.apply(null, args)
+  }
 }
 
 Peer.WEBRTC_SUPPORT = !!getBrowserRTC()
@@ -8511,891 +7793,28 @@ Peer.WEBRTC_SUPPORT = !!getBrowserRTC()
 Peer.config = {
   iceServers: [
     {
-      urls: 'stun:stun.l.google.com:19302'
-    },
-    {
-      urls: 'stun:global.stun.twilio.com:3478?transport=udp'
+      urls: [
+        'stun:stun.l.google.com:19302',
+        'stun:global.stun.twilio.com:3478'
+      ]
     }
   ],
   sdpSemantics: 'unified-plan'
 }
+
 Peer.channelConfig = {}
 
-Object.defineProperty(Peer.prototype, 'bufferSize', {
-  get: function () {
-    var self = this
-    return (self._channel && self._channel.bufferedAmount) || 0
-  }
-})
-
-// HACK: it's possible channel.readyState is "closing" before peer.destroy() fires
-// https://bugs.chromium.org/p/chromium/issues/detail?id=882743
-Object.defineProperty(Peer.prototype, 'connected', {
-  get: function () {
-    var self = this
-    return (self._connected && self._channel.readyState === 'open')
-  }
-})
-
-Peer.prototype.address = function () {
-  var self = this
-  return { port: self.localPort, family: self.localFamily, address: self.localAddress }
-}
-
-Peer.prototype.signal = function (data) {
-  var self = this
-  if (self.destroyed) throw makeError('cannot signal after peer is destroyed', 'ERR_SIGNALING')
-  if (typeof data === 'string') {
-    try {
-      data = JSON.parse(data)
-    } catch (err) {
-      data = {}
-    }
-  }
-  self._debug('signal()')
-
-  if (data.renegotiate && self.initiator) {
-    self._debug('got request to renegotiate')
-    self._needsNegotiation()
-  }
-  if (data.transceiverRequest && self.initiator) {
-    self._debug('got request for transceiver')
-    self.addTransceiver(data.transceiverRequest.kind, data.transceiverRequest.init)
-  }
-  if (data.candidate) {
-    if (self._pc.localDescription && self._pc.localDescription.type && self._pc.remoteDescription && self._pc.remoteDescription.type) {
-      self._addIceCandidate(data.candidate)
-    } else {
-      self._pendingCandidates.push(data.candidate)
-    }
-  }
-  if (data.sdp) {
-    self._pc.setRemoteDescription(new (self._wrtc.RTCSessionDescription)(data)).then(function () {
-      if (self.destroyed) return
-
-      self._pendingCandidates.forEach(function (candidate) {
-        self._addIceCandidate(candidate)
-      })
-      self._pendingCandidates = []
-
-      if (self._pc.remoteDescription.type === 'offer') self._createAnswer()
-    }).catch(function (err) { self.destroy(makeError(err, 'ERR_SET_REMOTE_DESCRIPTION')) })
-  }
-  if (!data.sdp && !data.candidate && !data.renegotiate && !data.transceiverRequest) {
-    self.destroy(makeError('signal() called with invalid signal data', 'ERR_SIGNALING'))
-  }
-}
-
-Peer.prototype._addIceCandidate = function (candidate) {
-  var self = this
-  var iceCandidateObj = new self._wrtc.RTCIceCandidate(candidate)
-  self._pc.addIceCandidate(iceCandidateObj).catch(function (err) {
-    if (!iceCandidateObj.address || iceCandidateObj.address.endsWith('.local')) {
-      warn('Ignoring unsupported ICE candidate.')
-    } else {
-      self.destroy(makeError(err, 'ERR_ADD_ICE_CANDIDATE'))
-    }
-  })
-}
-
-/**
- * Send text/binary data to the remote peer.
- * @param {ArrayBufferView|ArrayBuffer|Buffer|string|Blob} chunk
- */
-Peer.prototype.send = function (chunk) {
-  var self = this
-  self._channel.send(chunk)
-}
-
-/**
- * Add a Transceiver to the connection.
- * @param {String} kind
- * @param {Object} init
- */
-Peer.prototype.addTransceiver = function (kind, init) {
-  var self = this
-
-  self._debug('addTransceiver()')
-
-  if (self.initiator) {
-    try {
-      self._pc.addTransceiver(kind, init)
-      self._needsNegotiation()
-    } catch (err) {
-      self.destroy(err)
-    }
-  } else {
-    self.emit('signal', { // request initiator to renegotiate
-      transceiverRequest: { kind, init }
-    })
-  }
-}
-
-/**
- * Add a MediaStream to the connection.
- * @param {MediaStream} stream
- */
-Peer.prototype.addStream = function (stream) {
-  var self = this
-
-  self._debug('addStream()')
-
-  stream.getTracks().forEach(function (track) {
-    self.addTrack(track, stream)
-  })
-}
-
-/**
- * Add a MediaStreamTrack to the connection.
- * @param {MediaStreamTrack} track
- * @param {MediaStream} stream
- */
-Peer.prototype.addTrack = function (track, stream) {
-  var self = this
-
-  self._debug('addTrack()')
-
-  var submap = self._senderMap.get(track) || new Map() // nested Maps map [track, stream] to sender
-  var sender = submap.get(stream)
-  if (!sender) {
-    sender = self._pc.addTrack(track, stream)
-    submap.set(stream, sender)
-    self._senderMap.set(track, submap)
-    self._needsNegotiation()
-  } else if (sender.removed) {
-    self.destroy(makeError('Track has been removed. You should enable/disable tracks that you want to re-add.', 'ERR_SENDER_REMOVED'))
-  } else {
-    self.destroy(makeError('Track has already been added to that stream.', 'ERR_SENDER_ALREADY_ADDED'))
-  }
-}
-
-/**
- * Replace a MediaStreamTrack by another in the connection.
- * @param {MediaStreamTrack} oldTrack
- * @param {MediaStreamTrack} newTrack
- * @param {MediaStream} stream
- */
-Peer.prototype.replaceTrack = function (oldTrack, newTrack, stream) {
-  var self = this
-
-  self._debug('replaceTrack()')
-
-  var submap = self._senderMap.get(oldTrack)
-  var sender = submap ? submap.get(stream) : null
-  if (!sender) {
-    self.destroy(makeError('Cannot replace track that was never added.', 'ERR_TRACK_NOT_ADDED'))
-  }
-  if (newTrack) self._senderMap.set(newTrack, submap)
-
-  if (sender.replaceTrack != null) {
-    sender.replaceTrack(newTrack)
-  } else {
-    self.destroy(makeError('replaceTrack is not supported in this browser', 'ERR_UNSUPPORTED_REPLACETRACK'))
-  }
-}
-
-/**
- * Remove a MediaStreamTrack from the connection.
- * @param {MediaStreamTrack} track
- * @param {MediaStream} stream
- */
-Peer.prototype.removeTrack = function (track, stream) {
-  var self = this
-
-  self._debug('removeSender()')
-
-  var submap = self._senderMap.get(track)
-  var sender = submap ? submap.get(stream) : null
-  if (!sender) {
-    self.destroy(makeError('Cannot remove track that was never added.', 'ERR_TRACK_NOT_ADDED'))
-  }
-  try {
-    sender.removed = true
-    self._pc.removeTrack(sender)
-  } catch (err) {
-    if (err.name === 'NS_ERROR_UNEXPECTED') {
-      self._sendersAwaitingStable.push(sender) // HACK: Firefox must wait until (signalingState === stable) https://bugzilla.mozilla.org/show_bug.cgi?id=1133874
-    } else {
-      self.destroy(err)
-    }
-  }
-  self._needsNegotiation()
-}
-
-/**
- * Remove a MediaStream from the connection.
- * @param {MediaStream} stream
- */
-Peer.prototype.removeStream = function (stream) {
-  var self = this
-
-  self._debug('removeSenders()')
-
-  stream.getTracks().forEach(function (track) {
-    self.removeTrack(track, stream)
-  })
-}
-
-Peer.prototype._needsNegotiation = function () {
-  var self = this
-
-  self._debug('_needsNegotiation')
-  if (self._batchedNegotiation) return // batch synchronous renegotiations
-  self._batchedNegotiation = true
-  setTimeout(function () {
-    self._batchedNegotiation = false
-    self._debug('starting batched negotiation')
-    self.negotiate()
-  }, 0)
-}
-
-Peer.prototype.negotiate = function () {
-  var self = this
-
-  if (self.initiator) {
-    if (self._isNegotiating) {
-      self._queuedNegotiation = true
-      self._debug('already negotiating, queueing')
-    } else {
-      self._debug('start negotiation')
-      setTimeout(() => { // HACK: Chrome crashes if we immediately call createOffer
-        self._createOffer()
-      }, 0)
-    }
-  } else {
-    if (!self._isNegotiating) {
-      self._debug('requesting negotiation from initiator')
-      self.emit('signal', { // request initiator to renegotiate
-        renegotiate: true
-      })
-    }
-  }
-  self._isNegotiating = true
-}
-
-// TODO: Delete this method once readable-stream is updated to contain a default
-// implementation of destroy() that automatically calls _destroy()
-// See: https://github.com/nodejs/readable-stream/issues/283
-Peer.prototype.destroy = function (err) {
-  var self = this
-  self._destroy(err, function () {})
-}
-
-Peer.prototype._destroy = function (err, cb) {
-  var self = this
-  if (self.destroyed) return
-
-  self._debug('destroy (error: %s)', err && (err.message || err))
-
-  self.readable = self.writable = false
-
-  if (!self._readableState.ended) self.push(null)
-  if (!self._writableState.finished) self.end()
-
-  self.destroyed = true
-  self._connected = false
-  self._pcReady = false
-  self._channelReady = false
-  self._remoteTracks = null
-  self._remoteStreams = null
-  self._senderMap = null
-
-  clearInterval(self._closingInterval)
-  self._closingInterval = null
-
-  clearInterval(self._interval)
-  self._interval = null
-  self._chunk = null
-  self._cb = null
-
-  if (self._onFinishBound) self.removeListener('finish', self._onFinishBound)
-  self._onFinishBound = null
-
-  if (self._channel) {
-    try {
-      self._channel.close()
-    } catch (err) {}
-
-    self._channel.onmessage = null
-    self._channel.onopen = null
-    self._channel.onclose = null
-    self._channel.onerror = null
-  }
-  if (self._pc) {
-    try {
-      self._pc.close()
-    } catch (err) {}
-
-    self._pc.oniceconnectionstatechange = null
-    self._pc.onicegatheringstatechange = null
-    self._pc.onsignalingstatechange = null
-    self._pc.onicecandidate = null
-    self._pc.ontrack = null
-    self._pc.ondatachannel = null
-  }
-  self._pc = null
-  self._channel = null
-
-  if (err) self.emit('error', err)
-  self.emit('close')
-  cb()
-}
-
-Peer.prototype._setupData = function (event) {
-  var self = this
-  if (!event.channel) {
-    // In some situations `pc.createDataChannel()` returns `undefined` (in wrtc),
-    // which is invalid behavior. Handle it gracefully.
-    // See: https://github.com/feross/simple-peer/issues/163
-    return self.destroy(makeError('Data channel event is missing `channel` property', 'ERR_DATA_CHANNEL'))
-  }
-
-  self._channel = event.channel
-  self._channel.binaryType = 'arraybuffer'
-
-  if (typeof self._channel.bufferedAmountLowThreshold === 'number') {
-    self._channel.bufferedAmountLowThreshold = MAX_BUFFERED_AMOUNT
-  }
-
-  self.channelName = self._channel.label
-
-  self._channel.onmessage = function (event) {
-    self._onChannelMessage(event)
-  }
-  self._channel.onbufferedamountlow = function () {
-    self._onChannelBufferedAmountLow()
-  }
-  self._channel.onopen = function () {
-    self._onChannelOpen()
-  }
-  self._channel.onclose = function () {
-    self._onChannelClose()
-  }
-  self._channel.onerror = function (err) {
-    self.destroy(makeError(err, 'ERR_DATA_CHANNEL'))
-  }
-
-  // HACK: Chrome will sometimes get stuck in readyState "closing", let's check for this condition
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=882743
-  var isClosing = false
-  self._closingInterval = setInterval(function () { // No "onclosing" event
-    if (self._channel && self._channel.readyState === 'closing') {
-      if (isClosing) self._onChannelClose() // closing timed out: equivalent to onclose firing
-      isClosing = true
-    } else {
-      isClosing = false
-    }
-  }, CHANNEL_CLOSING_TIMEOUT)
-}
-
-Peer.prototype._read = function () {}
-
-Peer.prototype._write = function (chunk, encoding, cb) {
-  var self = this
-  if (self.destroyed) return cb(makeError('cannot write after peer is destroyed', 'ERR_DATA_CHANNEL'))
-
-  if (self._connected) {
-    try {
-      self.send(chunk)
-    } catch (err) {
-      return self.destroy(makeError(err, 'ERR_DATA_CHANNEL'))
-    }
-    if (self._channel.bufferedAmount > MAX_BUFFERED_AMOUNT) {
-      self._debug('start backpressure: bufferedAmount %d', self._channel.bufferedAmount)
-      self._cb = cb
-    } else {
-      cb(null)
-    }
-  } else {
-    self._debug('write before connect')
-    self._chunk = chunk
-    self._cb = cb
-  }
-}
-
-// When stream finishes writing, close socket. Half open connections are not
-// supported.
-Peer.prototype._onFinish = function () {
-  var self = this
-  if (self.destroyed) return
-
-  if (self._connected) {
-    destroySoon()
-  } else {
-    self.once('connect', destroySoon)
-  }
-
-  // Wait a bit before destroying so the socket flushes.
-  // TODO: is there a more reliable way to accomplish this?
-  function destroySoon () {
-    setTimeout(function () {
-      self.destroy()
-    }, 1000)
-  }
-}
-
-Peer.prototype._startIceCompleteTimeout = function () {
-  var self = this
-  if (self.destroyed) return
-  if (self._iceCompleteTimer) return
-  self._debug('started iceComplete timeout')
-  self._iceCompleteTimer = setTimeout(function () {
-    if (!self._iceComplete) {
-      self._iceComplete = true
-      self._debug('iceComplete timeout completed')
-      self.emit('iceTimeout')
-      self.emit('_iceComplete')
-    }
-  }, self.iceCompleteTimeout)
-}
-
-Peer.prototype._createOffer = function () {
-  var self = this
-  if (self.destroyed) return
-
-  self._pc.createOffer(self.offerOptions).then(function (offer) {
-    if (self.destroyed) return
-    if (!self.trickle && !self.allowHalfTrickle) offer.sdp = filterTrickle(offer.sdp)
-    offer.sdp = self.sdpTransform(offer.sdp)
-    self._pc.setLocalDescription(offer).then(onSuccess).catch(onError)
-
-    function onSuccess () {
-      self._debug('createOffer success')
-      if (self.destroyed) return
-      if (self.trickle || self._iceComplete) sendOffer()
-      else self.once('_iceComplete', sendOffer) // wait for candidates
-    }
-
-    function onError (err) {
-      self.destroy(makeError(err, 'ERR_SET_LOCAL_DESCRIPTION'))
-    }
-
-    function sendOffer () {
-      if (self.destroyed) return
-      var signal = self._pc.localDescription || offer
-      self._debug('signal')
-      self.emit('signal', {
-        type: signal.type,
-        sdp: signal.sdp
-      })
-    }
-  }).catch(function (err) { self.destroy(makeError(err, 'ERR_CREATE_OFFER')) })
-}
-
-Peer.prototype._requestMissingTransceivers = function () {
-  var self = this
-
-  if (self._pc.getTransceivers) {
-    self._pc.getTransceivers().forEach(transceiver => {
-      if (!transceiver.mid && transceiver.sender.track && !transceiver.requested) {
-        transceiver.requested = true // HACK: Safari returns negotiated transceivers with a null mid
-        self.addTransceiver(transceiver.sender.track.kind)
-      }
-    })
-  }
-}
-
-Peer.prototype._createAnswer = function () {
-  var self = this
-  if (self.destroyed) return
-
-  self._pc.createAnswer(self.answerOptions).then(function (answer) {
-    if (self.destroyed) return
-    if (!self.trickle && !self.allowHalfTrickle) answer.sdp = filterTrickle(answer.sdp)
-    answer.sdp = self.sdpTransform(answer.sdp)
-    self._pc.setLocalDescription(answer).then(onSuccess).catch(onError)
-
-    function onSuccess () {
-      if (self.destroyed) return
-      if (self.trickle || self._iceComplete) sendAnswer()
-      else self.once('_iceComplete', sendAnswer)
-    }
-
-    function onError (err) {
-      self.destroy(makeError(err, 'ERR_SET_LOCAL_DESCRIPTION'))
-    }
-
-    function sendAnswer () {
-      if (self.destroyed) return
-      var signal = self._pc.localDescription || answer
-      self._debug('signal')
-      self.emit('signal', {
-        type: signal.type,
-        sdp: signal.sdp
-      })
-      if (!self.initiator) self._requestMissingTransceivers()
-    }
-  }).catch(function (err) { self.destroy(makeError(err, 'ERR_CREATE_ANSWER')) })
-}
-
-Peer.prototype._onIceStateChange = function () {
-  var self = this
-  if (self.destroyed) return
-  var iceConnectionState = self._pc.iceConnectionState
-  var iceGatheringState = self._pc.iceGatheringState
-
-  self._debug(
-    'iceStateChange (connection: %s) (gathering: %s)',
-    iceConnectionState,
-    iceGatheringState
-  )
-  self.emit('iceStateChange', iceConnectionState, iceGatheringState)
-
-  if (iceConnectionState === 'connected' || iceConnectionState === 'completed') {
-    self._pcReady = true
-    self._maybeReady()
-  }
-  if (iceConnectionState === 'failed') {
-    self.destroy(makeError('Ice connection failed.', 'ERR_ICE_CONNECTION_FAILURE'))
-  }
-  if (iceConnectionState === 'closed') {
-    self.destroy(makeError('Ice connection closed.', 'ERR_ICE_CONNECTION_CLOSED'))
-  }
-}
-
-Peer.prototype.getStats = function (cb) {
-  var self = this
-
-  // Promise-based getStats() (standard)
-  if (self._pc.getStats.length === 0) {
-    self._pc.getStats().then(function (res) {
-      var reports = []
-      res.forEach(function (report) {
-        reports.push(flattenValues(report))
-      })
-      cb(null, reports)
-    }, function (err) { cb(err) })
-
-  // Two-parameter callback-based getStats() (deprecated, former standard)
-  } else if (self._isReactNativeWebrtc) {
-    self._pc.getStats(null, function (res) {
-      var reports = []
-      res.forEach(function (report) {
-        reports.push(flattenValues(report))
-      })
-      cb(null, reports)
-    }, function (err) { cb(err) })
-
-  // Single-parameter callback-based getStats() (non-standard)
-  } else if (self._pc.getStats.length > 0) {
-    self._pc.getStats(function (res) {
-      // If we destroy connection in `connect` callback this code might happen to run when actual connection is already closed
-      if (self.destroyed) return
-
-      var reports = []
-      res.result().forEach(function (result) {
-        var report = {}
-        result.names().forEach(function (name) {
-          report[name] = result.stat(name)
-        })
-        report.id = result.id
-        report.type = result.type
-        report.timestamp = result.timestamp
-        reports.push(flattenValues(report))
-      })
-      cb(null, reports)
-    }, function (err) { cb(err) })
-
-  // Unknown browser, skip getStats() since it's anyone's guess which style of
-  // getStats() they implement.
-  } else {
-    cb(null, [])
-  }
-
-  // statreports can come with a value array instead of properties
-  function flattenValues (report) {
-    if (Object.prototype.toString.call(report.values) === '[object Array]') {
-      report.values.forEach(function (value) {
-        Object.assign(report, value)
-      })
-    }
-    return report
-  }
-}
-
-Peer.prototype._maybeReady = function () {
-  var self = this
-  self._debug('maybeReady pc %s channel %s', self._pcReady, self._channelReady)
-  if (self._connected || self._connecting || !self._pcReady || !self._channelReady) return
-
-  self._connecting = true
-
-  // HACK: We can't rely on order here, for details see https://github.com/js-platform/node-webrtc/issues/339
-  function findCandidatePair () {
-    if (self.destroyed) return
-
-    self.getStats(function (err, items) {
-      if (self.destroyed) return
-
-      // Treat getStats error as non-fatal. It's not essential.
-      if (err) items = []
-
-      var remoteCandidates = {}
-      var localCandidates = {}
-      var candidatePairs = {}
-      var foundSelectedCandidatePair = false
-
-      items.forEach(function (item) {
-        // TODO: Once all browsers support the hyphenated stats report types, remove
-        // the non-hypenated ones
-        if (item.type === 'remotecandidate' || item.type === 'remote-candidate') {
-          remoteCandidates[item.id] = item
-        }
-        if (item.type === 'localcandidate' || item.type === 'local-candidate') {
-          localCandidates[item.id] = item
-        }
-        if (item.type === 'candidatepair' || item.type === 'candidate-pair') {
-          candidatePairs[item.id] = item
-        }
-      })
-
-      items.forEach(function (item) {
-        // Spec-compliant
-        if (item.type === 'transport' && item.selectedCandidatePairId) {
-          setSelectedCandidatePair(candidatePairs[item.selectedCandidatePairId])
-        }
-
-        // Old implementations
-        if (
-          (item.type === 'googCandidatePair' && item.googActiveConnection === 'true') ||
-          ((item.type === 'candidatepair' || item.type === 'candidate-pair') && item.selected)
-        ) {
-          setSelectedCandidatePair(item)
-        }
-      })
-
-      function setSelectedCandidatePair (selectedCandidatePair) {
-        foundSelectedCandidatePair = true
-
-        var local = localCandidates[selectedCandidatePair.localCandidateId]
-
-        if (local && (local.ip || local.address)) {
-          // Spec
-          self.localAddress = local.ip || local.address
-          self.localPort = Number(local.port)
-        } else if (local && local.ipAddress) {
-          // Firefox
-          self.localAddress = local.ipAddress
-          self.localPort = Number(local.portNumber)
-        } else if (typeof selectedCandidatePair.googLocalAddress === 'string') {
-          // TODO: remove this once Chrome 58 is released
-          local = selectedCandidatePair.googLocalAddress.split(':')
-          self.localAddress = local[0]
-          self.localPort = Number(local[1])
-        }
-        if (self.localAddress) {
-          self.localFamily = self.localAddress.includes(':') ? 'IPv6' : 'IPv4'
-        }
-
-        var remote = remoteCandidates[selectedCandidatePair.remoteCandidateId]
-
-        if (remote && (remote.ip || remote.address)) {
-          // Spec
-          self.remoteAddress = remote.ip || remote.address
-          self.remotePort = Number(remote.port)
-        } else if (remote && remote.ipAddress) {
-          // Firefox
-          self.remoteAddress = remote.ipAddress
-          self.remotePort = Number(remote.portNumber)
-        } else if (typeof selectedCandidatePair.googRemoteAddress === 'string') {
-          // TODO: remove this once Chrome 58 is released
-          remote = selectedCandidatePair.googRemoteAddress.split(':')
-          self.remoteAddress = remote[0]
-          self.remotePort = Number(remote[1])
-        }
-        if (self.remoteAddress) {
-          self.remoteFamily = self.remoteAddress.includes(':') ? 'IPv6' : 'IPv4'
-        }
-
-        self._debug(
-          'connect local: %s:%s remote: %s:%s',
-          self.localAddress, self.localPort, self.remoteAddress, self.remotePort
-        )
-      }
-
-      // Ignore candidate pair selection in browsers like Safari 11 that do not have any local or remote candidates
-      // But wait until at least 1 candidate pair is available
-      if (!foundSelectedCandidatePair && (!Object.keys(candidatePairs).length || Object.keys(localCandidates).length)) {
-        setTimeout(findCandidatePair, 100)
-        return
-      } else {
-        self._connecting = false
-        self._connected = true
-      }
-
-      if (self._chunk) {
-        try {
-          self.send(self._chunk)
-        } catch (err) {
-          return self.destroy(makeError(err, 'ERR_DATA_CHANNEL'))
-        }
-        self._chunk = null
-        self._debug('sent chunk from "write before connect"')
-
-        var cb = self._cb
-        self._cb = null
-        cb(null)
-      }
-
-      // If `bufferedAmountLowThreshold` and 'onbufferedamountlow' are unsupported,
-      // fallback to using setInterval to implement backpressure.
-      if (typeof self._channel.bufferedAmountLowThreshold !== 'number') {
-        self._interval = setInterval(function () { self._onInterval() }, 150)
-        if (self._interval.unref) self._interval.unref()
-      }
-
-      self._debug('connect')
-      self.emit('connect')
-    })
-  }
-  findCandidatePair()
-}
-
-Peer.prototype._onInterval = function () {
-  var self = this
-  if (!self._cb || !self._channel || self._channel.bufferedAmount > MAX_BUFFERED_AMOUNT) {
-    return
-  }
-  self._onChannelBufferedAmountLow()
-}
-
-Peer.prototype._onSignalingStateChange = function () {
-  var self = this
-  if (self.destroyed) return
-
-  if (self._pc.signalingState === 'stable' && !self._firstStable) {
-    self._isNegotiating = false
-
-    // HACK: Firefox doesn't yet support removing tracks when signalingState !== 'stable'
-    self._debug('flushing sender queue', self._sendersAwaitingStable)
-    self._sendersAwaitingStable.forEach(function (sender) {
-      self._pc.removeTrack(sender)
-      self._queuedNegotiation = true
-    })
-    self._sendersAwaitingStable = []
-
-    if (self._queuedNegotiation) {
-      self._debug('flushing negotiation queue')
-      self._queuedNegotiation = false
-      self._needsNegotiation() // negotiate again
-    }
-
-    self._debug('negotiate')
-    self.emit('negotiate')
-  }
-  self._firstStable = false
-
-  self._debug('signalingStateChange %s', self._pc.signalingState)
-  self.emit('signalingStateChange', self._pc.signalingState)
-}
-
-Peer.prototype._onIceCandidate = function (event) {
-  var self = this
-  if (self.destroyed) return
-  if (event.candidate && self.trickle) {
-    self.emit('signal', {
-      candidate: {
-        candidate: event.candidate.candidate,
-        sdpMLineIndex: event.candidate.sdpMLineIndex,
-        sdpMid: event.candidate.sdpMid
-      }
-    })
-  } else if (!event.candidate && !self._iceComplete) {
-    self._iceComplete = true
-    self.emit('_iceComplete')
-  }
-  // as soon as we've received one valid candidate start timeout
-  if (event.candidate) {
-    self._startIceCompleteTimeout()
-  }
-}
-
-Peer.prototype._onChannelMessage = function (event) {
-  var self = this
-  if (self.destroyed) return
-  var data = event.data
-  if (data instanceof ArrayBuffer) data = Buffer.from(data)
-  self.push(data)
-}
-
-Peer.prototype._onChannelBufferedAmountLow = function () {
-  var self = this
-  if (self.destroyed || !self._cb) return
-  self._debug('ending backpressure: bufferedAmount %d', self._channel.bufferedAmount)
-  var cb = self._cb
-  self._cb = null
-  cb(null)
-}
-
-Peer.prototype._onChannelOpen = function () {
-  var self = this
-  if (self._connected || self.destroyed) return
-  self._debug('on channel open')
-  self._channelReady = true
-  self._maybeReady()
-}
-
-Peer.prototype._onChannelClose = function () {
-  var self = this
-  if (self.destroyed) return
-  self._debug('on channel close')
-  self.destroy()
-}
-
-Peer.prototype._onTrack = function (event) {
-  var self = this
-  if (self.destroyed) return
-
-  event.streams.forEach(function (eventStream) {
-    self._debug('on track')
-    self.emit('track', event.track, eventStream)
-
-    self._remoteTracks.push({
-      track: event.track,
-      stream: eventStream
-    })
-
-    if (self._remoteStreams.some(function (remoteStream) {
-      return remoteStream.id === eventStream.id
-    })) return // Only fire one 'stream' event, even though there may be multiple tracks per stream
-
-    self._remoteStreams.push(eventStream)
-    setTimeout(function () {
-      self.emit('stream', eventStream) // ensure all tracks have been added
-    }, 0)
-  })
-}
-
-Peer.prototype._debug = function () {
-  var self = this
-  var args = [].slice.call(arguments)
-  args[0] = '[' + self._id + '] ' + args[0]
-  debug.apply(null, args)
-}
-
-// HACK: Filter trickle lines when trickle is disabled #354
-function filterTrickle (sdp) {
-  return sdp.replace(/a=ice-options:trickle\s\n/g, '')
-}
-
-function makeError (message, code) {
-  var err = new Error(message)
-  err.code = code
-  return err
-}
-
-function warn (message) {
-  console.warn(message)
-}
-
-}).call(this,require("buffer").Buffer)
-},{"buffer":16,"debug":"debug","get-browser-rtc":18,"inherits":20,"randombytes":24,"readable-stream":39}],45:[function(require,module,exports){
-(function (process,Buffer){
-/* global WebSocket, DOMException */
+module.exports = Peer
+
+},{"buffer":"buffer","debug":"debug","err-code":17,"get-browser-rtc":18,"queue-microtask":24,"randombytes":25,"readable-stream":40}],46:[function(require,module,exports){
+(function (Buffer){(function (){
+/*! simple-websocket. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
+/* global WebSocket */
 
 const debug = require('debug')('simple-websocket')
 const randombytes = require('randombytes')
 const stream = require('readable-stream')
+const queueMicrotask = require('queue-microtask') // TODO: remove when Node 10 is not supported
 const ws = require('ws') // websockets in node - will be empty object in browser
 
 const _WebSocket = typeof ws !== 'function' ? WebSocket : ws
@@ -9447,34 +7866,33 @@ class Socket extends stream.Duplex {
       try {
         if (typeof ws === 'function') {
           // `ws` package accepts options
-          this._ws = new _WebSocket(opts.url, opts)
+          this._ws = new _WebSocket(opts.url, null, {
+            ...opts,
+            encoding: undefined // encoding option breaks ws internals
+          })
         } else {
           this._ws = new _WebSocket(opts.url)
         }
       } catch (err) {
-        process.nextTick(() => this.destroy(err))
+        queueMicrotask(() => this.destroy(err))
         return
       }
     }
 
     this._ws.binaryType = 'arraybuffer'
-    this._ws.onopen = () => {
-      this._onOpen()
-    }
-    this._ws.onmessage = event => {
-      this._onMessage(event)
-    }
-    this._ws.onclose = () => {
-      this._onClose()
-    }
-    this._ws.onerror = () => {
-      this.destroy(new Error('connection error to ' + this.url))
+
+    if (opts.socket && this.connected) {
+      queueMicrotask(() => this._handleOpen())
+    } else {
+      this._ws.onopen = () => this._handleOpen()
     }
 
-    this._onFinishBound = () => {
-      this._onFinish()
-    }
-    this.once('finish', this._onFinishBound)
+    this._ws.onmessage = event => this._handleMessage(event)
+    this._ws.onclose = () => this._handleClose()
+    this._ws.onerror = err => this._handleError(err)
+
+    this._handleFinishBound = () => this._handleFinish()
+    this.once('finish', this._handleFinishBound)
   }
 
   /**
@@ -9509,8 +7927,10 @@ class Socket extends stream.Duplex {
     this._chunk = null
     this._cb = null
 
-    if (this._onFinishBound) this.removeListener('finish', this._onFinishBound)
-    this._onFinishBound = null
+    if (this._handleFinishBound) {
+      this.removeListener('finish', this._handleFinishBound)
+    }
+    this._handleFinishBound = null
 
     if (this._ws) {
       const ws = this._ws
@@ -9534,15 +7954,7 @@ class Socket extends stream.Duplex {
     }
     this._ws = null
 
-    if (err) {
-      if (typeof DOMException !== 'undefined' && err instanceof DOMException) {
-        // Convert Edge DOMException object to Error object
-        const code = err.code
-        err = new Error(err.message)
-        err.code = code
-      }
-      this.emit('error', err)
-    }
+    if (err) this.emit('error', err)
     this.emit('close')
     cb()
   }
@@ -9571,32 +7983,7 @@ class Socket extends stream.Duplex {
     }
   }
 
-  // When stream finishes writing, close socket. Half open connections are not
-  // supported.
-  _onFinish () {
-    if (this.destroyed) return
-
-    // Wait a bit before destroying so the socket flushes.
-    // TODO: is there a more reliable way to accomplish this?
-    const destroySoon = () => {
-      setTimeout(() => this.destroy(), 1000)
-    }
-
-    if (this.connected) {
-      destroySoon()
-    } else {
-      this.once('connect', destroySoon)
-    }
-  }
-
-  _onMessage (event) {
-    if (this.destroyed) return
-    let data = event.data
-    if (data instanceof ArrayBuffer) data = Buffer.from(data)
-    this.push(data)
-  }
-
-  _onOpen () {
+  _handleOpen () {
     if (this.connected || this.destroyed) return
     this.connected = true
 
@@ -9625,6 +8012,41 @@ class Socket extends stream.Duplex {
     this.emit('connect')
   }
 
+  _handleMessage (event) {
+    if (this.destroyed) return
+    let data = event.data
+    if (data instanceof ArrayBuffer) data = Buffer.from(data)
+    this.push(data)
+  }
+
+  _handleClose () {
+    if (this.destroyed) return
+    this._debug('on close')
+    this.destroy()
+  }
+
+  _handleError (_) {
+    this.destroy(new Error(`Error connecting to ${this.url}`))
+  }
+
+  // When stream finishes writing, close socket. Half open connections are not
+  // supported.
+  _handleFinish () {
+    if (this.destroyed) return
+
+    // Wait a bit before destroying so the socket flushes.
+    // TODO: is there a more reliable way to accomplish this?
+    const destroySoon = () => {
+      setTimeout(() => this.destroy(), 1000)
+    }
+
+    if (this.connected) {
+      destroySoon()
+    } else {
+      this.once('connect', destroySoon)
+    }
+  }
+
   _onInterval () {
     if (!this._cb || !this._ws || this._ws.bufferedAmount > MAX_BUFFERED_AMOUNT) {
       return
@@ -9633,12 +8055,6 @@ class Socket extends stream.Duplex {
     const cb = this._cb
     this._cb = null
     cb(null)
-  }
-
-  _onClose () {
-    if (this.destroyed) return
-    this._debug('on close')
-    this.destroy()
   }
 
   _debug () {
@@ -9652,8 +8068,8 @@ Socket.WEBSOCKET_SUPPORT = !!_WebSocket
 
 module.exports = Socket
 
-}).call(this,require('_process'),require("buffer").Buffer)
-},{"_process":23,"buffer":16,"debug":"debug","randombytes":24,"readable-stream":39,"ws":15}],46:[function(require,module,exports){
+}).call(this)}).call(this,require("buffer").Buffer)
+},{"buffer":"buffer","debug":"debug","queue-microtask":24,"randombytes":25,"readable-stream":40,"ws":15}],47:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -9950,67 +8366,8 @@ function simpleWrite(buf) {
 function simpleEnd(buf) {
   return buf && buf.length ? this.write(buf) : '';
 }
-},{"safe-buffer":41}],47:[function(require,module,exports){
-"use strict"
-
-function unique_pred(list, compare) {
-  var ptr = 1
-    , len = list.length
-    , a=list[0], b=list[0]
-  for(var i=1; i<len; ++i) {
-    b = a
-    a = list[i]
-    if(compare(a, b)) {
-      if(i === ptr) {
-        ptr++
-        continue
-      }
-      list[ptr++] = a
-    }
-  }
-  list.length = ptr
-  return list
-}
-
-function unique_eq(list) {
-  var ptr = 1
-    , len = list.length
-    , a=list[0], b = list[0]
-  for(var i=1; i<len; ++i, b=a) {
-    b = a
-    a = list[i]
-    if(a !== b) {
-      if(i === ptr) {
-        ptr++
-        continue
-      }
-      list[ptr++] = a
-    }
-  }
-  list.length = ptr
-  return list
-}
-
-function unique(list, compare, sorted) {
-  if(list.length === 0) {
-    return list
-  }
-  if(compare) {
-    if(!sorted) {
-      list.sort(compare)
-    }
-    return unique_pred(list, compare)
-  }
-  if(!sorted) {
-    list.sort()
-  }
-  return unique_eq(list)
-}
-
-module.exports = unique
-
-},{}],48:[function(require,module,exports){
-(function (global){
+},{"safe-buffer":42}],48:[function(require,module,exports){
+(function (global){(function (){
 
 /**
  * Module exports.
@@ -10079,7 +8436,7 @@ function config (name) {
   return String(val).toLowerCase() === 'true';
 }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],49:[function(require,module,exports){
 // Returns a wrapper function that returns a wrapped callback
 // The wrapper function should do some stuff, and return a
@@ -10115,20 +8472,1810 @@ function wrappy (fn, cb) {
   }
 }
 
-},{}],"debug":[function(require,module,exports){
-(function (process){
+},{}],"buffer":[function(require,module,exports){
+(function (Buffer){(function (){
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <https://feross.org>
+ * @license  MIT
+ */
+/* eslint-disable no-proto */
+
+'use strict'
+
+var base64 = require('base64-js')
+var ieee754 = require('ieee754')
+
+exports.Buffer = Buffer
+exports.SlowBuffer = SlowBuffer
+exports.INSPECT_MAX_BYTES = 50
+
+var K_MAX_LENGTH = 0x7fffffff
+exports.kMaxLength = K_MAX_LENGTH
+
+/**
+ * If `Buffer.TYPED_ARRAY_SUPPORT`:
+ *   === true    Use Uint8Array implementation (fastest)
+ *   === false   Print warning and recommend using `buffer` v4.x which has an Object
+ *               implementation (most compatible, even IE6)
+ *
+ * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
+ * Opera 11.6+, iOS 4.2+.
+ *
+ * We report that the browser does not support typed arrays if the are not subclassable
+ * using __proto__. Firefox 4-29 lacks support for adding new properties to `Uint8Array`
+ * (See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438). IE 10 lacks support
+ * for __proto__ and has a buggy typed array implementation.
+ */
+Buffer.TYPED_ARRAY_SUPPORT = typedArraySupport()
+
+if (!Buffer.TYPED_ARRAY_SUPPORT && typeof console !== 'undefined' &&
+    typeof console.error === 'function') {
+  console.error(
+    'This browser lacks typed array (Uint8Array) support which is required by ' +
+    '`buffer` v5.x. Use `buffer` v4.x if you require old browser support.'
+  )
+}
+
+function typedArraySupport () {
+  // Can typed array instances can be augmented?
+  try {
+    var arr = new Uint8Array(1)
+    arr.__proto__ = { __proto__: Uint8Array.prototype, foo: function () { return 42 } }
+    return arr.foo() === 42
+  } catch (e) {
+    return false
+  }
+}
+
+Object.defineProperty(Buffer.prototype, 'parent', {
+  enumerable: true,
+  get: function () {
+    if (!Buffer.isBuffer(this)) return undefined
+    return this.buffer
+  }
+})
+
+Object.defineProperty(Buffer.prototype, 'offset', {
+  enumerable: true,
+  get: function () {
+    if (!Buffer.isBuffer(this)) return undefined
+    return this.byteOffset
+  }
+})
+
+function createBuffer (length) {
+  if (length > K_MAX_LENGTH) {
+    throw new RangeError('The value "' + length + '" is invalid for option "size"')
+  }
+  // Return an augmented `Uint8Array` instance
+  var buf = new Uint8Array(length)
+  buf.__proto__ = Buffer.prototype
+  return buf
+}
+
+/**
+ * The Buffer constructor returns instances of `Uint8Array` that have their
+ * prototype changed to `Buffer.prototype`. Furthermore, `Buffer` is a subclass of
+ * `Uint8Array`, so the returned instances will have all the node `Buffer` methods
+ * and the `Uint8Array` methods. Square bracket notation works as expected -- it
+ * returns a single octet.
+ *
+ * The `Uint8Array` prototype remains unmodified.
+ */
+
+function Buffer (arg, encodingOrOffset, length) {
+  // Common case.
+  if (typeof arg === 'number') {
+    if (typeof encodingOrOffset === 'string') {
+      throw new TypeError(
+        'The "string" argument must be of type string. Received type number'
+      )
+    }
+    return allocUnsafe(arg)
+  }
+  return from(arg, encodingOrOffset, length)
+}
+
+// Fix subarray() in ES2016. See: https://github.com/feross/buffer/pull/97
+if (typeof Symbol !== 'undefined' && Symbol.species != null &&
+    Buffer[Symbol.species] === Buffer) {
+  Object.defineProperty(Buffer, Symbol.species, {
+    value: null,
+    configurable: true,
+    enumerable: false,
+    writable: false
+  })
+}
+
+Buffer.poolSize = 8192 // not used by this implementation
+
+function from (value, encodingOrOffset, length) {
+  if (typeof value === 'string') {
+    return fromString(value, encodingOrOffset)
+  }
+
+  if (ArrayBuffer.isView(value)) {
+    return fromArrayLike(value)
+  }
+
+  if (value == null) {
+    throw TypeError(
+      'The first argument must be one of type string, Buffer, ArrayBuffer, Array, ' +
+      'or Array-like Object. Received type ' + (typeof value)
+    )
+  }
+
+  if (isInstance(value, ArrayBuffer) ||
+      (value && isInstance(value.buffer, ArrayBuffer))) {
+    return fromArrayBuffer(value, encodingOrOffset, length)
+  }
+
+  if (typeof value === 'number') {
+    throw new TypeError(
+      'The "value" argument must not be of type number. Received type number'
+    )
+  }
+
+  var valueOf = value.valueOf && value.valueOf()
+  if (valueOf != null && valueOf !== value) {
+    return Buffer.from(valueOf, encodingOrOffset, length)
+  }
+
+  var b = fromObject(value)
+  if (b) return b
+
+  if (typeof Symbol !== 'undefined' && Symbol.toPrimitive != null &&
+      typeof value[Symbol.toPrimitive] === 'function') {
+    return Buffer.from(
+      value[Symbol.toPrimitive]('string'), encodingOrOffset, length
+    )
+  }
+
+  throw new TypeError(
+    'The first argument must be one of type string, Buffer, ArrayBuffer, Array, ' +
+    'or Array-like Object. Received type ' + (typeof value)
+  )
+}
+
+/**
+ * Functionally equivalent to Buffer(arg, encoding) but throws a TypeError
+ * if value is a number.
+ * Buffer.from(str[, encoding])
+ * Buffer.from(array)
+ * Buffer.from(buffer)
+ * Buffer.from(arrayBuffer[, byteOffset[, length]])
+ **/
+Buffer.from = function (value, encodingOrOffset, length) {
+  return from(value, encodingOrOffset, length)
+}
+
+// Note: Change prototype *after* Buffer.from is defined to workaround Chrome bug:
+// https://github.com/feross/buffer/pull/148
+Buffer.prototype.__proto__ = Uint8Array.prototype
+Buffer.__proto__ = Uint8Array
+
+function assertSize (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('"size" argument must be of type number')
+  } else if (size < 0) {
+    throw new RangeError('The value "' + size + '" is invalid for option "size"')
+  }
+}
+
+function alloc (size, fill, encoding) {
+  assertSize(size)
+  if (size <= 0) {
+    return createBuffer(size)
+  }
+  if (fill !== undefined) {
+    // Only pay attention to encoding if it's a string. This
+    // prevents accidentally sending in a number that would
+    // be interpretted as a start offset.
+    return typeof encoding === 'string'
+      ? createBuffer(size).fill(fill, encoding)
+      : createBuffer(size).fill(fill)
+  }
+  return createBuffer(size)
+}
+
+/**
+ * Creates a new filled Buffer instance.
+ * alloc(size[, fill[, encoding]])
+ **/
+Buffer.alloc = function (size, fill, encoding) {
+  return alloc(size, fill, encoding)
+}
+
+function allocUnsafe (size) {
+  assertSize(size)
+  return createBuffer(size < 0 ? 0 : checked(size) | 0)
+}
+
+/**
+ * Equivalent to Buffer(num), by default creates a non-zero-filled Buffer instance.
+ * */
+Buffer.allocUnsafe = function (size) {
+  return allocUnsafe(size)
+}
+/**
+ * Equivalent to SlowBuffer(num), by default creates a non-zero-filled Buffer instance.
+ */
+Buffer.allocUnsafeSlow = function (size) {
+  return allocUnsafe(size)
+}
+
+function fromString (string, encoding) {
+  if (typeof encoding !== 'string' || encoding === '') {
+    encoding = 'utf8'
+  }
+
+  if (!Buffer.isEncoding(encoding)) {
+    throw new TypeError('Unknown encoding: ' + encoding)
+  }
+
+  var length = byteLength(string, encoding) | 0
+  var buf = createBuffer(length)
+
+  var actual = buf.write(string, encoding)
+
+  if (actual !== length) {
+    // Writing a hex string, for example, that contains invalid characters will
+    // cause everything after the first invalid character to be ignored. (e.g.
+    // 'abxxcd' will be treated as 'ab')
+    buf = buf.slice(0, actual)
+  }
+
+  return buf
+}
+
+function fromArrayLike (array) {
+  var length = array.length < 0 ? 0 : checked(array.length) | 0
+  var buf = createBuffer(length)
+  for (var i = 0; i < length; i += 1) {
+    buf[i] = array[i] & 255
+  }
+  return buf
+}
+
+function fromArrayBuffer (array, byteOffset, length) {
+  if (byteOffset < 0 || array.byteLength < byteOffset) {
+    throw new RangeError('"offset" is outside of buffer bounds')
+  }
+
+  if (array.byteLength < byteOffset + (length || 0)) {
+    throw new RangeError('"length" is outside of buffer bounds')
+  }
+
+  var buf
+  if (byteOffset === undefined && length === undefined) {
+    buf = new Uint8Array(array)
+  } else if (length === undefined) {
+    buf = new Uint8Array(array, byteOffset)
+  } else {
+    buf = new Uint8Array(array, byteOffset, length)
+  }
+
+  // Return an augmented `Uint8Array` instance
+  buf.__proto__ = Buffer.prototype
+  return buf
+}
+
+function fromObject (obj) {
+  if (Buffer.isBuffer(obj)) {
+    var len = checked(obj.length) | 0
+    var buf = createBuffer(len)
+
+    if (buf.length === 0) {
+      return buf
+    }
+
+    obj.copy(buf, 0, 0, len)
+    return buf
+  }
+
+  if (obj.length !== undefined) {
+    if (typeof obj.length !== 'number' || numberIsNaN(obj.length)) {
+      return createBuffer(0)
+    }
+    return fromArrayLike(obj)
+  }
+
+  if (obj.type === 'Buffer' && Array.isArray(obj.data)) {
+    return fromArrayLike(obj.data)
+  }
+}
+
+function checked (length) {
+  // Note: cannot use `length < K_MAX_LENGTH` here because that fails when
+  // length is NaN (which is otherwise coerced to zero.)
+  if (length >= K_MAX_LENGTH) {
+    throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
+                         'size: 0x' + K_MAX_LENGTH.toString(16) + ' bytes')
+  }
+  return length | 0
+}
+
+function SlowBuffer (length) {
+  if (+length != length) { // eslint-disable-line eqeqeq
+    length = 0
+  }
+  return Buffer.alloc(+length)
+}
+
+Buffer.isBuffer = function isBuffer (b) {
+  return b != null && b._isBuffer === true &&
+    b !== Buffer.prototype // so Buffer.isBuffer(Buffer.prototype) will be false
+}
+
+Buffer.compare = function compare (a, b) {
+  if (isInstance(a, Uint8Array)) a = Buffer.from(a, a.offset, a.byteLength)
+  if (isInstance(b, Uint8Array)) b = Buffer.from(b, b.offset, b.byteLength)
+  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b)) {
+    throw new TypeError(
+      'The "buf1", "buf2" arguments must be one of type Buffer or Uint8Array'
+    )
+  }
+
+  if (a === b) return 0
+
+  var x = a.length
+  var y = b.length
+
+  for (var i = 0, len = Math.min(x, y); i < len; ++i) {
+    if (a[i] !== b[i]) {
+      x = a[i]
+      y = b[i]
+      break
+    }
+  }
+
+  if (x < y) return -1
+  if (y < x) return 1
+  return 0
+}
+
+Buffer.isEncoding = function isEncoding (encoding) {
+  switch (String(encoding).toLowerCase()) {
+    case 'hex':
+    case 'utf8':
+    case 'utf-8':
+    case 'ascii':
+    case 'latin1':
+    case 'binary':
+    case 'base64':
+    case 'ucs2':
+    case 'ucs-2':
+    case 'utf16le':
+    case 'utf-16le':
+      return true
+    default:
+      return false
+  }
+}
+
+Buffer.concat = function concat (list, length) {
+  if (!Array.isArray(list)) {
+    throw new TypeError('"list" argument must be an Array of Buffers')
+  }
+
+  if (list.length === 0) {
+    return Buffer.alloc(0)
+  }
+
+  var i
+  if (length === undefined) {
+    length = 0
+    for (i = 0; i < list.length; ++i) {
+      length += list[i].length
+    }
+  }
+
+  var buffer = Buffer.allocUnsafe(length)
+  var pos = 0
+  for (i = 0; i < list.length; ++i) {
+    var buf = list[i]
+    if (isInstance(buf, Uint8Array)) {
+      buf = Buffer.from(buf)
+    }
+    if (!Buffer.isBuffer(buf)) {
+      throw new TypeError('"list" argument must be an Array of Buffers')
+    }
+    buf.copy(buffer, pos)
+    pos += buf.length
+  }
+  return buffer
+}
+
+function byteLength (string, encoding) {
+  if (Buffer.isBuffer(string)) {
+    return string.length
+  }
+  if (ArrayBuffer.isView(string) || isInstance(string, ArrayBuffer)) {
+    return string.byteLength
+  }
+  if (typeof string !== 'string') {
+    throw new TypeError(
+      'The "string" argument must be one of type string, Buffer, or ArrayBuffer. ' +
+      'Received type ' + typeof string
+    )
+  }
+
+  var len = string.length
+  var mustMatch = (arguments.length > 2 && arguments[2] === true)
+  if (!mustMatch && len === 0) return 0
+
+  // Use a for loop to avoid recursion
+  var loweredCase = false
+  for (;;) {
+    switch (encoding) {
+      case 'ascii':
+      case 'latin1':
+      case 'binary':
+        return len
+      case 'utf8':
+      case 'utf-8':
+        return utf8ToBytes(string).length
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return len * 2
+      case 'hex':
+        return len >>> 1
+      case 'base64':
+        return base64ToBytes(string).length
+      default:
+        if (loweredCase) {
+          return mustMatch ? -1 : utf8ToBytes(string).length // assume utf8
+        }
+        encoding = ('' + encoding).toLowerCase()
+        loweredCase = true
+    }
+  }
+}
+Buffer.byteLength = byteLength
+
+function slowToString (encoding, start, end) {
+  var loweredCase = false
+
+  // No need to verify that "this.length <= MAX_UINT32" since it's a read-only
+  // property of a typed array.
+
+  // This behaves neither like String nor Uint8Array in that we set start/end
+  // to their upper/lower bounds if the value passed is out of range.
+  // undefined is handled specially as per ECMA-262 6th Edition,
+  // Section 13.3.3.7 Runtime Semantics: KeyedBindingInitialization.
+  if (start === undefined || start < 0) {
+    start = 0
+  }
+  // Return early if start > this.length. Done here to prevent potential uint32
+  // coercion fail below.
+  if (start > this.length) {
+    return ''
+  }
+
+  if (end === undefined || end > this.length) {
+    end = this.length
+  }
+
+  if (end <= 0) {
+    return ''
+  }
+
+  // Force coersion to uint32. This will also coerce falsey/NaN values to 0.
+  end >>>= 0
+  start >>>= 0
+
+  if (end <= start) {
+    return ''
+  }
+
+  if (!encoding) encoding = 'utf8'
+
+  while (true) {
+    switch (encoding) {
+      case 'hex':
+        return hexSlice(this, start, end)
+
+      case 'utf8':
+      case 'utf-8':
+        return utf8Slice(this, start, end)
+
+      case 'ascii':
+        return asciiSlice(this, start, end)
+
+      case 'latin1':
+      case 'binary':
+        return latin1Slice(this, start, end)
+
+      case 'base64':
+        return base64Slice(this, start, end)
+
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return utf16leSlice(this, start, end)
+
+      default:
+        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
+        encoding = (encoding + '').toLowerCase()
+        loweredCase = true
+    }
+  }
+}
+
+// This property is used by `Buffer.isBuffer` (and the `is-buffer` npm package)
+// to detect a Buffer instance. It's not possible to use `instanceof Buffer`
+// reliably in a browserify context because there could be multiple different
+// copies of the 'buffer' package in use. This method works even for Buffer
+// instances that were created from another copy of the `buffer` package.
+// See: https://github.com/feross/buffer/issues/154
+Buffer.prototype._isBuffer = true
+
+function swap (b, n, m) {
+  var i = b[n]
+  b[n] = b[m]
+  b[m] = i
+}
+
+Buffer.prototype.swap16 = function swap16 () {
+  var len = this.length
+  if (len % 2 !== 0) {
+    throw new RangeError('Buffer size must be a multiple of 16-bits')
+  }
+  for (var i = 0; i < len; i += 2) {
+    swap(this, i, i + 1)
+  }
+  return this
+}
+
+Buffer.prototype.swap32 = function swap32 () {
+  var len = this.length
+  if (len % 4 !== 0) {
+    throw new RangeError('Buffer size must be a multiple of 32-bits')
+  }
+  for (var i = 0; i < len; i += 4) {
+    swap(this, i, i + 3)
+    swap(this, i + 1, i + 2)
+  }
+  return this
+}
+
+Buffer.prototype.swap64 = function swap64 () {
+  var len = this.length
+  if (len % 8 !== 0) {
+    throw new RangeError('Buffer size must be a multiple of 64-bits')
+  }
+  for (var i = 0; i < len; i += 8) {
+    swap(this, i, i + 7)
+    swap(this, i + 1, i + 6)
+    swap(this, i + 2, i + 5)
+    swap(this, i + 3, i + 4)
+  }
+  return this
+}
+
+Buffer.prototype.toString = function toString () {
+  var length = this.length
+  if (length === 0) return ''
+  if (arguments.length === 0) return utf8Slice(this, 0, length)
+  return slowToString.apply(this, arguments)
+}
+
+Buffer.prototype.toLocaleString = Buffer.prototype.toString
+
+Buffer.prototype.equals = function equals (b) {
+  if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
+  if (this === b) return true
+  return Buffer.compare(this, b) === 0
+}
+
+Buffer.prototype.inspect = function inspect () {
+  var str = ''
+  var max = exports.INSPECT_MAX_BYTES
+  str = this.toString('hex', 0, max).replace(/(.{2})/g, '$1 ').trim()
+  if (this.length > max) str += ' ... '
+  return '<Buffer ' + str + '>'
+}
+
+Buffer.prototype.compare = function compare (target, start, end, thisStart, thisEnd) {
+  if (isInstance(target, Uint8Array)) {
+    target = Buffer.from(target, target.offset, target.byteLength)
+  }
+  if (!Buffer.isBuffer(target)) {
+    throw new TypeError(
+      'The "target" argument must be one of type Buffer or Uint8Array. ' +
+      'Received type ' + (typeof target)
+    )
+  }
+
+  if (start === undefined) {
+    start = 0
+  }
+  if (end === undefined) {
+    end = target ? target.length : 0
+  }
+  if (thisStart === undefined) {
+    thisStart = 0
+  }
+  if (thisEnd === undefined) {
+    thisEnd = this.length
+  }
+
+  if (start < 0 || end > target.length || thisStart < 0 || thisEnd > this.length) {
+    throw new RangeError('out of range index')
+  }
+
+  if (thisStart >= thisEnd && start >= end) {
+    return 0
+  }
+  if (thisStart >= thisEnd) {
+    return -1
+  }
+  if (start >= end) {
+    return 1
+  }
+
+  start >>>= 0
+  end >>>= 0
+  thisStart >>>= 0
+  thisEnd >>>= 0
+
+  if (this === target) return 0
+
+  var x = thisEnd - thisStart
+  var y = end - start
+  var len = Math.min(x, y)
+
+  var thisCopy = this.slice(thisStart, thisEnd)
+  var targetCopy = target.slice(start, end)
+
+  for (var i = 0; i < len; ++i) {
+    if (thisCopy[i] !== targetCopy[i]) {
+      x = thisCopy[i]
+      y = targetCopy[i]
+      break
+    }
+  }
+
+  if (x < y) return -1
+  if (y < x) return 1
+  return 0
+}
+
+// Finds either the first index of `val` in `buffer` at offset >= `byteOffset`,
+// OR the last index of `val` in `buffer` at offset <= `byteOffset`.
+//
+// Arguments:
+// - buffer - a Buffer to search
+// - val - a string, Buffer, or number
+// - byteOffset - an index into `buffer`; will be clamped to an int32
+// - encoding - an optional encoding, relevant is val is a string
+// - dir - true for indexOf, false for lastIndexOf
+function bidirectionalIndexOf (buffer, val, byteOffset, encoding, dir) {
+  // Empty buffer means no match
+  if (buffer.length === 0) return -1
+
+  // Normalize byteOffset
+  if (typeof byteOffset === 'string') {
+    encoding = byteOffset
+    byteOffset = 0
+  } else if (byteOffset > 0x7fffffff) {
+    byteOffset = 0x7fffffff
+  } else if (byteOffset < -0x80000000) {
+    byteOffset = -0x80000000
+  }
+  byteOffset = +byteOffset // Coerce to Number.
+  if (numberIsNaN(byteOffset)) {
+    // byteOffset: it it's undefined, null, NaN, "foo", etc, search whole buffer
+    byteOffset = dir ? 0 : (buffer.length - 1)
+  }
+
+  // Normalize byteOffset: negative offsets start from the end of the buffer
+  if (byteOffset < 0) byteOffset = buffer.length + byteOffset
+  if (byteOffset >= buffer.length) {
+    if (dir) return -1
+    else byteOffset = buffer.length - 1
+  } else if (byteOffset < 0) {
+    if (dir) byteOffset = 0
+    else return -1
+  }
+
+  // Normalize val
+  if (typeof val === 'string') {
+    val = Buffer.from(val, encoding)
+  }
+
+  // Finally, search either indexOf (if dir is true) or lastIndexOf
+  if (Buffer.isBuffer(val)) {
+    // Special case: looking for empty string/buffer always fails
+    if (val.length === 0) {
+      return -1
+    }
+    return arrayIndexOf(buffer, val, byteOffset, encoding, dir)
+  } else if (typeof val === 'number') {
+    val = val & 0xFF // Search for a byte value [0-255]
+    if (typeof Uint8Array.prototype.indexOf === 'function') {
+      if (dir) {
+        return Uint8Array.prototype.indexOf.call(buffer, val, byteOffset)
+      } else {
+        return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset)
+      }
+    }
+    return arrayIndexOf(buffer, [ val ], byteOffset, encoding, dir)
+  }
+
+  throw new TypeError('val must be string, number or Buffer')
+}
+
+function arrayIndexOf (arr, val, byteOffset, encoding, dir) {
+  var indexSize = 1
+  var arrLength = arr.length
+  var valLength = val.length
+
+  if (encoding !== undefined) {
+    encoding = String(encoding).toLowerCase()
+    if (encoding === 'ucs2' || encoding === 'ucs-2' ||
+        encoding === 'utf16le' || encoding === 'utf-16le') {
+      if (arr.length < 2 || val.length < 2) {
+        return -1
+      }
+      indexSize = 2
+      arrLength /= 2
+      valLength /= 2
+      byteOffset /= 2
+    }
+  }
+
+  function read (buf, i) {
+    if (indexSize === 1) {
+      return buf[i]
+    } else {
+      return buf.readUInt16BE(i * indexSize)
+    }
+  }
+
+  var i
+  if (dir) {
+    var foundIndex = -1
+    for (i = byteOffset; i < arrLength; i++) {
+      if (read(arr, i) === read(val, foundIndex === -1 ? 0 : i - foundIndex)) {
+        if (foundIndex === -1) foundIndex = i
+        if (i - foundIndex + 1 === valLength) return foundIndex * indexSize
+      } else {
+        if (foundIndex !== -1) i -= i - foundIndex
+        foundIndex = -1
+      }
+    }
+  } else {
+    if (byteOffset + valLength > arrLength) byteOffset = arrLength - valLength
+    for (i = byteOffset; i >= 0; i--) {
+      var found = true
+      for (var j = 0; j < valLength; j++) {
+        if (read(arr, i + j) !== read(val, j)) {
+          found = false
+          break
+        }
+      }
+      if (found) return i
+    }
+  }
+
+  return -1
+}
+
+Buffer.prototype.includes = function includes (val, byteOffset, encoding) {
+  return this.indexOf(val, byteOffset, encoding) !== -1
+}
+
+Buffer.prototype.indexOf = function indexOf (val, byteOffset, encoding) {
+  return bidirectionalIndexOf(this, val, byteOffset, encoding, true)
+}
+
+Buffer.prototype.lastIndexOf = function lastIndexOf (val, byteOffset, encoding) {
+  return bidirectionalIndexOf(this, val, byteOffset, encoding, false)
+}
+
+function hexWrite (buf, string, offset, length) {
+  offset = Number(offset) || 0
+  var remaining = buf.length - offset
+  if (!length) {
+    length = remaining
+  } else {
+    length = Number(length)
+    if (length > remaining) {
+      length = remaining
+    }
+  }
+
+  var strLen = string.length
+
+  if (length > strLen / 2) {
+    length = strLen / 2
+  }
+  for (var i = 0; i < length; ++i) {
+    var parsed = parseInt(string.substr(i * 2, 2), 16)
+    if (numberIsNaN(parsed)) return i
+    buf[offset + i] = parsed
+  }
+  return i
+}
+
+function utf8Write (buf, string, offset, length) {
+  return blitBuffer(utf8ToBytes(string, buf.length - offset), buf, offset, length)
+}
+
+function asciiWrite (buf, string, offset, length) {
+  return blitBuffer(asciiToBytes(string), buf, offset, length)
+}
+
+function latin1Write (buf, string, offset, length) {
+  return asciiWrite(buf, string, offset, length)
+}
+
+function base64Write (buf, string, offset, length) {
+  return blitBuffer(base64ToBytes(string), buf, offset, length)
+}
+
+function ucs2Write (buf, string, offset, length) {
+  return blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length)
+}
+
+Buffer.prototype.write = function write (string, offset, length, encoding) {
+  // Buffer#write(string)
+  if (offset === undefined) {
+    encoding = 'utf8'
+    length = this.length
+    offset = 0
+  // Buffer#write(string, encoding)
+  } else if (length === undefined && typeof offset === 'string') {
+    encoding = offset
+    length = this.length
+    offset = 0
+  // Buffer#write(string, offset[, length][, encoding])
+  } else if (isFinite(offset)) {
+    offset = offset >>> 0
+    if (isFinite(length)) {
+      length = length >>> 0
+      if (encoding === undefined) encoding = 'utf8'
+    } else {
+      encoding = length
+      length = undefined
+    }
+  } else {
+    throw new Error(
+      'Buffer.write(string, encoding, offset[, length]) is no longer supported'
+    )
+  }
+
+  var remaining = this.length - offset
+  if (length === undefined || length > remaining) length = remaining
+
+  if ((string.length > 0 && (length < 0 || offset < 0)) || offset > this.length) {
+    throw new RangeError('Attempt to write outside buffer bounds')
+  }
+
+  if (!encoding) encoding = 'utf8'
+
+  var loweredCase = false
+  for (;;) {
+    switch (encoding) {
+      case 'hex':
+        return hexWrite(this, string, offset, length)
+
+      case 'utf8':
+      case 'utf-8':
+        return utf8Write(this, string, offset, length)
+
+      case 'ascii':
+        return asciiWrite(this, string, offset, length)
+
+      case 'latin1':
+      case 'binary':
+        return latin1Write(this, string, offset, length)
+
+      case 'base64':
+        // Warning: maxLength not taken into account in base64Write
+        return base64Write(this, string, offset, length)
+
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return ucs2Write(this, string, offset, length)
+
+      default:
+        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
+        encoding = ('' + encoding).toLowerCase()
+        loweredCase = true
+    }
+  }
+}
+
+Buffer.prototype.toJSON = function toJSON () {
+  return {
+    type: 'Buffer',
+    data: Array.prototype.slice.call(this._arr || this, 0)
+  }
+}
+
+function base64Slice (buf, start, end) {
+  if (start === 0 && end === buf.length) {
+    return base64.fromByteArray(buf)
+  } else {
+    return base64.fromByteArray(buf.slice(start, end))
+  }
+}
+
+function utf8Slice (buf, start, end) {
+  end = Math.min(buf.length, end)
+  var res = []
+
+  var i = start
+  while (i < end) {
+    var firstByte = buf[i]
+    var codePoint = null
+    var bytesPerSequence = (firstByte > 0xEF) ? 4
+      : (firstByte > 0xDF) ? 3
+        : (firstByte > 0xBF) ? 2
+          : 1
+
+    if (i + bytesPerSequence <= end) {
+      var secondByte, thirdByte, fourthByte, tempCodePoint
+
+      switch (bytesPerSequence) {
+        case 1:
+          if (firstByte < 0x80) {
+            codePoint = firstByte
+          }
+          break
+        case 2:
+          secondByte = buf[i + 1]
+          if ((secondByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0x1F) << 0x6 | (secondByte & 0x3F)
+            if (tempCodePoint > 0x7F) {
+              codePoint = tempCodePoint
+            }
+          }
+          break
+        case 3:
+          secondByte = buf[i + 1]
+          thirdByte = buf[i + 2]
+          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | (thirdByte & 0x3F)
+            if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) {
+              codePoint = tempCodePoint
+            }
+          }
+          break
+        case 4:
+          secondByte = buf[i + 1]
+          thirdByte = buf[i + 2]
+          fourthByte = buf[i + 3]
+          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | (fourthByte & 0x3F)
+            if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
+              codePoint = tempCodePoint
+            }
+          }
+      }
+    }
+
+    if (codePoint === null) {
+      // we did not generate a valid codePoint so insert a
+      // replacement char (U+FFFD) and advance only 1 byte
+      codePoint = 0xFFFD
+      bytesPerSequence = 1
+    } else if (codePoint > 0xFFFF) {
+      // encode to utf16 (surrogate pair dance)
+      codePoint -= 0x10000
+      res.push(codePoint >>> 10 & 0x3FF | 0xD800)
+      codePoint = 0xDC00 | codePoint & 0x3FF
+    }
+
+    res.push(codePoint)
+    i += bytesPerSequence
+  }
+
+  return decodeCodePointsArray(res)
+}
+
+// Based on http://stackoverflow.com/a/22747272/680742, the browser with
+// the lowest limit is Chrome, with 0x10000 args.
+// We go 1 magnitude less, for safety
+var MAX_ARGUMENTS_LENGTH = 0x1000
+
+function decodeCodePointsArray (codePoints) {
+  var len = codePoints.length
+  if (len <= MAX_ARGUMENTS_LENGTH) {
+    return String.fromCharCode.apply(String, codePoints) // avoid extra slice()
+  }
+
+  // Decode in chunks to avoid "call stack size exceeded".
+  var res = ''
+  var i = 0
+  while (i < len) {
+    res += String.fromCharCode.apply(
+      String,
+      codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH)
+    )
+  }
+  return res
+}
+
+function asciiSlice (buf, start, end) {
+  var ret = ''
+  end = Math.min(buf.length, end)
+
+  for (var i = start; i < end; ++i) {
+    ret += String.fromCharCode(buf[i] & 0x7F)
+  }
+  return ret
+}
+
+function latin1Slice (buf, start, end) {
+  var ret = ''
+  end = Math.min(buf.length, end)
+
+  for (var i = start; i < end; ++i) {
+    ret += String.fromCharCode(buf[i])
+  }
+  return ret
+}
+
+function hexSlice (buf, start, end) {
+  var len = buf.length
+
+  if (!start || start < 0) start = 0
+  if (!end || end < 0 || end > len) end = len
+
+  var out = ''
+  for (var i = start; i < end; ++i) {
+    out += toHex(buf[i])
+  }
+  return out
+}
+
+function utf16leSlice (buf, start, end) {
+  var bytes = buf.slice(start, end)
+  var res = ''
+  for (var i = 0; i < bytes.length; i += 2) {
+    res += String.fromCharCode(bytes[i] + (bytes[i + 1] * 256))
+  }
+  return res
+}
+
+Buffer.prototype.slice = function slice (start, end) {
+  var len = this.length
+  start = ~~start
+  end = end === undefined ? len : ~~end
+
+  if (start < 0) {
+    start += len
+    if (start < 0) start = 0
+  } else if (start > len) {
+    start = len
+  }
+
+  if (end < 0) {
+    end += len
+    if (end < 0) end = 0
+  } else if (end > len) {
+    end = len
+  }
+
+  if (end < start) end = start
+
+  var newBuf = this.subarray(start, end)
+  // Return an augmented `Uint8Array` instance
+  newBuf.__proto__ = Buffer.prototype
+  return newBuf
+}
+
+/*
+ * Need to make sure that buffer isn't trying to write out of bounds.
+ */
+function checkOffset (offset, ext, length) {
+  if ((offset % 1) !== 0 || offset < 0) throw new RangeError('offset is not uint')
+  if (offset + ext > length) throw new RangeError('Trying to access beyond buffer length')
+}
+
+Buffer.prototype.readUIntLE = function readUIntLE (offset, byteLength, noAssert) {
+  offset = offset >>> 0
+  byteLength = byteLength >>> 0
+  if (!noAssert) checkOffset(offset, byteLength, this.length)
+
+  var val = this[offset]
+  var mul = 1
+  var i = 0
+  while (++i < byteLength && (mul *= 0x100)) {
+    val += this[offset + i] * mul
+  }
+
+  return val
+}
+
+Buffer.prototype.readUIntBE = function readUIntBE (offset, byteLength, noAssert) {
+  offset = offset >>> 0
+  byteLength = byteLength >>> 0
+  if (!noAssert) {
+    checkOffset(offset, byteLength, this.length)
+  }
+
+  var val = this[offset + --byteLength]
+  var mul = 1
+  while (byteLength > 0 && (mul *= 0x100)) {
+    val += this[offset + --byteLength] * mul
+  }
+
+  return val
+}
+
+Buffer.prototype.readUInt8 = function readUInt8 (offset, noAssert) {
+  offset = offset >>> 0
+  if (!noAssert) checkOffset(offset, 1, this.length)
+  return this[offset]
+}
+
+Buffer.prototype.readUInt16LE = function readUInt16LE (offset, noAssert) {
+  offset = offset >>> 0
+  if (!noAssert) checkOffset(offset, 2, this.length)
+  return this[offset] | (this[offset + 1] << 8)
+}
+
+Buffer.prototype.readUInt16BE = function readUInt16BE (offset, noAssert) {
+  offset = offset >>> 0
+  if (!noAssert) checkOffset(offset, 2, this.length)
+  return (this[offset] << 8) | this[offset + 1]
+}
+
+Buffer.prototype.readUInt32LE = function readUInt32LE (offset, noAssert) {
+  offset = offset >>> 0
+  if (!noAssert) checkOffset(offset, 4, this.length)
+
+  return ((this[offset]) |
+      (this[offset + 1] << 8) |
+      (this[offset + 2] << 16)) +
+      (this[offset + 3] * 0x1000000)
+}
+
+Buffer.prototype.readUInt32BE = function readUInt32BE (offset, noAssert) {
+  offset = offset >>> 0
+  if (!noAssert) checkOffset(offset, 4, this.length)
+
+  return (this[offset] * 0x1000000) +
+    ((this[offset + 1] << 16) |
+    (this[offset + 2] << 8) |
+    this[offset + 3])
+}
+
+Buffer.prototype.readIntLE = function readIntLE (offset, byteLength, noAssert) {
+  offset = offset >>> 0
+  byteLength = byteLength >>> 0
+  if (!noAssert) checkOffset(offset, byteLength, this.length)
+
+  var val = this[offset]
+  var mul = 1
+  var i = 0
+  while (++i < byteLength && (mul *= 0x100)) {
+    val += this[offset + i] * mul
+  }
+  mul *= 0x80
+
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
+
+  return val
+}
+
+Buffer.prototype.readIntBE = function readIntBE (offset, byteLength, noAssert) {
+  offset = offset >>> 0
+  byteLength = byteLength >>> 0
+  if (!noAssert) checkOffset(offset, byteLength, this.length)
+
+  var i = byteLength
+  var mul = 1
+  var val = this[offset + --i]
+  while (i > 0 && (mul *= 0x100)) {
+    val += this[offset + --i] * mul
+  }
+  mul *= 0x80
+
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
+
+  return val
+}
+
+Buffer.prototype.readInt8 = function readInt8 (offset, noAssert) {
+  offset = offset >>> 0
+  if (!noAssert) checkOffset(offset, 1, this.length)
+  if (!(this[offset] & 0x80)) return (this[offset])
+  return ((0xff - this[offset] + 1) * -1)
+}
+
+Buffer.prototype.readInt16LE = function readInt16LE (offset, noAssert) {
+  offset = offset >>> 0
+  if (!noAssert) checkOffset(offset, 2, this.length)
+  var val = this[offset] | (this[offset + 1] << 8)
+  return (val & 0x8000) ? val | 0xFFFF0000 : val
+}
+
+Buffer.prototype.readInt16BE = function readInt16BE (offset, noAssert) {
+  offset = offset >>> 0
+  if (!noAssert) checkOffset(offset, 2, this.length)
+  var val = this[offset + 1] | (this[offset] << 8)
+  return (val & 0x8000) ? val | 0xFFFF0000 : val
+}
+
+Buffer.prototype.readInt32LE = function readInt32LE (offset, noAssert) {
+  offset = offset >>> 0
+  if (!noAssert) checkOffset(offset, 4, this.length)
+
+  return (this[offset]) |
+    (this[offset + 1] << 8) |
+    (this[offset + 2] << 16) |
+    (this[offset + 3] << 24)
+}
+
+Buffer.prototype.readInt32BE = function readInt32BE (offset, noAssert) {
+  offset = offset >>> 0
+  if (!noAssert) checkOffset(offset, 4, this.length)
+
+  return (this[offset] << 24) |
+    (this[offset + 1] << 16) |
+    (this[offset + 2] << 8) |
+    (this[offset + 3])
+}
+
+Buffer.prototype.readFloatLE = function readFloatLE (offset, noAssert) {
+  offset = offset >>> 0
+  if (!noAssert) checkOffset(offset, 4, this.length)
+  return ieee754.read(this, offset, true, 23, 4)
+}
+
+Buffer.prototype.readFloatBE = function readFloatBE (offset, noAssert) {
+  offset = offset >>> 0
+  if (!noAssert) checkOffset(offset, 4, this.length)
+  return ieee754.read(this, offset, false, 23, 4)
+}
+
+Buffer.prototype.readDoubleLE = function readDoubleLE (offset, noAssert) {
+  offset = offset >>> 0
+  if (!noAssert) checkOffset(offset, 8, this.length)
+  return ieee754.read(this, offset, true, 52, 8)
+}
+
+Buffer.prototype.readDoubleBE = function readDoubleBE (offset, noAssert) {
+  offset = offset >>> 0
+  if (!noAssert) checkOffset(offset, 8, this.length)
+  return ieee754.read(this, offset, false, 52, 8)
+}
+
+function checkInt (buf, value, offset, ext, max, min) {
+  if (!Buffer.isBuffer(buf)) throw new TypeError('"buffer" argument must be a Buffer instance')
+  if (value > max || value < min) throw new RangeError('"value" argument is out of bounds')
+  if (offset + ext > buf.length) throw new RangeError('Index out of range')
+}
+
+Buffer.prototype.writeUIntLE = function writeUIntLE (value, offset, byteLength, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  byteLength = byteLength >>> 0
+  if (!noAssert) {
+    var maxBytes = Math.pow(2, 8 * byteLength) - 1
+    checkInt(this, value, offset, byteLength, maxBytes, 0)
+  }
+
+  var mul = 1
+  var i = 0
+  this[offset] = value & 0xFF
+  while (++i < byteLength && (mul *= 0x100)) {
+    this[offset + i] = (value / mul) & 0xFF
+  }
+
+  return offset + byteLength
+}
+
+Buffer.prototype.writeUIntBE = function writeUIntBE (value, offset, byteLength, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  byteLength = byteLength >>> 0
+  if (!noAssert) {
+    var maxBytes = Math.pow(2, 8 * byteLength) - 1
+    checkInt(this, value, offset, byteLength, maxBytes, 0)
+  }
+
+  var i = byteLength - 1
+  var mul = 1
+  this[offset + i] = value & 0xFF
+  while (--i >= 0 && (mul *= 0x100)) {
+    this[offset + i] = (value / mul) & 0xFF
+  }
+
+  return offset + byteLength
+}
+
+Buffer.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
+  this[offset] = (value & 0xff)
+  return offset + 1
+}
+
+Buffer.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
+  this[offset] = (value & 0xff)
+  this[offset + 1] = (value >>> 8)
+  return offset + 2
+}
+
+Buffer.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
+  this[offset] = (value >>> 8)
+  this[offset + 1] = (value & 0xff)
+  return offset + 2
+}
+
+Buffer.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
+  this[offset + 3] = (value >>> 24)
+  this[offset + 2] = (value >>> 16)
+  this[offset + 1] = (value >>> 8)
+  this[offset] = (value & 0xff)
+  return offset + 4
+}
+
+Buffer.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
+  this[offset] = (value >>> 24)
+  this[offset + 1] = (value >>> 16)
+  this[offset + 2] = (value >>> 8)
+  this[offset + 3] = (value & 0xff)
+  return offset + 4
+}
+
+Buffer.prototype.writeIntLE = function writeIntLE (value, offset, byteLength, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert) {
+    var limit = Math.pow(2, (8 * byteLength) - 1)
+
+    checkInt(this, value, offset, byteLength, limit - 1, -limit)
+  }
+
+  var i = 0
+  var mul = 1
+  var sub = 0
+  this[offset] = value & 0xFF
+  while (++i < byteLength && (mul *= 0x100)) {
+    if (value < 0 && sub === 0 && this[offset + i - 1] !== 0) {
+      sub = 1
+    }
+    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF
+  }
+
+  return offset + byteLength
+}
+
+Buffer.prototype.writeIntBE = function writeIntBE (value, offset, byteLength, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert) {
+    var limit = Math.pow(2, (8 * byteLength) - 1)
+
+    checkInt(this, value, offset, byteLength, limit - 1, -limit)
+  }
+
+  var i = byteLength - 1
+  var mul = 1
+  var sub = 0
+  this[offset + i] = value & 0xFF
+  while (--i >= 0 && (mul *= 0x100)) {
+    if (value < 0 && sub === 0 && this[offset + i + 1] !== 0) {
+      sub = 1
+    }
+    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF
+  }
+
+  return offset + byteLength
+}
+
+Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
+  if (value < 0) value = 0xff + value + 1
+  this[offset] = (value & 0xff)
+  return offset + 1
+}
+
+Buffer.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
+  this[offset] = (value & 0xff)
+  this[offset + 1] = (value >>> 8)
+  return offset + 2
+}
+
+Buffer.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
+  this[offset] = (value >>> 8)
+  this[offset + 1] = (value & 0xff)
+  return offset + 2
+}
+
+Buffer.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
+  this[offset] = (value & 0xff)
+  this[offset + 1] = (value >>> 8)
+  this[offset + 2] = (value >>> 16)
+  this[offset + 3] = (value >>> 24)
+  return offset + 4
+}
+
+Buffer.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
+  if (value < 0) value = 0xffffffff + value + 1
+  this[offset] = (value >>> 24)
+  this[offset + 1] = (value >>> 16)
+  this[offset + 2] = (value >>> 8)
+  this[offset + 3] = (value & 0xff)
+  return offset + 4
+}
+
+function checkIEEE754 (buf, value, offset, ext, max, min) {
+  if (offset + ext > buf.length) throw new RangeError('Index out of range')
+  if (offset < 0) throw new RangeError('Index out of range')
+}
+
+function writeFloat (buf, value, offset, littleEndian, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert) {
+    checkIEEE754(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38)
+  }
+  ieee754.write(buf, value, offset, littleEndian, 23, 4)
+  return offset + 4
+}
+
+Buffer.prototype.writeFloatLE = function writeFloatLE (value, offset, noAssert) {
+  return writeFloat(this, value, offset, true, noAssert)
+}
+
+Buffer.prototype.writeFloatBE = function writeFloatBE (value, offset, noAssert) {
+  return writeFloat(this, value, offset, false, noAssert)
+}
+
+function writeDouble (buf, value, offset, littleEndian, noAssert) {
+  value = +value
+  offset = offset >>> 0
+  if (!noAssert) {
+    checkIEEE754(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308)
+  }
+  ieee754.write(buf, value, offset, littleEndian, 52, 8)
+  return offset + 8
+}
+
+Buffer.prototype.writeDoubleLE = function writeDoubleLE (value, offset, noAssert) {
+  return writeDouble(this, value, offset, true, noAssert)
+}
+
+Buffer.prototype.writeDoubleBE = function writeDoubleBE (value, offset, noAssert) {
+  return writeDouble(this, value, offset, false, noAssert)
+}
+
+// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
+Buffer.prototype.copy = function copy (target, targetStart, start, end) {
+  if (!Buffer.isBuffer(target)) throw new TypeError('argument should be a Buffer')
+  if (!start) start = 0
+  if (!end && end !== 0) end = this.length
+  if (targetStart >= target.length) targetStart = target.length
+  if (!targetStart) targetStart = 0
+  if (end > 0 && end < start) end = start
+
+  // Copy 0 bytes; we're done
+  if (end === start) return 0
+  if (target.length === 0 || this.length === 0) return 0
+
+  // Fatal error conditions
+  if (targetStart < 0) {
+    throw new RangeError('targetStart out of bounds')
+  }
+  if (start < 0 || start >= this.length) throw new RangeError('Index out of range')
+  if (end < 0) throw new RangeError('sourceEnd out of bounds')
+
+  // Are we oob?
+  if (end > this.length) end = this.length
+  if (target.length - targetStart < end - start) {
+    end = target.length - targetStart + start
+  }
+
+  var len = end - start
+
+  if (this === target && typeof Uint8Array.prototype.copyWithin === 'function') {
+    // Use built-in when available, missing from IE11
+    this.copyWithin(targetStart, start, end)
+  } else if (this === target && start < targetStart && targetStart < end) {
+    // descending copy from end
+    for (var i = len - 1; i >= 0; --i) {
+      target[i + targetStart] = this[i + start]
+    }
+  } else {
+    Uint8Array.prototype.set.call(
+      target,
+      this.subarray(start, end),
+      targetStart
+    )
+  }
+
+  return len
+}
+
+// Usage:
+//    buffer.fill(number[, offset[, end]])
+//    buffer.fill(buffer[, offset[, end]])
+//    buffer.fill(string[, offset[, end]][, encoding])
+Buffer.prototype.fill = function fill (val, start, end, encoding) {
+  // Handle string cases:
+  if (typeof val === 'string') {
+    if (typeof start === 'string') {
+      encoding = start
+      start = 0
+      end = this.length
+    } else if (typeof end === 'string') {
+      encoding = end
+      end = this.length
+    }
+    if (encoding !== undefined && typeof encoding !== 'string') {
+      throw new TypeError('encoding must be a string')
+    }
+    if (typeof encoding === 'string' && !Buffer.isEncoding(encoding)) {
+      throw new TypeError('Unknown encoding: ' + encoding)
+    }
+    if (val.length === 1) {
+      var code = val.charCodeAt(0)
+      if ((encoding === 'utf8' && code < 128) ||
+          encoding === 'latin1') {
+        // Fast path: If `val` fits into a single byte, use that numeric value.
+        val = code
+      }
+    }
+  } else if (typeof val === 'number') {
+    val = val & 255
+  }
+
+  // Invalid ranges are not set to a default, so can range check early.
+  if (start < 0 || this.length < start || this.length < end) {
+    throw new RangeError('Out of range index')
+  }
+
+  if (end <= start) {
+    return this
+  }
+
+  start = start >>> 0
+  end = end === undefined ? this.length : end >>> 0
+
+  if (!val) val = 0
+
+  var i
+  if (typeof val === 'number') {
+    for (i = start; i < end; ++i) {
+      this[i] = val
+    }
+  } else {
+    var bytes = Buffer.isBuffer(val)
+      ? val
+      : Buffer.from(val, encoding)
+    var len = bytes.length
+    if (len === 0) {
+      throw new TypeError('The value "' + val +
+        '" is invalid for argument "value"')
+    }
+    for (i = 0; i < end - start; ++i) {
+      this[i + start] = bytes[i % len]
+    }
+  }
+
+  return this
+}
+
+// HELPER FUNCTIONS
+// ================
+
+var INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g
+
+function base64clean (str) {
+  // Node takes equal signs as end of the Base64 encoding
+  str = str.split('=')[0]
+  // Node strips out invalid characters like \n and \t from the string, base64-js does not
+  str = str.trim().replace(INVALID_BASE64_RE, '')
+  // Node converts strings with length < 2 to ''
+  if (str.length < 2) return ''
+  // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
+  while (str.length % 4 !== 0) {
+    str = str + '='
+  }
+  return str
+}
+
+function toHex (n) {
+  if (n < 16) return '0' + n.toString(16)
+  return n.toString(16)
+}
+
+function utf8ToBytes (string, units) {
+  units = units || Infinity
+  var codePoint
+  var length = string.length
+  var leadSurrogate = null
+  var bytes = []
+
+  for (var i = 0; i < length; ++i) {
+    codePoint = string.charCodeAt(i)
+
+    // is surrogate component
+    if (codePoint > 0xD7FF && codePoint < 0xE000) {
+      // last char was a lead
+      if (!leadSurrogate) {
+        // no lead yet
+        if (codePoint > 0xDBFF) {
+          // unexpected trail
+          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+          continue
+        } else if (i + 1 === length) {
+          // unpaired lead
+          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+          continue
+        }
+
+        // valid lead
+        leadSurrogate = codePoint
+
+        continue
+      }
+
+      // 2 leads in a row
+      if (codePoint < 0xDC00) {
+        if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+        leadSurrogate = codePoint
+        continue
+      }
+
+      // valid surrogate pair
+      codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000
+    } else if (leadSurrogate) {
+      // valid bmp char, but last char was a lead
+      if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+    }
+
+    leadSurrogate = null
+
+    // encode utf8
+    if (codePoint < 0x80) {
+      if ((units -= 1) < 0) break
+      bytes.push(codePoint)
+    } else if (codePoint < 0x800) {
+      if ((units -= 2) < 0) break
+      bytes.push(
+        codePoint >> 0x6 | 0xC0,
+        codePoint & 0x3F | 0x80
+      )
+    } else if (codePoint < 0x10000) {
+      if ((units -= 3) < 0) break
+      bytes.push(
+        codePoint >> 0xC | 0xE0,
+        codePoint >> 0x6 & 0x3F | 0x80,
+        codePoint & 0x3F | 0x80
+      )
+    } else if (codePoint < 0x110000) {
+      if ((units -= 4) < 0) break
+      bytes.push(
+        codePoint >> 0x12 | 0xF0,
+        codePoint >> 0xC & 0x3F | 0x80,
+        codePoint >> 0x6 & 0x3F | 0x80,
+        codePoint & 0x3F | 0x80
+      )
+    } else {
+      throw new Error('Invalid code point')
+    }
+  }
+
+  return bytes
+}
+
+function asciiToBytes (str) {
+  var byteArray = []
+  for (var i = 0; i < str.length; ++i) {
+    // Node's code seems to be doing this and not & 0x7F..
+    byteArray.push(str.charCodeAt(i) & 0xFF)
+  }
+  return byteArray
+}
+
+function utf16leToBytes (str, units) {
+  var c, hi, lo
+  var byteArray = []
+  for (var i = 0; i < str.length; ++i) {
+    if ((units -= 2) < 0) break
+
+    c = str.charCodeAt(i)
+    hi = c >> 8
+    lo = c % 256
+    byteArray.push(lo)
+    byteArray.push(hi)
+  }
+
+  return byteArray
+}
+
+function base64ToBytes (str) {
+  return base64.toByteArray(base64clean(str))
+}
+
+function blitBuffer (src, dst, offset, length) {
+  for (var i = 0; i < length; ++i) {
+    if ((i + offset >= dst.length) || (i >= src.length)) break
+    dst[i + offset] = src[i]
+  }
+  return i
+}
+
+// ArrayBuffer or Uint8Array objects from other contexts (i.e. iframes) do not pass
+// the `instanceof` check but they should be treated as of that type.
+// See: https://github.com/feross/buffer/issues/166
+function isInstance (obj, type) {
+  return obj instanceof type ||
+    (obj != null && obj.constructor != null && obj.constructor.name != null &&
+      obj.constructor.name === type.name)
+}
+function numberIsNaN (obj) {
+  // For IE11 support
+  return obj !== obj // eslint-disable-line no-self-compare
+}
+
+}).call(this)}).call(this,require("buffer").Buffer)
+},{"base64-js":10,"buffer":"buffer","ieee754":19}],"debug":[function(require,module,exports){
+(function (process){(function (){
 /* eslint-env browser */
 
 /**
  * This is the web browser implementation of `debug()`.
  */
 
-exports.log = log;
 exports.formatArgs = formatArgs;
 exports.save = save;
 exports.load = load;
 exports.useColors = useColors;
 exports.storage = localstorage();
+exports.destroy = (() => {
+	let warned = false;
+
+	return () => {
+		if (!warned) {
+			warned = true;
+			console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
+		}
+	};
+})();
 
 /**
  * Colors.
@@ -10289,18 +10436,14 @@ function formatArgs(args) {
 }
 
 /**
- * Invokes `console.log()` when available.
- * No-op when `console.log` is not a "function".
+ * Invokes `console.debug()` when available.
+ * No-op when `console.debug` is not a "function".
+ * If `console.debug` is not available, falls back
+ * to `console.log`.
  *
  * @api public
  */
-function log(...args) {
-	// This hackery is required for IE8/9, where
-	// the `console.log` function doesn't have 'apply'
-	return typeof console === 'object' &&
-		console.log &&
-		console.log(...args);
-}
+exports.log = console.debug || console.log || (() => {});
 
 /**
  * Save `namespaces`.
@@ -10382,8 +10525,8 @@ formatters.j = function (v) {
 	}
 };
 
-}).call(this,require('_process'))
-},{"./common":17,"_process":23}],"events":[function(require,module,exports){
+}).call(this)}).call(this,require('_process'))
+},{"./common":16,"_process":23}],"events":[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -10405,182 +10548,143 @@ formatters.j = function (v) {
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-var objectCreate = Object.create || objectCreatePolyfill
-var objectKeys = Object.keys || objectKeysPolyfill
-var bind = Function.prototype.bind || functionBindPolyfill
+'use strict';
 
-function EventEmitter() {
-  if (!this._events || !Object.prototype.hasOwnProperty.call(this, '_events')) {
-    this._events = objectCreate(null);
-    this._eventsCount = 0;
+var R = typeof Reflect === 'object' ? Reflect : null
+var ReflectApply = R && typeof R.apply === 'function'
+  ? R.apply
+  : function ReflectApply(target, receiver, args) {
+    return Function.prototype.apply.call(target, receiver, args);
   }
 
-  this._maxListeners = this._maxListeners || undefined;
+var ReflectOwnKeys
+if (R && typeof R.ownKeys === 'function') {
+  ReflectOwnKeys = R.ownKeys
+} else if (Object.getOwnPropertySymbols) {
+  ReflectOwnKeys = function ReflectOwnKeys(target) {
+    return Object.getOwnPropertyNames(target)
+      .concat(Object.getOwnPropertySymbols(target));
+  };
+} else {
+  ReflectOwnKeys = function ReflectOwnKeys(target) {
+    return Object.getOwnPropertyNames(target);
+  };
+}
+
+function ProcessEmitWarning(warning) {
+  if (console && console.warn) console.warn(warning);
+}
+
+var NumberIsNaN = Number.isNaN || function NumberIsNaN(value) {
+  return value !== value;
+}
+
+function EventEmitter() {
+  EventEmitter.init.call(this);
 }
 module.exports = EventEmitter;
+module.exports.once = once;
 
 // Backwards-compat with node 0.10.x
 EventEmitter.EventEmitter = EventEmitter;
 
 EventEmitter.prototype._events = undefined;
+EventEmitter.prototype._eventsCount = 0;
 EventEmitter.prototype._maxListeners = undefined;
 
 // By default EventEmitters will print a warning if more than 10 listeners are
 // added to it. This is a useful default which helps finding memory leaks.
 var defaultMaxListeners = 10;
 
-var hasDefineProperty;
-try {
-  var o = {};
-  if (Object.defineProperty) Object.defineProperty(o, 'x', { value: 0 });
-  hasDefineProperty = o.x === 0;
-} catch (err) { hasDefineProperty = false }
-if (hasDefineProperty) {
-  Object.defineProperty(EventEmitter, 'defaultMaxListeners', {
-    enumerable: true,
-    get: function() {
-      return defaultMaxListeners;
-    },
-    set: function(arg) {
-      // check whether the input is a positive number (whose value is zero or
-      // greater and not a NaN).
-      if (typeof arg !== 'number' || arg < 0 || arg !== arg)
-        throw new TypeError('"defaultMaxListeners" must be a positive number');
-      defaultMaxListeners = arg;
-    }
-  });
-} else {
-  EventEmitter.defaultMaxListeners = defaultMaxListeners;
+function checkListener(listener) {
+  if (typeof listener !== 'function') {
+    throw new TypeError('The "listener" argument must be of type Function. Received type ' + typeof listener);
+  }
 }
+
+Object.defineProperty(EventEmitter, 'defaultMaxListeners', {
+  enumerable: true,
+  get: function() {
+    return defaultMaxListeners;
+  },
+  set: function(arg) {
+    if (typeof arg !== 'number' || arg < 0 || NumberIsNaN(arg)) {
+      throw new RangeError('The value of "defaultMaxListeners" is out of range. It must be a non-negative number. Received ' + arg + '.');
+    }
+    defaultMaxListeners = arg;
+  }
+});
+
+EventEmitter.init = function() {
+
+  if (this._events === undefined ||
+      this._events === Object.getPrototypeOf(this)._events) {
+    this._events = Object.create(null);
+    this._eventsCount = 0;
+  }
+
+  this._maxListeners = this._maxListeners || undefined;
+};
 
 // Obviously not all Emitters should be limited to 10. This function allows
 // that to be increased. Set to zero for unlimited.
 EventEmitter.prototype.setMaxListeners = function setMaxListeners(n) {
-  if (typeof n !== 'number' || n < 0 || isNaN(n))
-    throw new TypeError('"n" argument must be a positive number');
+  if (typeof n !== 'number' || n < 0 || NumberIsNaN(n)) {
+    throw new RangeError('The value of "n" is out of range. It must be a non-negative number. Received ' + n + '.');
+  }
   this._maxListeners = n;
   return this;
 };
 
-function $getMaxListeners(that) {
+function _getMaxListeners(that) {
   if (that._maxListeners === undefined)
     return EventEmitter.defaultMaxListeners;
   return that._maxListeners;
 }
 
 EventEmitter.prototype.getMaxListeners = function getMaxListeners() {
-  return $getMaxListeners(this);
+  return _getMaxListeners(this);
 };
 
-// These standalone emit* functions are used to optimize calling of event
-// handlers for fast cases because emit() itself often has a variable number of
-// arguments and can be deoptimized because of that. These functions always have
-// the same number of arguments and thus do not get deoptimized, so the code
-// inside them can execute faster.
-function emitNone(handler, isFn, self) {
-  if (isFn)
-    handler.call(self);
-  else {
-    var len = handler.length;
-    var listeners = arrayClone(handler, len);
-    for (var i = 0; i < len; ++i)
-      listeners[i].call(self);
-  }
-}
-function emitOne(handler, isFn, self, arg1) {
-  if (isFn)
-    handler.call(self, arg1);
-  else {
-    var len = handler.length;
-    var listeners = arrayClone(handler, len);
-    for (var i = 0; i < len; ++i)
-      listeners[i].call(self, arg1);
-  }
-}
-function emitTwo(handler, isFn, self, arg1, arg2) {
-  if (isFn)
-    handler.call(self, arg1, arg2);
-  else {
-    var len = handler.length;
-    var listeners = arrayClone(handler, len);
-    for (var i = 0; i < len; ++i)
-      listeners[i].call(self, arg1, arg2);
-  }
-}
-function emitThree(handler, isFn, self, arg1, arg2, arg3) {
-  if (isFn)
-    handler.call(self, arg1, arg2, arg3);
-  else {
-    var len = handler.length;
-    var listeners = arrayClone(handler, len);
-    for (var i = 0; i < len; ++i)
-      listeners[i].call(self, arg1, arg2, arg3);
-  }
-}
-
-function emitMany(handler, isFn, self, args) {
-  if (isFn)
-    handler.apply(self, args);
-  else {
-    var len = handler.length;
-    var listeners = arrayClone(handler, len);
-    for (var i = 0; i < len; ++i)
-      listeners[i].apply(self, args);
-  }
-}
-
 EventEmitter.prototype.emit = function emit(type) {
-  var er, handler, len, args, i, events;
+  var args = [];
+  for (var i = 1; i < arguments.length; i++) args.push(arguments[i]);
   var doError = (type === 'error');
 
-  events = this._events;
-  if (events)
-    doError = (doError && events.error == null);
+  var events = this._events;
+  if (events !== undefined)
+    doError = (doError && events.error === undefined);
   else if (!doError)
     return false;
 
   // If there is no 'error' event listener then throw.
   if (doError) {
-    if (arguments.length > 1)
-      er = arguments[1];
+    var er;
+    if (args.length > 0)
+      er = args[0];
     if (er instanceof Error) {
+      // Note: The comments on the `throw` lines are intentional, they show
+      // up in Node's output if this results in an unhandled exception.
       throw er; // Unhandled 'error' event
-    } else {
-      // At least give some kind of context to the user
-      var err = new Error('Unhandled "error" event. (' + er + ')');
-      err.context = er;
-      throw err;
     }
-    return false;
+    // At least give some kind of context to the user
+    var err = new Error('Unhandled error.' + (er ? ' (' + er.message + ')' : ''));
+    err.context = er;
+    throw err; // Unhandled 'error' event
   }
 
-  handler = events[type];
+  var handler = events[type];
 
-  if (!handler)
+  if (handler === undefined)
     return false;
 
-  var isFn = typeof handler === 'function';
-  len = arguments.length;
-  switch (len) {
-      // fast cases
-    case 1:
-      emitNone(handler, isFn, this);
-      break;
-    case 2:
-      emitOne(handler, isFn, this, arguments[1]);
-      break;
-    case 3:
-      emitTwo(handler, isFn, this, arguments[1], arguments[2]);
-      break;
-    case 4:
-      emitThree(handler, isFn, this, arguments[1], arguments[2], arguments[3]);
-      break;
-      // slower
-    default:
-      args = new Array(len - 1);
-      for (i = 1; i < len; i++)
-        args[i - 1] = arguments[i];
-      emitMany(handler, isFn, this, args);
+  if (typeof handler === 'function') {
+    ReflectApply(handler, this, args);
+  } else {
+    var len = handler.length;
+    var listeners = arrayClone(handler, len);
+    for (var i = 0; i < len; ++i)
+      ReflectApply(listeners[i], this, args);
   }
 
   return true;
@@ -10591,19 +10695,18 @@ function _addListener(target, type, listener, prepend) {
   var events;
   var existing;
 
-  if (typeof listener !== 'function')
-    throw new TypeError('"listener" argument must be a function');
+  checkListener(listener);
 
   events = target._events;
-  if (!events) {
-    events = target._events = objectCreate(null);
+  if (events === undefined) {
+    events = target._events = Object.create(null);
     target._eventsCount = 0;
   } else {
     // To avoid recursion in the case that type === "newListener"! Before
     // adding it to the listeners, first emit "newListener".
-    if (events.newListener) {
+    if (events.newListener !== undefined) {
       target.emit('newListener', type,
-          listener.listener ? listener.listener : listener);
+                  listener.listener ? listener.listener : listener);
 
       // Re-assign `events` because a newListener handler could have caused the
       // this._events to be assigned to a new object
@@ -10612,7 +10715,7 @@ function _addListener(target, type, listener, prepend) {
     existing = events[type];
   }
 
-  if (!existing) {
+  if (existing === undefined) {
     // Optimize the case of one listener. Don't need the extra array object.
     existing = events[type] = listener;
     ++target._eventsCount;
@@ -10620,33 +10723,29 @@ function _addListener(target, type, listener, prepend) {
     if (typeof existing === 'function') {
       // Adding the second element, need to change to array.
       existing = events[type] =
-          prepend ? [listener, existing] : [existing, listener];
-    } else {
+        prepend ? [listener, existing] : [existing, listener];
       // If we've already got an array, just append.
-      if (prepend) {
-        existing.unshift(listener);
-      } else {
-        existing.push(listener);
-      }
+    } else if (prepend) {
+      existing.unshift(listener);
+    } else {
+      existing.push(listener);
     }
 
     // Check for listener leak
-    if (!existing.warned) {
-      m = $getMaxListeners(target);
-      if (m && m > 0 && existing.length > m) {
-        existing.warned = true;
-        var w = new Error('Possible EventEmitter memory leak detected. ' +
-            existing.length + ' "' + String(type) + '" listeners ' +
-            'added. Use emitter.setMaxListeners() to ' +
-            'increase limit.');
-        w.name = 'MaxListenersExceededWarning';
-        w.emitter = target;
-        w.type = type;
-        w.count = existing.length;
-        if (typeof console === 'object' && console.warn) {
-          console.warn('%s: %s', w.name, w.message);
-        }
-      }
+    m = _getMaxListeners(target);
+    if (m > 0 && existing.length > m && !existing.warned) {
+      existing.warned = true;
+      // No error code for this since it is a Warning
+      // eslint-disable-next-line no-restricted-syntax
+      var w = new Error('Possible EventEmitter memory leak detected. ' +
+                          existing.length + ' ' + String(type) + ' listeners ' +
+                          'added. Use emitter.setMaxListeners() to ' +
+                          'increase limit');
+      w.name = 'MaxListenersExceededWarning';
+      w.emitter = target;
+      w.type = type;
+      w.count = existing.length;
+      ProcessEmitWarning(w);
     }
   }
 
@@ -10668,44 +10767,29 @@ function onceWrapper() {
   if (!this.fired) {
     this.target.removeListener(this.type, this.wrapFn);
     this.fired = true;
-    switch (arguments.length) {
-      case 0:
-        return this.listener.call(this.target);
-      case 1:
-        return this.listener.call(this.target, arguments[0]);
-      case 2:
-        return this.listener.call(this.target, arguments[0], arguments[1]);
-      case 3:
-        return this.listener.call(this.target, arguments[0], arguments[1],
-            arguments[2]);
-      default:
-        var args = new Array(arguments.length);
-        for (var i = 0; i < args.length; ++i)
-          args[i] = arguments[i];
-        this.listener.apply(this.target, args);
-    }
+    if (arguments.length === 0)
+      return this.listener.call(this.target);
+    return this.listener.apply(this.target, arguments);
   }
 }
 
 function _onceWrap(target, type, listener) {
   var state = { fired: false, wrapFn: undefined, target: target, type: type, listener: listener };
-  var wrapped = bind.call(onceWrapper, state);
+  var wrapped = onceWrapper.bind(state);
   wrapped.listener = listener;
   state.wrapFn = wrapped;
   return wrapped;
 }
 
 EventEmitter.prototype.once = function once(type, listener) {
-  if (typeof listener !== 'function')
-    throw new TypeError('"listener" argument must be a function');
+  checkListener(listener);
   this.on(type, _onceWrap(this, type, listener));
   return this;
 };
 
 EventEmitter.prototype.prependOnceListener =
     function prependOnceListener(type, listener) {
-      if (typeof listener !== 'function')
-        throw new TypeError('"listener" argument must be a function');
+      checkListener(listener);
       this.prependListener(type, _onceWrap(this, type, listener));
       return this;
     };
@@ -10715,20 +10799,19 @@ EventEmitter.prototype.removeListener =
     function removeListener(type, listener) {
       var list, events, position, i, originalListener;
 
-      if (typeof listener !== 'function')
-        throw new TypeError('"listener" argument must be a function');
+      checkListener(listener);
 
       events = this._events;
-      if (!events)
+      if (events === undefined)
         return this;
 
       list = events[type];
-      if (!list)
+      if (list === undefined)
         return this;
 
       if (list === listener || list.listener === listener) {
         if (--this._eventsCount === 0)
-          this._events = objectCreate(null);
+          this._events = Object.create(null);
         else {
           delete events[type];
           if (events.removeListener)
@@ -10750,35 +10833,38 @@ EventEmitter.prototype.removeListener =
 
         if (position === 0)
           list.shift();
-        else
+        else {
           spliceOne(list, position);
+        }
 
         if (list.length === 1)
           events[type] = list[0];
 
-        if (events.removeListener)
+        if (events.removeListener !== undefined)
           this.emit('removeListener', type, originalListener || listener);
       }
 
       return this;
     };
 
+EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+
 EventEmitter.prototype.removeAllListeners =
     function removeAllListeners(type) {
       var listeners, events, i;
 
       events = this._events;
-      if (!events)
+      if (events === undefined)
         return this;
 
       // not listening for removeListener, no need to emit
-      if (!events.removeListener) {
+      if (events.removeListener === undefined) {
         if (arguments.length === 0) {
-          this._events = objectCreate(null);
+          this._events = Object.create(null);
           this._eventsCount = 0;
-        } else if (events[type]) {
+        } else if (events[type] !== undefined) {
           if (--this._eventsCount === 0)
-            this._events = objectCreate(null);
+            this._events = Object.create(null);
           else
             delete events[type];
         }
@@ -10787,7 +10873,7 @@ EventEmitter.prototype.removeAllListeners =
 
       // emit removeListener for all listeners on all events
       if (arguments.length === 0) {
-        var keys = objectKeys(events);
+        var keys = Object.keys(events);
         var key;
         for (i = 0; i < keys.length; ++i) {
           key = keys[i];
@@ -10795,7 +10881,7 @@ EventEmitter.prototype.removeAllListeners =
           this.removeAllListeners(key);
         }
         this.removeAllListeners('removeListener');
-        this._events = objectCreate(null);
+        this._events = Object.create(null);
         this._eventsCount = 0;
         return this;
       }
@@ -10804,7 +10890,7 @@ EventEmitter.prototype.removeAllListeners =
 
       if (typeof listeners === 'function') {
         this.removeListener(type, listeners);
-      } else if (listeners) {
+      } else if (listeners !== undefined) {
         // LIFO order
         for (i = listeners.length - 1; i >= 0; i--) {
           this.removeListener(type, listeners[i]);
@@ -10817,17 +10903,18 @@ EventEmitter.prototype.removeAllListeners =
 function _listeners(target, type, unwrap) {
   var events = target._events;
 
-  if (!events)
+  if (events === undefined)
     return [];
 
   var evlistener = events[type];
-  if (!evlistener)
+  if (evlistener === undefined)
     return [];
 
   if (typeof evlistener === 'function')
     return unwrap ? [evlistener.listener || evlistener] : [evlistener];
 
-  return unwrap ? unwrapListeners(evlistener) : arrayClone(evlistener, evlistener.length);
+  return unwrap ?
+    unwrapListeners(evlistener) : arrayClone(evlistener, evlistener.length);
 }
 
 EventEmitter.prototype.listeners = function listeners(type) {
@@ -10850,12 +10937,12 @@ EventEmitter.prototype.listenerCount = listenerCount;
 function listenerCount(type) {
   var events = this._events;
 
-  if (events) {
+  if (events !== undefined) {
     var evlistener = events[type];
 
     if (typeof evlistener === 'function') {
       return 1;
-    } else if (evlistener) {
+    } else if (evlistener !== undefined) {
       return evlistener.length;
     }
   }
@@ -10864,21 +10951,20 @@ function listenerCount(type) {
 }
 
 EventEmitter.prototype.eventNames = function eventNames() {
-  return this._eventsCount > 0 ? Reflect.ownKeys(this._events) : [];
+  return this._eventsCount > 0 ? ReflectOwnKeys(this._events) : [];
 };
-
-// About 1.5x faster than the two-arg version of Array#splice().
-function spliceOne(list, index) {
-  for (var i = index, k = i + 1, n = list.length; k < n; i += 1, k += 1)
-    list[i] = list[k];
-  list.pop();
-}
 
 function arrayClone(arr, n) {
   var copy = new Array(n);
   for (var i = 0; i < n; ++i)
     copy[i] = arr[i];
   return copy;
+}
+
+function spliceOne(list, index) {
+  for (; index + 1 < list.length; index++)
+    list[index] = list[index + 1];
+  list.pop();
 }
 
 function unwrapListeners(arr) {
@@ -10889,23 +10975,54 @@ function unwrapListeners(arr) {
   return ret;
 }
 
-function objectCreatePolyfill(proto) {
-  var F = function() {};
-  F.prototype = proto;
-  return new F;
+function once(emitter, name) {
+  return new Promise(function (resolve, reject) {
+    function errorListener(err) {
+      emitter.removeListener(name, resolver);
+      reject(err);
+    }
+
+    function resolver() {
+      if (typeof emitter.removeListener === 'function') {
+        emitter.removeListener('error', errorListener);
+      }
+      resolve([].slice.call(arguments));
+    };
+
+    eventTargetAgnosticAddListener(emitter, name, resolver, { once: true });
+    if (name !== 'error') {
+      addErrorHandlerIfEventEmitter(emitter, errorListener, { once: true });
+    }
+  });
 }
-function objectKeysPolyfill(obj) {
-  var keys = [];
-  for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k)) {
-    keys.push(k);
+
+function addErrorHandlerIfEventEmitter(emitter, handler, flags) {
+  if (typeof emitter.on === 'function') {
+    eventTargetAgnosticAddListener(emitter, 'error', handler, flags);
   }
-  return k;
 }
-function functionBindPolyfill(context) {
-  var fn = this;
-  return function () {
-    return fn.apply(context, arguments);
-  };
+
+function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
+  if (typeof emitter.on === 'function') {
+    if (flags.once) {
+      emitter.once(name, listener);
+    } else {
+      emitter.on(name, listener);
+    }
+  } else if (typeof emitter.addEventListener === 'function') {
+    // EventTarget does not have `error` event semantics like Node
+    // EventEmitters, we do not listen for `error` events here.
+    emitter.addEventListener(name, function wrapListener(arg) {
+      // IE does not have builtin `{ once: true }` support so we
+      // have to do it manually.
+      if (flags.once) {
+        emitter.removeEventListener(name, wrapListener);
+      }
+      listener(arg);
+    });
+  } else {
+    throw new TypeError('The "emitter" argument must be of type EventEmitter. Received type ' + typeof emitter);
+  }
 }
 
 },{}],"p2p-media-loader-core":[function(require,module,exports){
@@ -10926,12 +11043,20 @@ function functionBindPolyfill(context) {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.version = void 0;
 exports.version = "0.6.2";
-__export(require("./loader-interface"));
-__export(require("./hybrid-loader"));
+__exportStar(require("./loader-interface"), exports);
+__exportStar(require("./hybrid-loader"), exports);
 
 },{"./hybrid-loader":4,"./loader-interface":5}]},{},[2]);
