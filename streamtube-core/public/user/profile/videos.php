@@ -13,7 +13,7 @@ if( array_key_exists( 'videos' , $wp_query->query ) ){
     $paged = count( $custom_paged ) >= 2 ? (int)$custom_paged[1] : 1;
 }
 
-$heading = apply_filters( 'streamtube/core/user/profile/videos', esc_html__( 'Videos', 'streatube-core' ));
+$heading = apply_filters( 'streamtube/core/user/profile/videos', esc_html__( 'Uploaded', 'streatube-core' ));
 
 ?>
 <section class="section-profile profile-videos py-4 pb-0 m-0">
@@ -44,12 +44,12 @@ $heading = apply_filters( 'streamtube/core/user/profile/videos', esc_html__( 'Vi
         extract( $template );        
 
         $not_found_text = sprintf(
-            esc_html__( '%s has not uploaded any videos yet.', 'streamtube' ),
+            esc_html__( '%s has not uploaded any videos.', 'streamtube' ),
             '<strong>'. get_user_by( 'ID', get_queried_object_id() )->display_name .'</strong>'
         );
 
         if( streamtube_core_is_my_profile() ){
-            $not_found_text = esc_html__( 'You have not uploaded any videos yet.', 'streamtube' );
+            $not_found_text = esc_html__( 'You have not uploaded any videos.', 'streamtube' );
         }
 
         $query_args = array_merge( $GLOBALS['wp_query']->query_vars, array(

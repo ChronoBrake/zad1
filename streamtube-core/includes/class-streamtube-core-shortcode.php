@@ -368,7 +368,7 @@ class Streamtube_Core_ShortCode {
 		}
 
 		if( ! empty( $args['authors'] ) ){
-			$args['capability'] = 'author';
+			$args['who'] = 'authors';
 		}
 
 		/**
@@ -453,7 +453,7 @@ class Streamtube_Core_ShortCode {
 					<?php if( get_option( 'user_list_pagination', 'click' ) == 'click' ) : ?>
 
 						<?php printf(
-							'<button type="button" class="btn border text-secondary load-users load-on-click bg-light" data-params="%s" data-action="load_more_users">',
+							'<button class="btn border text-secondary load-users load-on-click bg-light" data-params="%s" data-action="load_more_users">',
 							esc_attr( json_encode( $args ) )
 						);?>
 							<span class="load-icon icon-angle-down position-absolute top-50 start-50 translate-middle"></span>
@@ -580,14 +580,7 @@ class Streamtube_Core_ShortCode {
 		add_shortcode( 'post_grid', array( $this , '_post_grid' ), 10 );
 	}
 
-	/**
-	 *
-	 * The playlist shortcode
-	 * 
-	 * @param  array $args
-	 * 
-	 */
-	public function _playlist( $args = array() ){
+	public function _playlist( $args ){
 
 		$content_layout = 'grid';
 
@@ -629,9 +622,9 @@ class Streamtube_Core_ShortCode {
                 'compare'   =>  'EXISTS'
         	);
         	$query_args['meta_query'][] = array(
-                'key'       =>  Streamtube_Core_Post::VIDEO_URL,
+                'key'       =>  'video_url',
                 'compare'   =>  'EXISTS'
-        	);
+        	);        	
         }
 
         // Set taxonomies
@@ -680,7 +673,7 @@ class Streamtube_Core_ShortCode {
         $loop = 0;
 
         printf(
-        	'<div class="widget-videos-playlist posts-widget streamtube-widget %s"><div class="%s"><div class="row">',
+        	'<div class="widget-videos-playlist %s"><div class="%s"><div class="row">',
         	$args['upnext'] ? 'up-next' : 'up-next-off',
         	$args['boxed'] ? 'container' : 'no-container'
         );
@@ -904,40 +897,5 @@ class Streamtube_Core_ShortCode {
 	 */
 	public function term_grid(){
 		add_shortcode( 'term_grid', array( $this , '_term_grid' ), 10 );
-	}
-
-	/**
-	 *
-	 * The User Library shortcode
-	 * 
-	 * @param  array  $args
-	 * @return string
-	 * 
-	 */
-	public function _user_library( $args = array() ){
-
-		$args = wp_parse_args( $args, array(
-			'user_id'			=>	get_current_user_id(),
-	        'posts_per_column' 	=>  4,
-	        'rows_per_page'		=>	1,
-	        'rows_per_page'     =>  2,
-	        'col_xl'            =>  4,
-	        'col_lg'            =>  4,
-	        'col_md'            =>  2,
-	        'col_sm'            =>  2,
-	        'col'               =>  1,
-	        'pagination'		=>	'click',
-	        'not_login_message'	=>	esc_html__( 'Sign in to discover your library', 'streamtube-core' ),
-	        'btn_login_icon'	=>	'icon-user-circle',
-	        'btn_login_text'	=>	esc_html__( 'Log In', 'streamtube-core' )
-		) );
-
-		ob_start();
-		streamtube_core_load_template( 'shortcode/user-library.php', true, $args );
-		return ob_get_clean();
-	}
-
-	public function user_library(){
-		add_shortcode( 'user_library', array( $this , '_user_library' ), 10 );
-	}
+	}	
 }

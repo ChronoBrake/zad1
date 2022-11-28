@@ -49,7 +49,7 @@ printf(
     	}	    
 	}else{
 	    printf(
-	        '<button type="button" class="button button-small button-bunnycdn-sync button-primary" data-attachment-id="%s">%s</button>',
+	        '<button type="button"_template class="button button-small button-bunnycdn-sync button-primary" data-attachment-id="%s">%s</button>',
 	        esc_attr( $args['attachment_id'] ),
 	        esc_html__( 'Sync', 'streamtube-core' )
 	    );

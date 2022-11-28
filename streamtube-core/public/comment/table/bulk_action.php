@@ -5,7 +5,6 @@ $_bulk_actions = array(
 	'approve'	=>	esc_html__( 'Approve', 'streamtube-core' ),
 	'spam'		=>	esc_html__( 'Mark as spam', 'streamtube-core' ),
 	'trash'		=>	esc_html__( 'Move to trash', 'streamtube-core' ),
-	'delete'	=>	esc_html__( 'Delete permanently', 'streamtube-core' ),
 );
 
 if( ! array_key_exists( 'position', $args ) ){

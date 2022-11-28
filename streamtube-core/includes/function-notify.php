@@ -121,10 +121,8 @@ function streamtube_core_notify_author_after_video_encoding_failed( $post, $emai
 	}
 
 	$email_content = wp_parse_args( $email_content, array(
-		'subject'			=>	'',
-		'content'			=>	'',
-		'error_code'		=>	'',
-		'error_message'		=>	''
+		'subject'	=>	'',
+		'content'	=>	''
 	) );
 
 	$userdata = get_userdata( $post->post_author );
@@ -168,14 +166,6 @@ function streamtube_core_notify_author_after_video_encoding_failed( $post, $emai
 		$message = str_replace( '{website_url}', untrailingslashit( home_url() ), 	$message );
 		$message = str_replace( '{post_name}', $post->post_title, 					$message );
 		$message = str_replace( '{post_url}', get_permalink( $post->ID ), 			$message );
-
-		if( $email_content['error_code'] ){
-			$message = str_replace( '{error_code}', $email_content['error_code'], 	$message );
-		}
-
-		if( $email_content['error_message'] ){
-			$message = str_replace( '{error_message}', $email_content['error_message'], 	$message );
-		}		
 	}
 
 	$headers = array();

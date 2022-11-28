@@ -50,18 +50,11 @@ class Streamtube_Core_Restrict_Content{
      */
     protected $post_types = array( 'video' );
 
-    protected $post;
-
-    protected $license;
-
     /**
      * Get plugin objects
      */
-    public function __construct(){
-
-        $this->post = new Streamtube_Core_Post();
-
-        $this->license = new Streamtube_Core_License();
+    private function plugin(){
+        return streamtube_core()->get();
     }
 
     /**
@@ -106,7 +99,12 @@ class Streamtube_Core_Restrict_Content{
      * 
      */
     public function get_editable_roles(){
-        $roles = wp_roles()->roles;
+
+        if( ! function_exists( 'get_editable_roles' ) ){
+            require_once ABSPATH . 'wp-admin/includes/user.php';
+        }
+
+        $roles = get_editable_roles();
 
         if( is_array( $roles ) ){
             unset( $roles['administrator'] );
@@ -217,8 +215,6 @@ class Streamtube_Core_Restrict_Content{
      */
     public function get_notice_message( $wp_errors ){
 
-        global $post, $streamtube;
-
         /**
          *
          * @since 1.0.9
@@ -227,34 +223,16 @@ class Streamtube_Core_Restrict_Content{
         $wp_errors = apply_filters( 'streamtube/core/content_restriction/permission_errors', $wp_errors );
 
         $output = sprintf(
-            '<div class="no-permission error-message %s">',
+            '<div class="no-permission %s"><h4 class="error-message position-absolute top-50 start-50 translate-middle center-x center-y">%s</h4></div>',
             esc_attr( $wp_errors->get_error_code() ),
+            implode( '<br/>' , $wp_errors->get_error_messages() )
         );
-
-            $output .= '<div class="position-absolute top-50 start-50 translate-middle center-x center-y">';
-
-                $output .= sprintf(
-                    '<h5 class="error-text h5">%s</h5>',
-                    implode( '<br/>' , $wp_errors->get_error_messages() )
-                );
-
-                if( $streamtube->get()->post->get_video_trailer( $post->ID ) ){
-                    $output .= sprintf(
-                        '<a class="btn btn-danger btn-trailer px-4" href="%s">%s</a>',
-                        esc_url( add_query_arg( array( 'view_trailer' => '1', 'autoplay' => '1' ) ) ),
-                        esc_html__( 'Trailer', 'streamtube-core' )
-                    );
-                }
-
-            $output .= '</div>';
-
-        $output .= '</div>';
 
         if( get_post_type() == 'video' ){
 
             $poster = wp_get_attachment_image_url( get_post_thumbnail_id(), 'large' );
 
-            $thumbnails2 = $this->post->get_thumbnail_image_url_2();
+            $thumbnails2 = $this->plugin()->post->get_thumbnail_image_url_2();
 
             if( $thumbnails2 ){
                 $poster = $thumbnails2;
@@ -266,7 +244,7 @@ class Streamtube_Core_Restrict_Content{
             );
         }
 
-        return apply_filters( 'streamtube/core/content_restriction/notice_message', $output, $wp_errors );
+        return $output;
     }
 
     /**
@@ -400,7 +378,7 @@ class Streamtube_Core_Restrict_Content{
 
         $settings['roles'] = $roles;
 
-        if( is_wp_error( $this->license->is_verified() ) ){
+        if( is_wp_error( $this->plugin()->license->is_verified() ) ){
             return $default;
         }
 
@@ -498,10 +476,6 @@ class Streamtube_Core_Restrict_Content{
 
         global $post;
 
-        if( ! $post instanceof WP_Post ){
-            return;
-        }
-
         $user_data = wp_get_current_user();
 
         /**
@@ -513,7 +487,7 @@ class Streamtube_Core_Restrict_Content{
             return true;
         }
 
-        if( is_wp_error( $this->license->is_verified() ) ){
+        if( is_wp_error( $this->plugin()->license->is_verified() ) ){
             return true;
         }        
 
@@ -640,16 +614,6 @@ class Streamtube_Core_Restrict_Content{
      */
     public function filter_player( $input ){
 
-        global $post, $streamtube;   
-        
-        if( ! $post instanceof WP_Post ){
-            return $player;
-        }
-
-        if( $streamtube->get()->post->get_video_trailer( $post->ID ) && isset( $_GET['view_trailer'] ) ){
-            return $input;
-        }
-        
         $check_permission = $this->check_permission();
 
         if( is_wp_error( $check_permission ) ){
@@ -774,65 +738,4 @@ class Streamtube_Core_Restrict_Content{
             'message'   =>  esc_html__( 'Request has been sent successfully.', 'streamtube-core' )
         ) );
     }
-
-    /**
-     * Add custom fields to the Video table
-     *
-     * @param array $columns
-     */
-    public function filter_post_table( $columns ){
-        return array_merge( $columns, array(
-            'restrict_content' =>  esc_html__( 'Restriction', 'streamtube-core' )
-        ) );
-    }
-
-    /**
-     *
-     * Custom Columns callback
-     * 
-     * @param  string $column
-     * @param  int $post_id
-     * 
-     */
-    public function filter_post_table_columns( $column, $post_id ){
-        if( $column == 'restrict_content' ){
-            $post_data = $this->get_post_data( $post_id, true );
-
-            if( ! $post_data->apply_for ){
-                esc_html_e( 'None', 'streamtube-core' );
-            }
-
-            if( $post_data->apply_for == 'inherit' ){
-                esc_html_e( 'Global Settings', 'streamtube-core' );
-            }
-
-            if( $post_data->apply_for == 'logged_in' ){
-                esc_html_e( 'Logged In Users', 'streamtube-core' );
-            }
-
-            if( $post_data->apply_for == 'roles' ){
-                $roles = (array)$post_data->roles;
-
-                if( $roles ){
-                    ?>
-                    <div class="custom-roles tags">
-                        <?php echo '<span class="role tag">' . implode( '</span><span class="role tag">', $roles ) . '</span>'; ?>
-                    </div>
-                    <?php
-                }
-            }
-
-            if( $post_data->apply_for == 'capabilities' ){
-                $capabilities = (array)$post_data->capabilities;
-
-                if( $capabilities ){
-                    ?>
-                    <div class="custom-capabilities tags">
-                        <?php echo '<span class="capabilitie tag">' . implode( '</span><span class="capabilitie tag">', $capabilities ) . '</span>'; ?>
-                    </div>
-                    <?php
-                }
-            }          
-        }
-    }     
 }

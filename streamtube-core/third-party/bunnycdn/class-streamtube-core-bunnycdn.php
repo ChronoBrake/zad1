@@ -57,13 +57,11 @@ class Streamtube_Core_BunnyCDN{
      */
     public $admin;
 
-    private $post;
-
     public function __construct(){
 
         $this->load_dependencies();
 
-        $this->settings = Streamtube_Core_BunnyCDN_Settings::get_settings();
+        $this->settings = $this->get_settings();
 
         $this->admin = new Streamtube_Core_BunnyCDN_Admin(); 
 
@@ -72,8 +70,16 @@ class Streamtube_Core_BunnyCDN{
             'libraryId'     =>  $this->settings['libraryId'],
             'cdn_hostname'  =>  $this->settings['cdn_hostname']
         ) );
+    }
 
-        $this->post = new Streamtube_Core_Post();
+    /**
+     *
+     * Plugin instance
+     * 
+     * @since 2.1
+     */
+    private function plugin(){
+        return streamtube_core()->get();
     }
 
     /**
@@ -101,8 +107,7 @@ class Streamtube_Core_BunnyCDN{
             require_once(ABSPATH . 'wp-admin/includes/media.php');
             require_once(ABSPATH . 'wp-admin/includes/file.php');
             require_once(ABSPATH . 'wp-admin/includes/image.php');
-        }  
-        $this->include_file( 'class-streamtube-core-bunnycdn-settings.php' );      
+        }        
         $this->include_file( 'class-streamtube-core-bunnycdn-admin.php' );
         $this->include_file( 'class-streamtube-core-bunnycdn-api.php' );        
     }
@@ -119,7 +124,7 @@ class Streamtube_Core_BunnyCDN{
     public function get_setting_tabs(){
         return array(
             'general'           =>   esc_html__( 'General', 'streamtube-core' ),
-            'notifications'     =>   esc_html__( 'Notifications', 'streamtube-core' ),
+            'email-templates'   =>   esc_html__( 'Email Templates', 'streamtube-core' ),
         );
     }
 
@@ -138,7 +143,84 @@ class Streamtube_Core_BunnyCDN{
             'php_curl'      =>  esc_html__( 'PHP Curl', 'streamtube-core' ),
             'shell_curl'    =>  esc_html__( 'Shell Curl', 'streamtube-core' )
         );
-    }  
+    }
+
+    /**
+     *
+     * Default Notify Public Content
+     * 
+     * @return string
+     *
+     * @since 2.1
+     * 
+     */
+    private function get_default_notify_publish_content(){
+        $content = esc_html__( 'Your video {post_name} is now ready to watch on {website_name}', 'streamtube-core'  ) . "\r\n\r\n";
+
+        $content .= '{post_url}' . "\r\n\r\n";
+
+        return $content;        
+    }
+
+    /**
+     *
+     * Default Notify Encoding Failed Content
+     * 
+     * @return string
+     *
+     * @since 2.1
+     * 
+     */
+    private function get_default_notify_encoding_fail_content(){
+        $content = esc_html__( 'Your video {post_name} encoding failed on %s', 'streamtube-core'  ) . "\r\n\r\n";
+
+        $content .= '{post_url}' . "\r\n\r\n";
+
+        return $content;        
+    }    
+
+    /**
+     *
+     * Get settings
+     *
+     * @since 2.1
+     * 
+     */
+    public function get_settings(){
+
+        $webhook_key = md5( uniqid() );
+
+        $settings = (array)get_option( '_bunnycdn' );
+
+        $settings = wp_parse_args( $settings, array(
+            'enable'                        =>  '',
+            'is_connected'                  =>  '',
+            'libraryId'                     =>  '',
+            'AccessKey'                     =>  '',
+            'cdn_hostname'                  =>  '',
+            'webhook_key'                   =>  $webhook_key,
+            'sync_type'                     =>  'fetching',
+            'curl_path'                     =>  get_option( 'system_curl_path', '/usr/bin/curl' ),
+            'tsp'                           =>  '',
+            'tsp_path'                      =>  get_option( 'system_tsp_path', '/usr/bin/tsp' ),
+            'delete_original'               =>  '',
+            'animation_image'               =>  '',
+            'file_organize'                 =>  '',
+            'auto_publish'                  =>  '',
+            'author_notify_publish'         =>  '',
+            'author_notify_publish_subject' =>  esc_html__( 'Your {post_name} is now on {website_name}' ),
+            'author_notify_publish_content' =>  $this->get_default_notify_publish_content(),
+            'author_notify_fail'            =>  '',
+            'author_notify_fail_subject'    =>  esc_html__( 'Your {post_name} encoding failed on {website_name}', 'streamtube-core' ),
+            'author_notify_fail_content'    =>  $this->get_default_notify_encoding_fail_content()
+        ) );
+
+        if( ! $settings['webhook_key'] ){
+            $settings['webhook_key'] = $webhook_key;
+        }
+
+        return $settings;
+    }
 
     /**
      *
@@ -205,6 +287,15 @@ class Streamtube_Core_BunnyCDN{
         return apply_filters( 'streamtube/core/bunnycdn/webhook/statuses', $statuses );
     }
 
+    /**
+     *
+     * Check if enabled
+     * 
+     * @return boolean
+     *
+     * @since 2.1
+     * 
+     */
     public function is_enabled(){
         return $this->settings['enable'] && $this->settings['is_connected'] ? true : false;
     }
@@ -247,7 +338,7 @@ class Streamtube_Core_BunnyCDN{
      */
     public function is_synced( $post_id ){
 
-        $has_data   = get_post_meta( $post_id,      '_bunnycdn', true );
+        $has_data   = get_post_meta( $post_id, '_bunnycdn', true );
         $is_encoded = (int)get_post_meta( $post_id, '_bunnycdn_status', true );
 
         return $has_data && $is_encoded == 3 ? true : false;
@@ -315,39 +406,7 @@ class Streamtube_Core_BunnyCDN{
      * 
      */
     public function get_video_process_status( $post_id ){
-
-        $maybe_completed = (int)get_post_meta( $post_id, '_bunnycdn_status', true );
-
-        if( in_array( $maybe_completed , array( 3, 4 ) ) ){
-            return $maybe_completed;
-        }
-
-        $response = $this->bunnyAPI->get_video( $this->get_video_guid( $post_id ) );
-
-        if( is_wp_error( $response ) ){
-            return $maybe_completed;
-        }
-
-        update_post_meta( $post_id, '_bunnycdn',        $response );
-        update_post_meta( $post_id, '_bunnycdn_guid',   $response['guid'] );
-        update_post_meta( $post_id, '_bunnycdn_status', $response['status'] );
-
-        /**
-         *
-         * Fires once webhook updated
-         *
-         * @param object $post ($attachment_id)
-         * @param array $data
-         *
-         * @since 2.1
-         * 
-         */
-        do_action( 'streamtube/core/bunny/webhook/update', $post_id, array(
-            'Status'    =>  $response['status'],
-            'VideoGuid' =>  $response['guid']
-        ) );
-
-        return (int)$response['status'];
+        return get_post_meta( $post_id, '_bunnycdn_status', true );
     }
 
     /**
@@ -528,6 +587,13 @@ class Streamtube_Core_BunnyCDN{
      */
     public function _add_attachment( $post_id ){
 
+        if( ! wp_attachment_is( 'video', $post_id ) ){
+            return new WP_Error(
+                'invalid_video_type',
+                esc_html__( 'Invalid Video Type', 'streamtube-core' )
+            );
+        }
+
         $post           = get_post( $post_id );
         $user_id        = $post->post_author;
         $post_title     = $post->post_title;
@@ -632,16 +698,11 @@ class Streamtube_Core_BunnyCDN{
      * 
      */
     public function add_attachment( $post_id ){
-
         if( ! $this->is_auto_sync() ){
             return $post_id;
         }
 
-        if( wp_attachment_is( 'video', $post_id ) || wp_attachment_is( 'audio', $post_id )){
-            return $this->_add_attachment( $post_id );
-        }
-        
-        return $post_id;
+        return $this->_add_attachment( $post_id );
     }    
 
     /**
@@ -655,6 +716,10 @@ class Streamtube_Core_BunnyCDN{
      * 
      */
     public function _attachment_updated( $post_id ){
+
+        if( ! wp_attachment_is( 'video', $post_id ) ){
+            return $post_id;
+        }
 
         $videoId = $this->get_video_guid( $post_id );
 
@@ -729,6 +794,49 @@ class Streamtube_Core_BunnyCDN{
 
     /**
      *
+     * Update bunny Video after updating Video post
+     * 
+     * @param  int $post_id 
+     *
+     * @since 2.1
+     * 
+     */
+    public function _save_post_video( $post_id ){
+
+        $maybe_attachment_id = get_post_meta( $post_id, 'video_url', true );
+
+        if( wp_attachment_is( 'video', $maybe_attachment_id ) ){
+
+            $videoId = $this->get_video_guid( $maybe_attachment_id );
+
+            if( $videoId ){
+                $title = get_the_title( $post_id );
+
+                return $this->bunnyAPI->update_video( compact( 'videoId', 'title' ) );
+            }
+        }
+    }
+
+    /**
+     *
+     * Update bunny Video after updating Video post
+     * 
+     * @param  int $post_id 
+     *
+     * @since 2.1
+     * 
+     */
+    public function save_post_video( $post_id ){
+
+        if( ! $this->is_auto_sync() ){
+            return $post_id;
+        }
+
+        return $this->_save_post_video( $post_id );
+    }
+
+    /**
+     *
      * Auto Fetch video
      * 
      * @param  int $post_id video post type ID
@@ -744,7 +852,7 @@ class Streamtube_Core_BunnyCDN{
             return false;
         }
 
-        if( empty( $source ) || ! wp_http_validate_url( $source ) ){
+        if( empty( $source ) || wp_attachment_is( 'video', $source ) ){
             return false;
         }
 
@@ -768,21 +876,9 @@ class Streamtube_Core_BunnyCDN{
             return false;
         }
 
-        $filetype = explode( "/" , $content_type );
+        $_content_type = explode( "/" , $content_type );
 
-        if( ! is_array( $filetype ) ){
-            return false;
-        }
-
-        if( ! in_array( $filetype[0] , array( 'video', 'audio' ) ) ){
-            return false;
-        }
-
-        if( $filetype[0] == 'video' && ! in_array( strtolower( $filetype[1] ) , wp_get_video_extensions() ) ){
-            return false;
-        }
-
-        if( $filetype[0] == 'audio' && ! in_array( strtolower( $filetype[1] ) , wp_get_audio_extensions() ) ){
+        if( count( $_content_type ) == 2 && ! in_array( strtolower( $_content_type[1] ) , wp_get_video_extensions() ) ){
             return false;
         }
 
@@ -931,7 +1027,7 @@ class Streamtube_Core_BunnyCDN{
      * @since 2.1
      * 
      */
-    public function retry_sync_video( $post_id ){
+    public function retry_sync_video( $post_id ){      
 
         if( $this->is_synced( $post_id ) ){
             return new WP_Error(
@@ -949,6 +1045,107 @@ class Streamtube_Core_BunnyCDN{
         delete_post_meta( $post_id, '_bunnycdn_status' );
 
         return $this->_add_attachment( $post_id );
+    }
+
+    /**
+     *
+     * Generate thumbnail image
+     * 
+     * @param  int $post_id
+     * @param  string $videoId
+     * @return WP_Error|int
+     *
+     * @since 2.1
+     * 
+     */
+    public function generate_thumbnail_image( $post_id, $videoId = '' ){
+        if( has_post_thumbnail( $post_id ) ){
+            return new WP_Error(
+                'thumbnail_exists',
+                esc_html__( 'Thumbnail Image is already existed', 'streamtube-core' )
+            );
+        }
+
+        if( ! $videoId ){
+            $videoId = $this->get_video_guid( $post_id );    
+        }
+
+        if( ! $videoId ){
+            return new WP_Error(
+                'videoId_not_found',
+                esc_html__( 'VideoId was not found', 'streamtube-core' )
+            );
+        }
+
+        $thumbnail_url = $this->bunnyAPI->get_video_thumbnail_url( $videoId );
+
+        $thumbnail_id = media_sideload_image( $thumbnail_url, $post_id, null, 'id' );
+
+        if( ! is_wp_error(  $thumbnail_id ) ){
+            set_post_thumbnail( $post_id, $thumbnail_id );
+
+            wp_update_post( array(
+                'ID'            =>  $thumbnail_id,
+                'post_parent'   =>  $post_id
+            ) );
+
+            $post = get_post( $post_id );
+
+            if( $post->post_parent ){
+                set_post_thumbnail( $post->post_parent, $thumbnail_id );
+            }
+        }
+
+        return $thumbnail_id;
+    }
+
+    /**
+     *
+     * Generate webp image
+     * 
+     * @param  int $post_id
+     * @param  string $videoId
+     * @return WP_Error|int
+     *
+     * @since 2.1
+     * 
+     */
+    public function generate_webp_image( $post_id, $videoId = '' ){
+
+        if( $this->plugin()->post->get_thumbnail_image_url_2( $post_id ) ){
+            return new WP_Error(
+                'webp_exists',
+                esc_html__( 'WebP Image is already existed', 'streamtube-core' )
+            );
+        }
+
+        if( ! $videoId ){
+            $videoId = $this->get_video_guid( $post_id );    
+        }
+
+        if( ! $videoId ){
+            return new WP_Error(
+                'videoId_not_found',
+                esc_html__( 'VideoId was not found', 'streamtube-core' )
+            );
+        }        
+
+        $webp_url = $this->bunnyAPI->get_video_preview_webp_url( $videoId );
+
+        $webp_id = media_sideload_image( $webp_url, $post_id, null, 'id' );
+
+        if( ! is_wp_error(  $webp_id ) ){
+
+            $this->plugin()->post->update_thumbnail_image_url_2( $post_id, $webp_id );
+
+            $post = get_post( $post_id );
+
+            if( $post->post_parent ){
+                $this->plugin()->post->update_thumbnail_image_url_2( $post->post_parent, $webp_id );
+            }
+        }
+
+        return $webp_id;
     }
 
     /**
@@ -1103,7 +1300,7 @@ class Streamtube_Core_BunnyCDN{
      */
     public function filter_player_output( $player, $setup, $source ){
 
-        if( ! $this->is_enabled() ){
+        if( ! $this->is_enabled() || ! wp_attachment_is( 'video', $source ) ){
             return $player;
         }
 
@@ -1124,132 +1321,6 @@ class Streamtube_Core_BunnyCDN{
 
     /**
      *
-     * Display the notice within thumbnail field on the Edit Post form
-     * 
-     */
-    public function thumbnail_notice( $post ){
-        if( ! has_post_thumbnail( $post ) ){
-
-            $Post = new Streamtube_Core_Post();
-
-            if( $this->get_video_guid( $Post->get_source( $post->ID ) ) ){
-                load_template( untrailingslashit( plugin_dir_path( __FILE__ ) ) . '/frontend/process-thumbnail.php' );    
-            }
-        }
-    }
-
-    /**
-     *
-     * Generate thumbnail image
-     * 
-     * @param  int $attachment_id
-     * @param  string $videoId
-     * @return WP_Error|int
-     *
-     * @since 2.1
-     * 
-     */
-    public function generate_thumbnail_image( $attachment_id, $videoId = '' ){
-
-        if( has_post_thumbnail( $attachment_id ) ){
-            return new WP_Error(
-                'thumbnail_exists',
-                esc_html__( 'Thumbnail Image is already existed', 'streamtube-core' )
-            );
-        }
-
-        if( ! $videoId ){
-            $videoId = $this->get_video_guid( $attachment_id );    
-        }
-
-        if( ! $videoId ){
-            return new WP_Error(
-                'videoId_not_found',
-                esc_html__( 'VideoId was not found', 'streamtube-core' )
-            );
-        }
-
-        $thumbnail_url = $this->bunnyAPI->get_video_thumbnail_url( $videoId );
-
-        $thumbnail_id = media_sideload_image( $thumbnail_url, $attachment_id, null, 'id' );
-
-        if( ! is_wp_error(  $thumbnail_id ) ){
-
-            set_post_thumbnail( $attachment_id, $thumbnail_id );
-
-            wp_update_post( array(
-                'ID'            =>  $thumbnail_id,
-                'post_parent'   =>  $attachment_id,
-                'post_author'   =>  get_post( $attachment_id )->post_author
-            ) );
-
-            $attachment = get_post( $attachment_id );
-
-            if( $attachment->post_parent && ! has_post_thumbnail( $attachment->post_parent ) ){
-                set_post_thumbnail( $attachment->post_parent, $thumbnail_id );
-            }
-        }
-
-        return $thumbnail_id;
-    }
-
-    /**
-     *
-     * Generate webp image
-     * 
-     * @param  int $post_id
-     * @param  string $videoId
-     * @return WP_Error|int
-     *
-     * @since 2.1
-     * 
-     */
-    public function generate_webp_image( $attachment_id, $videoId = '' ){
-
-        if( $this->post->get_thumbnail_image_url_2( $attachment_id ) != "" ){
-            return new WP_Error(
-                'webp_exists',
-                esc_html__( 'WebP Image is already existed', 'streamtube-core' )
-            );
-        }
-
-        if( ! $videoId ){
-            $videoId = $this->get_video_guid( $attachment_id );    
-        }
-
-        if( ! $videoId ){
-            return new WP_Error(
-                'videoId_not_found',
-                esc_html__( 'VideoId was not found', 'streamtube-core' )
-            );
-        }        
-
-        $webp_url = $this->bunnyAPI->get_video_preview_webp_url( $videoId );
-
-        $webp_id = media_sideload_image( $webp_url, $attachment_id, null, 'id' );
-
-        if( ! is_wp_error(  $webp_id ) ){
-
-            $this->post->update_thumbnail_image_url_2( $attachment_id, $webp_id );
-
-            $attachment = get_post( $attachment_id );
-
-            if( $attachment->post_parent ){
-                $this->post->update_thumbnail_image_url_2( $attachment->post_parent, $webp_id );
-            }
-
-            wp_update_post( array(
-                'ID'            =>  $webp_id,
-                'post_parent'   =>  $attachment_id,
-                'post_author'   =>  $attachment->post_author
-            ) );
-        }
-
-        return $webp_id;
-    }
-
-    /**
-     *
      * Generate thumbnail images
      * 
      * @param  int $post_id
@@ -1258,16 +1329,14 @@ class Streamtube_Core_BunnyCDN{
      * @since 2.1
      * 
      */
-    public function update_thumbnail_images( $attachment_id, $data = array() ){
+    public function update_thumbnail_images( $post, $data ){
 
-        if( array_key_exists( 'Status', $data ) && in_array( $data['Status'] , array( 3, 4 )) ){
+        if( in_array( $data['Status'] , array( '3', '4' )) ){
 
-            if( $this->settings['auto_import_thumbnail'] ){
-                $this->generate_thumbnail_image( $attachment_id, $data['VideoGuid'] );
-            }
+            $this->generate_thumbnail_image( $post->ID, $data['VideoGuid'] );
 
             if( $this->settings['animation_image'] ){
-                $this->generate_webp_image( $attachment_id, $data['VideoGuid'] );
+                $this->generate_webp_image( $post->ID, $data['VideoGuid'] );
             }
         }
     }
@@ -1312,16 +1381,10 @@ class Streamtube_Core_BunnyCDN{
      * @since 2.1
      * 
      */
-    public function delete_original_file( $attachment_id, $data ){
-
-        $Status = (int)$data['Status'];
-
-        if( in_array( $Status , array( 3, 4 ) ) ){
-
-            $attachment = get_post( $attachment_id );
-
-            if( get_post_type( $attachment ) != 'ad_tag' && wp_validate_boolean( $this->settings['delete_original'] ) ){
-                $this->delete_attachment_file( $attachment_id );
+    public function delete_original_file( $post, $data ){
+        if( (int)$data['Status'] == 3 ){
+            if( get_post_type( $post->post_parent ) != 'ad_tag' && wp_validate_boolean( $this->settings['delete_original'] ) ){
+                $this->delete_attachment_file( $post->ID );
             }
         }
     }
@@ -1378,27 +1441,25 @@ class Streamtube_Core_BunnyCDN{
      *
      * Auto publish video after encoding successfully
      * 
-     * @param  $post
+     * @param  WP_Post $post
      * @param  array $data webhook response
      *
      * @since 2.1
      * 
      */
-    public function auto_publish_after_success_encoding( $attachment_id, $data ){
+    public function auto_publish_after_success_encoding( $post, $data ){
 
         if( (int)$data['Status'] == 3 ){
 
-            $attachment = get_post( $attachment_id );
-
-            if( $attachment->post_parent ){
+            if( $post->post_parent ){
             
                 wp_update_post( array(
-                    'ID'            =>  $attachment->post_parent,
+                    'ID'            =>  $post->post_parent,
                     'post_status'   =>  'publish'
                 ) );
 
                 if( $this->settings['author_notify_publish'] ){
-                    streamtube_core_notify_author_after_video_publish( $attachment->post_parent, array(
+                    streamtube_core_notify_author_after_video_publish( $post, array(
                         'subject'   =>  trim( $this->settings['author_notify_publish_subject'] ),
                         'content'   =>  trim( $this->settings['author_notify_publish_content'] )
                     ) );
@@ -1410,13 +1471,13 @@ class Streamtube_Core_BunnyCDN{
              *
              * Fires after publishing video
              *
-             * @param  int $post_id video id
+             * @param  int $post_id
              * @param  array $data webhook response
              *
              * @since 2.1
              * 
              */
-            do_action( 'streamtube/core/bunnycdn/auto_publish', $attachment->post_parent, $data );
+            do_action( 'streamtube/core/bunnycdn/auto_publish', $post, $data );
         }
     }
 
@@ -1424,15 +1485,15 @@ class Streamtube_Core_BunnyCDN{
      *
      * Auto send notify to author after encoding failed
      * 
-     * @param  $attachment_id
+     * @param  WP_Post $post
      * @param  array $data webhook response
      *
      * @since 2.1
      * 
      */
-    public function notify_author_after_encoding_failed( $attachment_id, $data ){
+    public function notify_author_after_encoding_failed( $post, $data ){
         if( (int)$data['Status'] == 5 ){
-            streamtube_core_notify_author_after_video_encoding_failed( $attachment_id, array(
+            streamtube_core_notify_author_after_video_encoding_failed( $post, array(
                 'subject'   =>  trim( $this->settings['author_notify_fail_subject'] ),
                 'content'   =>  trim( $this->settings['author_notify_fail_content'] )
             ) );
@@ -1463,30 +1524,6 @@ class Streamtube_Core_BunnyCDN{
 
     /**
      *
-     * Filter Allow Formats
-     * 
-     * @param  array  $allow_formats
-     *
-     * @return array
-     * 
-     */
-    public function filter_allow_formats( $allow_formats = array() ){
-
-        if( ! empty( $this->settings['allow_formats'] ) ){
-            $_allow_formats = array_map( 'trim', explode(',', $this->settings['allow_formats'] ) );
-
-            if( is_array( $_allow_formats ) ){
-                $allow_formats = array_merge( $allow_formats, $_allow_formats );
-
-                $allow_formats = array_values( array_unique( $allow_formats ) );
-            }
-        }
-
-        return $allow_formats;
-    }
-
-    /**
-     *
      * Process webhook data
      * 
      * @since 2.1
@@ -1497,9 +1534,6 @@ class Streamtube_Core_BunnyCDN{
         $statuses   = $this->get_webhook_video_statuses();
 
         if( is_array( $data ) && array_key_exists( 'VideoGuid' , $data ) ){
-
-            $data['Status'] = (int)$data['Status'];
-
             $post_id = $this->get_post_id_from_videoId( $data['VideoGuid'] );
 
             if( $post_id ){
@@ -1508,7 +1542,7 @@ class Streamtube_Core_BunnyCDN{
 
                 update_post_meta( $post_id, '_bunnycdn_status', $data['Status'] );
 
-                if( $data['Status'] == 3 ){
+                if( (int)$data['Status'] == 3 ){
                     
                     $video_details = $this->bunnyAPI->get_video( $data['VideoGuid'] );
 
@@ -1543,7 +1577,7 @@ class Streamtube_Core_BunnyCDN{
                  * @since 2.1
                  * 
                  */
-                do_action( 'streamtube/core/bunny/webhook/update', $post_id, $data );
+                do_action( 'streamtube/core/bunny/webhook/update', get_post( $post_id ), $data );
             }
         }    
     }    
@@ -1577,344 +1611,5 @@ class Streamtube_Core_BunnyCDN{
 
         wp_send_json_success( 'Webhook' );
 
-    }
-
-    /**
-     *
-     * The Video table
-     *
-     * @since 2.1
-     * 
-     */
-    public function admin_post_table( $columns ){
-
-        if( ! $this->is_enabled() ){
-            return $columns;
-        }
-
-        unset( $columns['date'] );
-
-        $new_columns = array();
-
-        if( Streamtube_Core_Permission::moderate_cdn_sync() && $this->is_enabled() ){
-            $new_columns['bunnycdn_sync'] = esc_html__( 'Bunny Stream', 'streamtube-core' );
-        }
-
-        $new_columns['date'] = esc_html__( 'Date', 'streamtube-core' );
-
-        return array_merge( $columns, $new_columns );
-    }
-
-    /**
-     *
-     * The Video table
-     *
-     * @since 2.1
-     * 
-     */
-    public function admin_post_table_columns( $column, $post_id ){
-
-        switch ( $column ) {
-
-            case 'bunnycdn_sync':
-                $attachment_id = get_post_meta( $post_id, 'video_url', true );
-
-                if( wp_attachment_is( 'video', $attachment_id ) || wp_attachment_is( 'audio', $attachment_id ) ){
-                    load_template( 
-                        plugin_dir_path( __FILE__ ) . 'admin/sync-control.php', 
-                        false, 
-                        compact( 'attachment_id' )
-                    );
-                }
-            break;
-            
-        }                    
     }    
-
-    /**
-     *
-     * The media table
-     * 
-     * @since  2.1
-     * 
-     */
-    public function admin_media_table( $columns ){
-
-        if( ! $this->is_enabled() ){
-            return $columns;
-        }        
-
-        unset( $columns['date'] );
-
-        $new_columns = array();
-
-        if( Streamtube_Core_Permission::moderate_cdn_sync() && $this->is_enabled() ){
-            $new_columns['bunnycdn_sync'] = esc_html__( 'Bunny Stream', 'streamtube-core' );
-        }       
-
-        $new_columns['date'] = esc_html__( 'Date', 'streamtube-core' );
-
-        return array_merge( $columns, $new_columns );
-    }
-
-    /**
-     *
-     * The media table
-     * 
-     * @since  2.1
-     * 
-     */
-    public function admin_media_table_columns( $column, $post_id ){
-
-        switch ( $column ) {
-
-            case 'bunnycdn_sync':
-
-                $attachment_id = $post_id;
-
-                if( wp_attachment_is( 'video', $attachment_id ) || wp_attachment_is( 'audio', $attachment_id ) ){
-                    load_template( 
-                        plugin_dir_path( __FILE__ ) . 'admin/sync-control.php', 
-                        false, 
-                        compact( 'attachment_id' )
-                    );
-                }
-            break;
-
-        }
-    }    
-
-    /**
-     *
-     * Add Bulk actions
-     * 
-     * @return array
-     *
-     * @since 2.1
-     * 
-     */
-    public function admin_bulk_actions( $bulk_actions ){
-
-        if( ! $this->is_enabled() ){
-            return $bulk_actions;
-        }        
-
-        $bulk_actions = array_merge( $bulk_actions, array(
-            'bulk_bunnycdn_sync'                    =>  esc_html__( 'Bunny Stream Sync', 'streamtube-core' ),
-            'bulk_bunnycdn_generate_image'          =>  esc_html__( 'Bunny Stream Generate Thumbnail Image', 'streamtube-core' ),
-            'bulk_bunnycdn_generate_webp_image'     =>  esc_html__( 'Bunny Stream Generate WebP Image', 'streamtube-core' )
-        ) );
-
-        return $bulk_actions;
-    }    
-
-    /**
-     *
-     * Bulk actions handler
-     * 
-     * @param  string $redirect_url
-     * @param  string $action
-     * @param  int $post_ids
-     *
-     * @since 2.1
-     * 
-     */
-    public function admin_handle_bulk_actions( $redirect_url, $action, $post_ids ){
-
-        if( ! $this->settings['is_connected'] ){
-            return $redirect_url;
-        }
-
-        $queued     = array();
-
-        $_post_ids  = array();
-
-        foreach ( $post_ids as $post_id ) {
-            if( get_post_type( $post_id ) == 'video' ){
-                $post_id = get_post_meta( $post_id, 'video_url', true );
-            }
-
-            $_post_ids[] = $post_id;
-        }
-
-        switch ( $action ) {
-            case 'bulk_bunnycdn_sync':
-
-                $is_bulk_sync_supported = $this->is_bulk_sync_supported();
-
-                for ( $i = 0; $i < count( $_post_ids ); $i++ ) { 
-
-                    if( $is_bulk_sync_supported ){
-
-                        $result = $this->retry_sync_video( $_post_ids[$i] );
-
-                        if( ! is_wp_error( $result ) ){
-                            $queued[] = $_post_ids[$i];
-                        }
-                    }
-                }
-
-                if( count( $queued ) > 0 ){
-                    $redirect_url   = add_query_arg( array(
-                        $action     => count( $queued )
-                    ), $redirect_url);    
-                }
-
-                if( ! $is_bulk_sync_supported ){
-                    $redirect_url   = add_query_arg( array(
-                        $action     => 'bulk_sync_not_supported',
-                        'ref'       =>  'php_curl'
-                    ), $redirect_url);
-                }
-
-            break;
-
-            case 'bulk_bunnycdn_generate_image':
-                for ( $i=0; $i < count( $_post_ids ); $i++) {
-                    $result = $this->generate_thumbnail_image( $_post_ids[$i] );
-
-                    if( ! is_wp_error( $result ) ){
-                        $queued[] = $_post_ids[$i];
-                    }                    
-                }
-
-                if( count( $queued ) > 0 ){
-                    $redirect_url   = add_query_arg( array(
-                        $action     => count( $queued )
-                    ), $redirect_url);
-                }                
-            break;
-
-            case 'bulk_bunnycdn_generate_webp_image':
-                for ( $i=0; $i < count( $_post_ids ); $i++) {
-                    $result = $this->generate_webp_image( $_post_ids[$i] );
-
-                    if( ! is_wp_error( $result ) ){
-                        $queued[] = $_post_ids[$i];
-                    }                    
-                }
-
-                if( count( $queued ) > 0 ){
-                    $redirect_url   = add_query_arg( array(
-                        $action     => count( $queued )
-                    ), $redirect_url);
-                }
-            break;            
-        }
-
-        return $redirect_url;
-    }
-
-    /**
-     *
-     * Show admin notice 
-     * 
-     * @since 2.1
-     */
-    public function admin_handle_bulk_admin_notices(){
-        if( isset( $_REQUEST['bulk_bunnycdn_sync'] ) ){
-
-            if( $_REQUEST['bulk_bunnycdn_sync'] == 'bulk_sync_not_supported' ){
-                printf(
-                    '<div class="notice notice-error"><p>%s</p></div>',
-                    sprintf(
-                        esc_html__( 'Bulk Sync is not supported since you have selected %s Sync Type from %s page', 'streamtube-core' ),
-                        '<strong>'. esc_html__( 'PHP Curl', 'streamtube-core' ) .'</strong>',
-                        '<strong><a href="'. esc_url( admin_url( 'options-general.php?page=sync-bunnycdn' ) ) .'">'. esc_html__( 'Settings', 'streamtube-core' ) .'</a></strong>',
-                    )
-                );
-            }
-            else{
-                echo '<div class="notice notice-success"><p>';
-                    $count = (int)$_REQUEST['bulk_bunnycdn_sync'];
-                    printf( 
-                        _n( 
-                            '%s has been queued for syncing onto Bunny CDN', 
-                            '%s have been queued for syncing onto Bunny CDN', 
-                            $count, 
-                            'streamtube-core' 
-                        ), 
-                        number_format_i18n( $count ) 
-                    );
-                echo '</p></div>';
-            }   
-        }
-    }
-
-    /**
-     *
-     * Filter user table
-     * 
-     * @param  array $columns
-     * @return array new $columns
-     *
-     * @since 2.1
-     * 
-     */
-    public function admin_user_table( $columns ){
-        return array_merge( $columns, array(
-            'bunnycdn_collection'   =>  esc_html__( 'Bunny Collection', 'streamtube-core' )
-        ) );
-    }
-
-    /**
-     *
-     * Filter user table
-     * 
-     * @param string $output
-     * @param string $column_name
-     * @param innt $user_id
-     *
-     * @since 2.1
-     * 
-     */
-    public function admin_user_table_columns( $output, $column_name, $user_id ){
-
-        $output = '';
-
-        switch ( $column_name ) {
-            case 'bunnycdn_collection':
-                $collection = $this->get_collection( $user_id );
-
-                if( $collection ){
-                    foreach ( $collection as $key => $value ) {
-                        if( $key != 'previewVideoIds' ){
-                            if( ! empty( $value ) ){
-                                $output .= sprintf(
-                                    '<p><strong>%s</strong>: %s</p>',
-                                    $this->bunnyAPI->get_collection_field_name( $key ),
-                                    $this->bunnyAPI->get_format_collect_field_value( $key, $value )
-                                );
-                            }
-                        }
-                    }
-                }
-            break;
-        }
-
-        return $output;
-    }
-
-    /**
-     * 
-     *
-     * Rest API generate thumbnail image
-     * 
-     * @param  int $thumbnail_id
-     * @param  int $attachment_id
-     * @return int
-     */
-    public function rest_generate_thumbnail_image( $thumbnail_id = 0, $attachment_id ){    
-
-        if( ! $this->is_enabled() ){
-            return $thumbnail_id;
-        }
-
-        if( ! $thumbnail_id || is_wp_error( $thumbnail_id ) ){
-            $thumbnail_id = $this->generate_thumbnail_image( $attachment_id );    
-        }
-
-        return $thumbnail_id;
-    }
-
 }

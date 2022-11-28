@@ -198,6 +198,7 @@ class Streamtube_Core_Shortcode_Liked_Posts_Elementor extends \Elementor\Widget_
 
         $this->end_controls_section();
 
+
         $this->start_controls_section(
             'section-layout',
             array(
@@ -306,11 +307,6 @@ class Streamtube_Core_Shortcode_Liked_Posts_Elementor extends \Elementor\Widget_
     }
 
     protected function render(){
-
-        if( ! function_exists( 'WPPL' ) ){
-            return;
-        }
-
         echo WPPL()->get()->public->the_liked_posts( $this->get_settings_for_display() );
     }
 }

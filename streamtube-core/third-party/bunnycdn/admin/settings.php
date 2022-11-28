@@ -34,7 +34,7 @@ if( ! array_key_exists( $current_tab, $tabs ) ){
     <?php
     if( isset( $_POST ) && isset( $_POST['bunnycdn_nonce'] ) ){
         if( wp_verify_nonce( $_POST['bunnycdn_nonce'], 'bunnycdn_nonce' ) && current_user_can( 'administrator' ) ){
-          
+
             $_bunny_api = new Streamtube_Core_BunnyCDN_API( array(
                 'AccessKey'     =>  $_POST['bunnycdn']['AccessKey'],
                 'libraryId'     =>  $_POST['bunnycdn']['libraryId']
@@ -66,7 +66,7 @@ if( ! array_key_exists( $current_tab, $tabs ) ){
         }
     }
 
-    $settings = Streamtube_Core_BunnyCDN_Settings::get_settings();
+    $settings = $bunnycdn->get_settings();
     ?>    
 
     <form method="post">

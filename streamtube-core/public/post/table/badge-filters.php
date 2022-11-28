@@ -18,7 +18,7 @@ $status = isset( $_GET['post_status'] ) ? sanitize_key( $_GET['post_status'] ) :
 		printf(
 			'<div class="entry-status status-%s mb-2"><a class="badge %s text-decoration-none text-white" href="%s">%s</a></div>',
 			sanitize_html_class( $key ),
-			$status == $key ? 'bg-danger' : 'bg-secondary',
+			$status == $key ? 'bg-info' : 'bg-secondary',
 			esc_url( $url ),
 			$text
 		);

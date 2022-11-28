@@ -32,7 +32,7 @@ if( ! is_object( $args ) ){
         esc_attr( $args->recipient_id )
     )?>
         <?php printf(
-            '<span class="btn__icon position-absolute top-50 start-50 translate-middle %s" data-bs-toggle="tooltip" data-bs-title="%s"></span>',
+            '<span class="btn__icon %s" data-bs-toggle="tooltip" data-bs-title="%s"></span>',
             $args->button_icon,
             $args->button_text
         );?>

@@ -26,15 +26,6 @@ class Streamtube_Core_Permission{
 
     /**
      *
-     * Publish Posts Cap
-     *
-     * @since 2.2.3
-     * 
-     */
-    const CAP_PUBLISH_POSTS     =   'publish_posts';
-
-    /**
-     *
      * Check if current user can moderate posts
      * 
      * @return true|false
@@ -55,7 +46,7 @@ class Streamtube_Core_Permission{
      * @return true|false
      */
     public static function can_upload(){
-        return current_user_can( self::CAP_PUBLISH_POSTS ) ? true : false;
+        return current_user_can( 'publish_posts' ) ? true : false;
     }
 
     /**
@@ -65,7 +56,7 @@ class Streamtube_Core_Permission{
      * @return true|false
      */
     public static function can_embed(){
-        return current_user_can( self::CAP_PUBLISH_POSTS  ) ? true : false;
+        return current_user_can( 'publish_posts' ) ? true : false;
     }    
 
     /**

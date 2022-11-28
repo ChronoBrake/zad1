@@ -100,15 +100,11 @@ class StreamTube_Core_Better_Messages{
             'button_icon'       =>  'icon-mail',
             'button_text'       =>  esc_html__( 'Private Message', 'streamtube-core' ),
             'button_type'       =>  'secondary',
-            'button_classes'    =>  array( 'btn', 'px-2', 'shadow-none', 'd-flex', 'align-items-center', 'btn-sm', 'position-relative' ),
+            'button_classes'    =>  array( 'btn', 'px-2', 'shadow-none', 'd-flex', 'align-items-center', 'btn-sm' ),
             'modal_id'          =>  'modal-private-message',
             'modal_title'       =>  esc_html__( 'Private Message', 'streamtube-core' ),
             'recipient_id'      =>  ''
         );
-
-        if( ! is_user_logged_in() ){
-            $settings['modal_id'] = 'modal-login';
-        }
 
         $settings['button_classes'][] = 'btn-' . sanitize_html_class( $settings['button_type'] );
 
@@ -415,16 +411,27 @@ class StreamTube_Core_Better_Messages{
         }
 
         if( is_author() ){
+
+            // Do not show the button if current page is current logged in user page
+            if( is_user_logged_in() && get_queried_object_id() == get_current_user_id() ){
+                return;
+            }
+
             $settings->recipient_id = get_queried_object_id();
         }
 
-        if( is_singular() ){
-            global $post;        
+        if( is_singular( 'video' ) ){
+            global $post;
+
+            // Do not show the button if current logged in user is post onwer.
+            if( is_user_logged_in() && $post->post_author == get_current_user_id() ){
+                return;
+            }            
 
             $settings->recipient_id = $post->post_author;
         }
 
-        if( $recipient_id ){
+        if( ! $settings->recipient_id && $recipient_id ){
             $settings->recipient_id = $recipient_id;
         }
 
@@ -436,7 +443,6 @@ class StreamTube_Core_Better_Messages{
     }
 
     public function user_list_button_private_message( $args ){
-
         return $this->button_private_message( $args->ID );
     }
 

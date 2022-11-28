@@ -61,10 +61,6 @@ class Streamtube_Core_Comment {
 			$comment = apply_filters( 'streamtube/core/comment/get_comment', $comment );			
 		}
 
-		$comment->comment_content_filtered = force_balance_tags( wpautop( wp_trim_words( $comment->comment_content, 20 ) ) );
-
-		$comment->comment_content_autop = wpautop( $comment->comment_content );
-
 		return $comment;
 	}
 
@@ -113,27 +109,6 @@ class Streamtube_Core_Comment {
 
 	/**
 	 *
-	 * Check if current user is comment author
-	 * 
-	 * @param  int|object  $comment
-	 * @return boolean
-	 * 
-	 */
-	public function is_comment_author( $comment ){
-
-		if( is_int( $comment ) ){
-			$comment = $this->get_comment( $comment );
-		}
-
-		if( ! $comment || ! is_user_logged_in() ){
-			return false;
-		}
-
-		return $comment->user_id == get_current_user_id() ? true : false;
-	}
-
-	/**
-	 *
 	 * Check if current user can moderate comments
 	 * 
 	 * @param  integer $comment_id
@@ -142,7 +117,7 @@ class Streamtube_Core_Comment {
 	 * @since  1.0.0
 	 * 
 	 */
-	public function can_moderate_comments( $comment = null ){
+	public function can_moderate_comments( $comment_id = 0 ){
 
 		/**
 		 *
@@ -155,13 +130,15 @@ class Streamtube_Core_Comment {
 		 */
 		$cap = apply_filters( 'moderate_comments_cap', 'moderate_comments' );
 
-		if( ! $comment ){
-			return current_user_can( $cap ); 
+		if( ! $comment_id ){
+			return current_user_can( $cap );
 		}
 
-		if( is_int( $comment ) ){
-			$comment = $this->get_comment( $comment );
-		}		
+		$comment = get_comment( $comment_id );
+
+		if( ! $comment ){
+			return current_user_can( $cap );
+		}
 
 		$post = get_post( $comment->comment_post_ID );
 
@@ -169,95 +146,8 @@ class Streamtube_Core_Comment {
 			return true;
 		}
 
-		return current_user_can( $cap, $comment );
-	}
-
-	/**
-	 *
-	 * Check if current user can edit given comment
-	 * 
-	 * @param  integer $comment_id
-	 * @return boolean
-	 * 
-	 */
-	public function can_edit_comment( $comment = null ){
-
-		if( is_int( $comment ) ){
-			$comment = $this->get_comment( $comment );
-		}
-
-		if( $this->can_moderate_comments( $comment ) ){
-			return true;
-		}		
-
-		if( $this->is_comment_author( $comment ) ){
-			return get_option( 'comment_edit' ) ? true : false;
-		}
-
-		return false;
-	}
-
-	/**
-	 *
-	 * Check if current user can delete given comment
-	 * 
-	 * @param  integer $comment_id
-	 * @return boolean
-	 * 
-	 */
-	public function can_delete_comment( $comment = null ){
-		if( is_int( $comment ) ){
-			$comment = $this->get_comment( $comment );
-		}
-
-		if( $this->can_moderate_comments( $comment ) ){
-			return true;
-		}
-
-		if( $this->is_comment_author( $comment ) ){
-			return get_option( 'comment_delete' ) ? true : false;
-		}
-
-		return false;
-	}
-
-	/**
-	 *
-	 * Check if current user can report comment
-	 * 
-	 * @return boolean
-	 */
-	public function can_report_comment( $comment = null ){
-
-		if( ! get_option( 'comment_report' ) ){
-			return false;
-		}
-
-		if( is_int( $comment ) ){
-			$comment = $this->get_comment( $comment );
-		}
-
-		$user_id = is_user_logged_in();
-
-		if( ! $user_id ){
-			return false;
-		}
-
-		// Always return true if current user can moderate comments
-		if( $this->can_moderate_comments( $comment ) ){
-			return true;
-		}
-
-		$can_report = apply_filters( 'streamtube/core/comment/can_report', $user_id, $comment );
-
-		if( "" != $cap = get_option( 'comment_report_role', 'read' ) ){
-			if( ! current_user_can( $cap ) ){
-				$can_report = false;
-			}
-		}
-
-		return $can_report;
-	}
+		return current_user_can( $cap, $comment_id );
+	}		
 
 	/**
 	 *
@@ -281,181 +171,11 @@ class Streamtube_Core_Comment {
 		}
 	}
 
-	/**
-	 *
-	 * Report comment
-	 * 
-	 * @param  int|WP_Comment $comment
-	 * 
-	 */
-	public function report_comment( $comment = null, $report_content = '' ){
-
-		if( is_int( $comment ) ){
-			$comment = $this->get_comment( $comment );
-		}
-
-		if( ! is_object( $comment ) || ! $this->can_report_comment( $comment ) ){
-			return new WP_Error(
-				'no_permission',
-				esc_html__( 'Sorry, you do not have permission to report this comment', 'streamtube-core' )
-			);
-		}
-
-		if( empty( $report_content ) ){
-			return new WP_Error(
-				'empty_report_content',
-				esc_html__( 'Report content is required', 'streamtube-core' )
-			);			
-		}
-
-		$content = array(
-			'content'	=>	$report_content,
-			'user_id'	=>	get_current_user_id(),
-			'date'		=>	current_time( 'timestamp' )
-		);
-
-		update_comment_meta( $comment->comment_ID, 'report_content', $content );
-
-		do_action( 'streamtube/core/comment/reported', $comment, $content );
-
-		return $content;
-	}
-
-	/**
-	 *
-	 * Notify Author after reported sent
-	 * 
-	 */
-	public function report_comment_notify( $comment, $content ){
-
-		if( ! get_option( 'comment_report_notify', 'on' ) ){
-			return false;
-		}
-
-		$_post 	= get_post( $comment->comment_post_ID );
-
-		$author	= get_userdata( $_post->post_author );
-
-		if( ! $author || $_post->post_author == $content['user_id'] ){
-			return;
-		}
-
-		$email['to'] 		= $author->user_email;
-		$email['subject']	= sprintf(
-			'%s: %s',
-			get_bloginfo( 'name' ),
-			esc_html__( 'Report Comment', 'streamtube-core' )
-		);
-
-		$email['message']	= sprintf(
-			esc_html__( 'Hello %s', 'streamtube-core' ),
-			$author->display_name
-		) . "\r\n\r\n";
-
-		$email['message']	.= sprintf(
-			esc_html__( '%s have reported a comment', 'streamtube-core' ),
-			get_userdata( $content['user_id'] )->display_name
-		) . "\r\n\r\n";
-
-		$email['message']	.= esc_html__( 'Report Content', 'streamtube-core' ) . "\r\n\r\n";		
-
-		$email['message']	.= '<hr/>' . "\r\n\r\n";
-
-		$email['message']	.= $content['content'] . "\r\n\r\n";
-
-		$email['message']	.= esc_html__( 'Comment Content', 'streamtube-core' ) . "\r\n\r\n";		
-
-		$email['message']	.= '<hr/>' . "\r\n\r\n";
-
-		$email['message']	.= $comment->comment_content . "\r\n\r\n";
-
-		$email['message']	.= sprintf(
-			esc_html__( 'Reference URL: %s', 'streamtube-core' ),
-			add_query_arg( 
-				array( 
-					'comment_id' => $comment->comment_ID 
-				), 
-				get_permalink( $comment->comment_post_ID ) 
-			) . '#comment-' . $comment->comment_ID
-		) . "\r\n\r\n";
-
-		$headers = array();
-		$headers[] = 'Content-Type: text/html; charset=UTF-8';
-		$headers[] = sprintf(
-			'From: %s <%s>',
-			get_option( 'blogname' ),
-			get_option( 'new_admin_email' )
-		);
-
-		/**
-		 *
-		 * filter the email before sending
-		 * 
-		 * @param array $email
-		 * @param  int $post video post type
-		 *
-		 * @since  1.0.0
-		 * 
-		 */
-		$email = apply_filters( 'streamtube/core/comment/report/notify_email', $email, $comment, $content );
-
-		extract( $email );
-
-		return wp_mail( $to, $subject, wpautop( $message ), $headers );	
-	}
-
-	/**
-	 *
-	 * Remove comment report
-	 * 
-	 * @param  int|WP_Comment $comment
-	 * @return delete_comment_meta()
-	 * 
-	 */
-	public function remove_comment_report( $comment = null ){
-
-		if( is_int( $comment ) ){
-			$comment = $this->get_comment( $comment );
-		}
-
-		if( ! is_object( $comment ) || ! $this->can_moderate_comments( $comment ) ){
-			return new WP_Error(
-				'no_permission',
-				esc_html__( 'Sorry, you do not have permission to remove report for this comment', 'streamtube-core' )
-			);
-		}
-
-		return delete_comment_meta( $comment->comment_ID, 'report_content' );
-	}
-
-	/**
-	 *
-	 * Check if given comment has been reported
-	 * 
-	 * @param  int|WP_Comment  $comment
-	 * @return array|false
-	 * 
-	 */
-	public function comment_reported( $comment = null ){
-
-		if( is_int( $comment ) ){
-			$comment = $this->get_comment( $comment );
-		}
-
-		$report_content = get_comment_meta( $comment->comment_ID, 'report_content', true );
-
-		if( $report_content ){
-			return $report_content;
-		}
-
-		return false;
-	}
-
 	public function bulk_action( $comment_id = 0, $action = '' ){
 
 		$errors = new WP_Error();
 
-		if( ! $comment_id || ! $action || ! $this->can_moderate_comments( (int)$comment_id ) ){
+		if( ! $comment_id || ! $action || ! $this->can_moderate_comments( $comment_id ) ){
 			$errors->add(
 				'no_permission',
 				esc_html__( 'Sorry, you are not allowed to moderate this comment.', 'streamtube-core' )
@@ -488,15 +208,11 @@ class Streamtube_Core_Comment {
 			break;
 
 			case 'spam':
-				return wp_spam_comment( $comment_id);
-			break;
+				return wp_trash_comment( $comment_id );
+			break;			
 
 			case 'trash':
-				return wp_trash_comment( $comment_id );
-			break;	
-
-			case 'delete':
-				return wp_delete_comment( $comment_id, true );
+				return wp_spam_comment( $comment_id);
 			break;	
 		}
 	}
@@ -511,42 +227,20 @@ class Streamtube_Core_Comment {
 
 		check_ajax_referer( '_wpnonce' );
 
-		$comment_id = isset( $_GET['comment_id'] ) ? (int)$_GET['comment_id'] : 0;
-
-		if( ! $comment_id && isset( $_POST['data'] ) ){
-			$http_data = json_decode( wp_unslash( $_POST['data'] ), true );
-
-			if( array_key_exists( 'comment_id', $http_data ) ){
-				$comment_id = (int)$http_data['comment_id'];
-			}
-		}
-
-		if( ! $comment_id ){
+		if( ! isset( $_GET['comment_id'] ) ){
 			wp_send_json_error( new WP_Error(
 				'comment_id_not_found',
 				esc_html__( 'Comment ID was not found', 'streamtube-core' )
 			) );
 		}
 
-		$comment = $this->get_comment( $comment_id, true );
-
-		$comment->comment_editor = $this->can_moderate_comments( $comment ) ? 'editor' : 'textarea';
-
-		$comment->comment_editor = apply_filters( 'streamtube/comment/editor', $comment->comment_editor, $comment );
+		$comment = $this->get_comment( $_GET['comment_id'], true );
 
 		if( is_wp_error( $comment ) ){
-			wp_send_json_error( $comment );
+			wp_send_json_error( $comment );			
 		}
 
 		wp_send_json_success( $comment );
-	}	
-
-	/**
-	 * AJAX Get comment to report
-	 */
-	public function ajax_get_comment_to_report(){
-		add_filter( 'streamtube/comment/editor', '__return_false', 1, 2 );
-		return $this->ajax_get_comment();
 	}
 
 	/**
@@ -589,15 +283,6 @@ class Streamtube_Core_Comment {
 
 		$errors = new WP_Error();
 
-		$comment_id = isset( $_POST['comment_ID'] ) ? (int)$_POST['comment_ID'] : 0;
-
-		if( ! $comment_id || ! $this->can_edit_comment( $comment_id ) ){
-			$errors->add(
-				'no_permission',
-				esc_html__( 'Sorry, you do not have permission edit comment', 'streamtube-core' )
-			);
-		}
-
 		/**
 		 * Fiter the errors
 		 *
@@ -608,115 +293,26 @@ class Streamtube_Core_Comment {
 
 		if( $errors->get_error_code() ){
 			wp_send_json_error( $errors );
-		}
-		
-		$comment = wp_update_comment( $_POST, true );
+		}		
 
-		if( is_wp_error( $comment ) ){
-			wp_send_json_error( $comment );
-		}
+		$comment = edit_comment();
 
 		if( wp_validate_boolean( $comment ) === false ){
 			wp_send_json_error( new WP_Error(
 				'undefined_error',
-				esc_html__( 'Error: cannot update comment, it seems you have not modified comment content yet', 'streamtube-core' )
+				esc_html__( 'Error: cannot update comment', 'streamtube-core' )
 			) );
 		}
 
-		update_comment_meta( $_POST['comment_ID'], 'last_edited', current_time( 'timestamp' ) );
+		$comment = $this->get_comment( $_POST['comment_ID'], true );
 
-		$comment = $this->get_comment( $comment_id, true );
+		$comment->comment_content_filtered = force_balance_tags( wpautop( wp_trim_words( $comment->comment_content, 20 ) ) );
 
 		wp_send_json_success( array(
 			'message' 	=>	esc_html__( 'Comment updated.', 'streamtube-core' ),
 			'comment'	=>	$comment
 		));		
 	}
-
-	/**
-	 * AJAX report comment
-	 */
-	public function ajax_report_comment(){
-		check_ajax_referer( '_wpnonce' );
-
-		$errors = new WP_Error();
-
-		$comment_id 	= isset( $_POST['comment_ID'] ) ? (int)$_POST['comment_ID'] : 0;
-
-		$report_content = isset( $_POST['comment_content'] ) ? $_POST['comment_content'] : '';
-
-		/**
-		 * Fiter the errors
-		 *
-		 * @since  1.0.0
-		 * 
-		 */
-		$errors = apply_filters( 'streamtube/core/comment/report_comment', $errors );
-
-		if( $errors->get_error_code() ){
-			wp_send_json_error( $errors );
-		}
-
-		$results = $this->report_comment( $comment_id, $report_content );
-
-		if( is_wp_error( $results ) ){
-			wp_send_json_error( $results );
-		}
-
-		wp_send_json_success( array(
-			'message'	=>	esc_html__( 'You have reported this comment successfully', 'streamtube-core' )
-		) );
-	}
-
-	/**
-	 * AJAX remove comment report
-	 */
-	public function ajax_remove_comment_report(){
-		check_ajax_referer( '_wpnonce' );
-
-		$errors = new WP_Error();
-
-		$comment_id = isset( $_GET['comment_id'] ) ? (int)$_GET['comment_id'] : 0;
-
-		if( ! $comment_id && isset( $_POST['data'] ) ){
-			$http_data = json_decode( wp_unslash( $_POST['data'] ), true );
-
-			if( array_key_exists( 'comment_id', $http_data ) ){
-				$comment_id = (int)$http_data['comment_id'];
-			}
-		}
-
-		if( ! $comment_id ){
-			wp_send_json_error( new WP_Error(
-				'comment_id_not_found',
-				esc_html__( 'Comment ID was not found', 'streamtube-core' )
-			) );
-		}
-
-		/**
-		 * Fiter the errors
-		 *
-		 * @since  1.0.0
-		 * 
-		 */
-		$errors = apply_filters( 'streamtube/core/comment/remove_report_comment', $errors );
-
-		if( $errors->get_error_code() ){
-			wp_send_json_error( $errors );
-		}
-
-		$results = $this->remove_comment_report( $comment_id );
-
-		if( is_wp_error( $results ) ){
-			wp_send_json_error( $results );
-		}
-
-		$comment = $this->get_comment( $comment_id );
-		$message = esc_html__( 'You have removed report for this comment successfully', 'streamtube-core' );
-
-		wp_send_json_success( compact( 'comment', 'message' ) );
-	}
-
 
 	/**
 	 * 
@@ -741,7 +337,7 @@ class Streamtube_Core_Comment {
 			);
 		}
 
-		if( ! $this->can_moderate_comments( (int)$data['comment_id'] ) ){
+		if( ! $this->can_moderate_comments( $data['comment_id'] ) ){
 			$errors->add( 
 				'no_permission', 
 				esc_html__( 'Sorry, you are not allowed to moderate this comment.', 'streamtube-core' ) 
@@ -801,7 +397,7 @@ class Streamtube_Core_Comment {
 			);
 		}
 
-		if( ! $this->can_moderate_comments( (int)$data['comment_id'] ) ){
+		if( ! $this->can_moderate_comments( $data['comment_id'] ) ){
 			$errors->add( 
 				'no_permission', 
 				esc_html__( 'Sorry, you are not allowed to trash this comment.', 'streamtube-core' ) 
@@ -820,7 +416,7 @@ class Streamtube_Core_Comment {
 			wp_send_json_error( $errors );
 		}
 
-		$results = wp_delete_comment( $data['comment_id'], true );
+		$results = wp_trash_comment( $data['comment_id'] );
 
 		if( is_wp_error( $results ) ){
 			wp_send_json_error( $results );
@@ -865,7 +461,7 @@ class Streamtube_Core_Comment {
 			);
 		}
 
-		if( ! $this->can_moderate_comments( (int)$data['comment_id'] ) ){
+		if( ! $this->can_moderate_comments( $data['comment_id'] ) ){
 			$errors->add( 
 				'no_permission', 
 				esc_html__( 'Sorry, you are not allowed to spam this comment.', 'streamtube-core' ) 
@@ -900,7 +496,7 @@ class Streamtube_Core_Comment {
 			),
 			'comment_id'	=>	$data['comment_id']
 		) );
-	}
+	}	
 
 	/**
 	 * 
@@ -981,72 +577,6 @@ class Streamtube_Core_Comment {
 
 	/**
 	 *
-	 * Filter reported comment content
-	 * 
-	 * @param  integer $comment_ID
-	 * @return string
-	 * 
-	 */
-	public function filter_reported_comment_content( $comment_text, $comment, $args ){
-
-		if( ! get_option( 'comment_report' )  ){
-			return $comment_text;
-		}
-
-		$maybe_report = $this->comment_reported( $comment );
-
-		if( $maybe_report && ! is_admin() ){
-
-			if( $this->can_moderate_comments( $comment ) ){
-
-				$report = sprintf(
-					'<p class="text-muted fst-italic">%s (%s)</p>',
-					esc_html__( 'This comment is currently being reviewed', 'streamtube-core' ),
-					'<a class="text-body" data-bs-toggle="collapse" href="#view-comment-report-'.esc_attr($comment->comment_ID).'">'. esc_html__( 'view report', 'streamtube-core' ) .'</a>'
-				);
-
-				$report .= '<div class="alert border bg-light collapse" id="view-comment-report-'.esc_attr($comment->comment_ID).'">';
-
-				$report .= sprintf(
-					'<p class="mb-0 report-content">%s</p>',
-					$maybe_report['content']
-				);
-
-				if( $maybe_report['user_id'] ){
-					$_user = get_userdata( $maybe_report['user_id'] );
-
-					if( $_user ){
-						$report .= sprintf(
-							'<p class="mb-0 report-user">'. esc_html__( 'Reported by %s' ) .'</p>',
-							'<a class="text-body" href="'. esc_url( get_author_posts_url( $_user->ID ) ) .'">'. $_user->display_name .'</a>'
-						);
-					}
-				}
-
-				if( $maybe_report['date'] ){
-					$report .= sprintf(
-						'<p class="mb-0 report-date">'. esc_html__( '%s ago', 'streamtube-core' ) .'</p>',
-						human_time_diff( $maybe_report['date'], current_time( 'timestamp' ) )
-					);
-				}			
-
-				$report .= '</div>';
-
-				$comment_text = $report . $comment_text;
-			}
-			else{
-				$comment_text = sprintf(
-					'<p class="text-muted fst-italic">%s</p>',
-					esc_html__( 'This comment is currently being reviewed', 'streamtube-core' )
-				);
-			}
-		}
-
-		return $comment_text;
-	}
-
-	/**
-	 *
 	 * Filter the comment form args
 	 * 
 	 * @param  array $args
@@ -1068,20 +598,6 @@ class Streamtube_Core_Comment {
 
 	/**
 	 *
-	 * Filter comment classes
-	 * 
-	 */
-	public function filter_comment_classes( $classes, $css_class, $comment_id, $comment, $post ){
-
-		if( $this->comment_reported( $comment ) ){
-			$classes[] = 'has-reported';
-		}
-
-		return $classes;
-	}
-
-	/**
-	 *
 	 * Load AJAX comments template
 	 * 
 	 * @param  string $file
@@ -1091,7 +607,9 @@ class Streamtube_Core_Comment {
 	 * 
 	 */
 	public function load_ajax_comments_template( $file ){
+
 		return streamtube_core_get_template( 'comment/comments-ajax.php' );
+
 	}
 
 	/**
@@ -1147,44 +665,6 @@ class Streamtube_Core_Comment {
          * 
          */
         return apply_filters( 'streamtube/core/pending_comments_badge', $badge, $count );
-	}
-
-	/**
-	 *
-	 * Load comment buttons
-	 * 
-	 * @since 1.0.0
-	 * 
-	 */
-	public function load_control_buttons( $comment, $args, $depth ){
-
-		$is_reported = $this->comment_reported( $comment );
-
-		?>
-		<div class="moderate-comment">
-
-			<?php if( $this->can_report_comment( $comment ) && ! $is_reported && ! user_can( $comment->user_id, 'administrator' ) ): ?>
-
-				<?php streamtube_core_load_template( 'comment/button-report.php', false ); ?>
-
-			<?php endif;?>
-
-			<?php if( $this->can_moderate_comments( $comment ) && $is_reported ): ?>
-
-				<?php streamtube_core_load_template( 'comment/button-remove-report.php', false ); ?>
-
-			<?php endif;?>
-
-			<?php if( $this->can_edit_comment( $comment ) ): ?>
-
-				<?php streamtube_core_load_template( 'comment/button-edit.php', false ); ?>
-
-				<?php streamtube_core_load_template( 'comment/button-delete.php', false ); ?>
-
-			<?php endif;?>
-
-		</div>
-		<?php
 	}
 
 }

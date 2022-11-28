@@ -7,7 +7,7 @@ wp_enqueue_style( 'cropperjs' );
 wp_enqueue_script( 'cropperjs' );
 
 ?>
-<div class="widget mb-0">
+<div class="widget">
 
 	<div class="widget-content">
 		<form class="form form-profile form-avatar form-user-photo form-ajax">
@@ -35,24 +35,19 @@ wp_enqueue_script( 'cropperjs' );
 					);?>
 
 				</div>
-				<div class="form-submit mx-auto mt-4">
+				<div class="form-submit mx-auto mt-5">
+					<label class="btn btn-info text-white me-3">
+						<input type="file" name="file" class="cropper-input d-none" accept=".jpg,.jpeg,.png,.gif,.bmp,.tiff">
+						<span class="icon-picture"></span>
+						<span class="button-label">Browse image</span>
+					</label>
 
-					<div class="d-md-flex d-block gap-3 align-items-start">
-						<label class="btn btn-info text-white mb-2 d-block">
-							<input type="file" name="file" class="cropper-input d-none" accept=".jpg,.jpeg,.png,.gif,.bmp,.tiff">
-							<span class="icon-picture"></span>
-							<span class="button-label">
-								<?php esc_html_e( 'Browse image', 'streamtube-core' );?>
-							</span>
-						</label>
-
-						<button type="submit" class="btn btn-primary mb-2 d-block">
-							<span class="icon-floppy"></span>
-							<span class="button-label">
-								<?php esc_html_e( 'Save Changes', 'streamtube-core' ); ?>
-							</span>
-						</button>
-					</div>
+					<button type="submit" class="btn btn-primary ms-auto">
+						<span class="icon-floppy"></span>
+						<span class="button-label">
+							<?php esc_html_e( 'Save Changes', 'streamtube-core' ); ?>
+						</span>
+					</button>
 
 					<input type="hidden" name="image_data">
 					<input type="hidden" name="image_base64">

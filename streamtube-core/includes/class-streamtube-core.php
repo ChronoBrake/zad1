@@ -99,8 +99,6 @@ class Streamtube_Core {
 		$this->define_woocommerce_hooks();
 		$this->define_rest_hooks();
 
-		$this->define_collection_hooks();
-
 		$this->define_googlesitekit_hooks();
 
 		$this->define_mycred_hooks();
@@ -174,11 +172,6 @@ class Streamtube_Core {
 		$this->include_file( 'includes/class-streamtube-core-license.php' );		
 
 		$this->plugin->license = new Streamtube_Core_License();
-
-		/**
-		 * Misc
-		 */
-		$this->include_file( 'includes/class-streamtube-core-misc.php' );		
 
 		/**
 		 * System permission
@@ -266,17 +259,7 @@ class Streamtube_Core {
 		/**
 		 * The class responsible for defining custom taxonomy widget
 		 */
-		$this->include_file( 'includes/widgets/class-streamtube-core-widget-chatroom.php' );
-
-		/**
-		 * The class responsible for defining recorded videos widget
-		 */
-		$this->include_file( 'includes/widgets/class-streamtube-core-widget-recorded-videos.php' );
-
-		/**
-		 * The class responsible for defining playlist content widget
-		 */
-		$this->include_file( 'includes/widgets/class-streamtube-core-widget-playlist-content.php' );		
+		$this->include_file( 'includes/widgets/class-streamtube-core-widget-chatroom.php' );		
 
 		/**
 		 * The class responsible for defining custom elementor widgets
@@ -339,6 +322,8 @@ class Streamtube_Core {
 		
 		$this->include_file( 'admin/class-streamtube-core-admin-user.php' );
 
+		$this->include_file( 'admin/class-streamtube-core-admin-post.php' );
+
 		$this->include_file( 'admin/class-streamtube-core-metabox.php' );
 
 		$this->include_file( 'admin/class-streamtube-core-customizer.php' );
@@ -368,11 +353,6 @@ class Streamtube_Core {
 		 * The function responsible for defining user functions
 		 */		
 		$this->include_file( 'includes/function-templates.php' );
-
-		/**
-		 * The template tags
-		 */		
-		$this->include_file( 'includes/template-tags.php' );		
 
 		/**
 		 * The function responsible for defining email functions
@@ -440,6 +420,12 @@ class Streamtube_Core {
 
 		$this->plugin->admin_user = new Streamtube_Core_Admin_User();
 
+		$this->loader->add_action( 
+			'wp_ajax_set_user_verification', 
+			$this->plugin->admin_user, 
+			'ajax_set_verification' 
+		);		
+
 		$this->loader->add_filter(
 			'manage_users_columns',
 			$this->plugin->admin_user,
@@ -456,13 +442,30 @@ class Streamtube_Core {
 			3
 		);		
 
+		$this->plugin->admin_post = new Streamtube_Core_Admin_Post();
+
+		$this->loader->add_filter(
+			'manage_video_posts_columns',
+			$this->plugin->admin_post,
+			'post_table',
+			10,
+			1
+		);
+
+		$this->loader->add_action(
+			'manage_video_posts_custom_column',
+			$this->plugin->admin_post,
+			'post_table_columns',
+			10,
+			2
+		);			
+
 		$this->plugin->metabox = new Streamtube_Core_MetaBox();
 
 		$this->loader->add_action( 
 			'add_meta_boxes', 
 			$this->plugin->metabox, 
-			'add_meta_boxes',
-			1
+			'add_meta_boxes' 
 		);
 
 		$this->loader->add_action( 
@@ -527,22 +530,6 @@ class Streamtube_Core {
 			1 
 		);		
 
-		$this->loader->add_filter(
-			'manage_video_posts_columns',
-			$this->plugin->restrict_content, 
-			'filter_post_table',
-			10,
-			1
-		);
-
-		$this->loader->add_action(
-			'manage_video_posts_custom_column',
-			$this->plugin->restrict_content, 
-			'filter_post_table_columns',
-			10,
-			2
-		);
-
 		$this->plugin->task_spooler = new Streamtube_Core_Task_Spooler();
 
 		$this->loader->add_action( 
@@ -566,8 +553,7 @@ class Streamtube_Core {
 		$this->loader->add_action(
 			 'wp_enqueue_scripts', 
 			 $this->plugin->public, 
-			 'enqueue_styles',
-			 20
+			 'enqueue_styles' 
 		);
 
 		$this->loader->add_action( 
@@ -586,7 +572,7 @@ class Streamtube_Core {
 			'enqueue_embed_scripts', 
 			$this->plugin->public, 
 			'enqueue_embed_scripts' 
-		);				
+		);		
 
 		$this->loader->add_action( 
 			'streamtube/header/profile/before', 
@@ -657,7 +643,7 @@ class Streamtube_Core {
 			'init', 
 			$this->plugin->taxonomy, 
 			'report_category' 
-		);
+		);		
 
 		$this->loader->add_action( 
 			'wp_ajax_search_terms',
@@ -719,7 +705,7 @@ class Streamtube_Core {
 			'update_thumbnail_field',
 			10,
 			1
-		);
+		);			
 
 		$this->loader->add_action( 
 			'edited_category',
@@ -785,29 +771,11 @@ class Streamtube_Core {
 			'widgets_init', 
 			'Streamtube_Core_Widget_Term_Grid', 
 			'register'
-		);
-
-		$this->loader->add_action( 
-			'wp_ajax_load_more_tax_terms', 
-			'Streamtube_Core_Widget_Term_Grid', 
-			'load_more_terms'
-		);
-
-		$this->loader->add_action( 
-			'wp_ajax_nopriv_load_more_tax_terms', 
-			'Streamtube_Core_Widget_Term_Grid', 
-			'load_more_terms'
-		);
-
-		$this->loader->add_action( 
-			'widgets_init', 
-			'Streamtube_Core_Widget_Video_Category', 
-			'register'
 		);		
 
 		$this->loader->add_action( 
 			'widgets_init', 
-			'Streamtube_Core_Widget_Recorded_Videos', 
+			'Streamtube_Core_Widget_Video_Category', 
 			'register'
 		);		
 
@@ -822,24 +790,6 @@ class Streamtube_Core {
 			'Streamtube_Core_Widget_Comments_Template', 
 			'register'
 		);	
-
-		$this->loader->add_action( 
-			'widgets_init', 
-			'Streamtube_Core_Widget_Playlist_Content', 
-			'register'
-		);		
-
-		$this->loader->add_action( 
-			"wp_ajax_search_in_collection",
-			'Streamtube_Core_Widget_Playlist_Content', 
-			'ajax_search_in_collection'
-		);
-
-		$this->loader->add_action( 
-			"wp_ajax_nopriv_search_in_collection",
-			'Streamtube_Core_Widget_Playlist_Content', 
-			'ajax_search_in_collection'
-		);		
 
 		$this->loader->add_action( 
 			'wp_ajax_nopriv_widget_load_more_posts', 
@@ -946,13 +896,7 @@ class Streamtube_Core {
 			'init', 
 			$this->plugin->shortcode, 
 			'term_grid' 
-		);
-
-		$this->loader->add_action(
-			'init', 
-			$this->plugin->shortcode, 
-			'user_library' 
-		);
+		);		
 
 		$this->plugin->oembed = new Streamtube_Core_oEmbed();
 
@@ -961,39 +905,6 @@ class Streamtube_Core {
 			$this->plugin->oembed, 
 			'add_providers' 
 		);
-
-		$this->plugin->misc = new Streamtube_Core_Misc();
-
-		$this->loader->add_filter(
-			'login_url', 
-			$this->plugin->misc, 
-			'filter_login_url',
-			9999,
-			3
-		);
-
-		$this->loader->add_filter(
-			'register_url', 
-			$this->plugin->misc, 
-			'filter_register_url',
-			9999,
-			1
-		);
-
-		$this->loader->add_filter(
-			'show_admin_bar', 
-			$this->plugin->misc, 
-			'hide_admin_bar',
-			9999,
-			1
-		);
-
-		$this->loader->add_action(
-			'admin_init', 
-			$this->plugin->misc, 
-			'block_admin_access'
-		);
-
 	}
 
 	/**
@@ -1143,7 +1054,7 @@ class Streamtube_Core {
 				'streamtube/player/file/setup',
 				$this->plugin->advertising,
 				'request_ad',
-				10,
+				100,
 				2
 			);
 		}
@@ -1264,54 +1175,6 @@ class Streamtube_Core {
 		);
 
 		$this->loader->add_action( 
-			'wp_ajax_upload_text_track', 
-			$this->plugin->post, 
-			'ajax_upload_text_track'
-		);		
-
-		$this->loader->add_action( 
-			'wp_ajax_update_text_tracks', 
-			$this->plugin->post, 
-			'ajax_update_text_tracks'
-		);
-
-		$this->loader->add_action( 
-			'wp_ajax_update_altsources', 
-			$this->plugin->post, 
-			'ajax_update_altsources'
-		);
-
-		$this->loader->add_action( 
-			'wp_ajax_get_post_thumbnail', 
-			$this->plugin->post, 
-			'ajax_get_post_thumbnail'
-		);
-
-		$this->loader->add_action( 
-			'wp_ajax_get_post_by_url', 
-			$this->plugin->post, 
-			'ajax_get_post_by_url'
-		);
-
-		$this->loader->add_action( 
-			'wp_ajax_nopriv_get_post_by_url', 
-			$this->plugin->post, 
-			'ajax_get_post_by_url'
-		);
-
-		$this->loader->add_action( 
-			'wp_ajax_search_autocomplete', 
-			$this->plugin->post, 
-			'ajax_search_autocomplete'
-		);
-
-		$this->loader->add_action( 
-			'wp_ajax_nopriv_search_autocomplete', 
-			$this->plugin->post, 
-			'ajax_search_autocomplete'
-		);			
-
-		$this->loader->add_action( 
 			'streamtube/core/post/edit/metaboxes', 
 			$this->plugin->post, 
 			'load_thumbnail_metabox',
@@ -1421,60 +1284,6 @@ class Streamtube_Core {
 			100,
 			2
 		);
-
-		$this->loader->add_filter( 
-			'streamtube_pre_player_args', 
-			$this->plugin->post, 
-			'filter_altsource',
-			10,
-			1
-		);		
-
-		$this->loader->add_action( 
-			'streamtube/single/video/control', 
-			$this->plugin->post, 
-			'the_trailer_button',
-			10
-		);		
-
-		$this->loader->add_action( 
-			'streamtube/single/video/control', 
-			$this->plugin->post, 
-			'the_altsources_navigator',
-			500
-		);
-
-		$this->loader->add_filter( 
-			'streamtube_pre_player_args', 
-			$this->plugin->post, 
-			'filter_pre_player_args',
-			10,
-			1
-		);
-
-		$this->loader->add_filter( 
-			'streamtube/player/file/setup', 
-			$this->plugin->post, 
-			'filter_player_setup',
-			20,
-			2
-		);
-
-		$this->loader->add_filter(
-			'manage_video_posts_columns',
-			$this->plugin->post, 
-			'filter_post_table',
-			10,
-			1
-		);
-
-		$this->loader->add_action(
-			'manage_video_posts_custom_column',
-			$this->plugin->post, 
-			'filter_post_table_columns',
-			10,
-			2
-		);		
 	}
 
 	/**
@@ -1491,7 +1300,7 @@ class Streamtube_Core {
 			'post_embed_url',
 			$this->plugin->video,
 			'filer_embed_url',
-			10,
+			100,
 			2
 		);			
 
@@ -1501,15 +1310,7 @@ class Streamtube_Core {
 			'filter_embed_html',
 			100,
 			4
-		);
-
-		$this->loader->add_action(
-			'oembed_response_data',
-			$this->plugin->video,
-			'filter_embed_type',
-			100,
-			4
-		);
+		);		
 
 		$this->loader->add_action(
 			'streamtube/single/video/control',
@@ -1546,6 +1347,12 @@ class Streamtube_Core {
 		$this->loader->add_action(
 			'streamtube/single/video/meta',
 			$this->plugin->video,
+			'load_single_post_views'
+		);
+
+		$this->loader->add_action(
+			'streamtube/single/video/meta',
+			$this->plugin->video,
 			'load_single_post_comment_count'
 		);
 
@@ -1572,418 +1379,6 @@ class Streamtube_Core {
 
 	}
 
-	private function define_collection_hooks(){
-
-		$this->include_file( 'third-party/collection/class-streamtube-core-collection.php' );
-
-		$this->plugin->collection = new Streamtube_Core_Collection();
-
-		$taxonomy = $this->plugin->collection::TAX_COLLECTION;
-
-		$this->loader->add_action(
-			'init',
-			$this->plugin->collection, 
-			'register_taxonomy'
-		);
-
-		$this->loader->add_filter(
-			'get_term',
-			$this->plugin->collection, 
-			'_filter_term',
-			10,
-			2
-		);		
-
-		$this->loader->add_action( 
-			"{$taxonomy}_add_form_fields",
-			$this->plugin->taxonomy, 
-			'add_thumbnail_field',
-			10,
-			1
-		);
-
-		$this->loader->add_action( 
-			"{$taxonomy}_edit_form_fields",
-			$this->plugin->taxonomy, 
-			'edit_thumbnail_field',
-			10,
-			2
-		);
-
-		$this->loader->add_action( 
-			"created_{$taxonomy}",
-			$this->plugin->taxonomy, 
-			'update_thumbnail_field',
-			10,
-			1
-		);			
-
-		$this->loader->add_action( 
-			"edited_{$taxonomy}",
-			$this->plugin->taxonomy, 
-			'update_thumbnail_field',
-			10,
-			1
-		);
-
-		$this->loader->add_filter( 
-			"manage_edit-{$taxonomy}_columns",
-			$this->plugin->taxonomy, 
-			'add_thumbnail_column',
-			10,
-			1
-		);
-
-		$this->loader->add_filter( 
-			"manage_{$taxonomy}_custom_column",
-			$this->plugin->taxonomy, 
-			'add_thumbnail_column_content',
-			10,
-			3
-		);		
-
-		// meta fields.
-		$this->loader->add_action( 
-			"{$taxonomy}_add_form_fields",
-			$this->plugin->collection,
-			'admin_add_term_meta_field',
-			10,
-			1
-		);
-
-		$this->loader->add_action( 
-			"{$taxonomy}_edit_form_fields",
-			$this->plugin->collection,
-			'admin_edit_term_meta_field',
-			10,
-			2
-		);		
-
-		$this->loader->add_action( 
-			"created_{$taxonomy}",
-			$this->plugin->collection,
-			'admin_update_term_meta_fields',
-			10,
-			1
-		);
-
-		$this->loader->add_action( 
-			"edited_{$taxonomy}",
-			$this->plugin->collection,
-			'admin_update_term_meta_fields',
-			10,
-			1
-		);
-
-		$this->loader->add_filter( 
-			"manage_edit-{$taxonomy}_columns",
-			$this->plugin->collection,
-			'admin_add_term_meta_field_columns',
-			10,
-			1
-		);
-
-		$this->loader->add_filter( 
-			"manage_{$taxonomy}_custom_column",
-			$this->plugin->collection,
-			'admin_add_term_meta_field_content_content',
-			10,
-			3
-		);
-
-		$this->loader->add_action( 
-			'delete_user', 
-			$this->plugin->collection,
-			'admin_delete_user_collections',
-			10,
-			3
-		);
-
-		$this->loader->add_action( 
-			'streamtube/post/thumbnail/after', 
-			$this->plugin->collection,
-			'frontend_the_watch_later_button',
-			10
-		);
-
-		$this->loader->add_action( 
-			'streamtube/flat_post/item', 
-			$this->plugin->collection,
-			'frontend_the_watch_later_button',
-			10
-		);
-
-		if( ! is_wp_error( $this->plugin->license->is_verified()) ){
-			$this->loader->add_action( 
-				'streamtube/single/video/control', 
-				$this->plugin->collection,
-				'frontend_the_collection_button' 
-			);
-		}
-
-		$this->loader->add_action( 
-			'wp_footer', 
-			$this->plugin->collection,
-			'frontend_the_collection_modal' 
-		);
-
-		$this->loader->add_action( 
-			"wp",
-			$this->plugin->collection, 
-			'frontend_add_post_history'
-		);
-
-		$this->loader->add_filter( 
-			"streamtube/core/post/edit/content/after",
-			$this->plugin->collection, 
-			'frontend_post_form_collections_box',
-			10,
-			1
-		);		
-
-		$this->loader->add_filter( 
-			"streamtube/core/user/dashboard/menu/items",
-			$this->plugin->collection, 
-			'frontend_dashboard_menu',
-			10,
-			1
-		);
-
-		$this->loader->add_filter( 
-			"streamtube/core/user/profile/menu/items",
-			$this->plugin->collection, 
-			'frontend_profile_menu',
-			10,
-			1
-		);		
-
-		$this->loader->add_action( 
-			"wp_login",
-			$this->plugin->collection, 
-			'auto_create_user_terms',
-			10,
-			2
-		);		
-
-		$this->loader->add_action( 
-			"saved_term",
-			$this->plugin->collection, 
-			'saved_term',
-			10,
-			3
-		);
-
-		$this->loader->add_action( 
-			"wp_ajax_create_collection",
-			$this->plugin->collection, 
-			'ajax_create_collection'
-		);
-
-		$this->loader->add_action( 
-			"wp_ajax_delete_collection",
-			$this->plugin->collection, 
-			'ajax_delete_collection'
-		);
-
-		$this->loader->add_action( 
-			"wp_ajax_get_collection_term",
-			$this->plugin->collection, 
-			'ajax_get_collection_term'
-		);			
-
-		$this->loader->add_action( 
-			"wp_ajax_set_post_collection",
-			$this->plugin->collection, 
-			'ajax_set_post_collection'
-		);
-
-		$this->loader->add_action( 
-			"wp_ajax_set_post_watch_later",
-			$this->plugin->collection, 
-			'ajax_set_post_watch_later'
-		);		
-
-		$this->loader->add_action( 
-			"wp_ajax_set_image_collection",
-			$this->plugin->collection, 
-			'ajax_set_image_collection'
-		);		
-
-		$this->loader->add_action( 
-			"wp_ajax_upload_collection_thumbnail_image",
-			$this->plugin->collection, 
-			'ajax_upload_collection_thumbnail_image'
-		);		
-
-		$this->loader->add_action( 
-			"wp_ajax_set_collection_status",
-			$this->plugin->collection, 
-			'ajax_set_collection_status'
-		);
-
-		$this->loader->add_action( 
-			"wp_ajax_set_collection_activity",
-			$this->plugin->collection, 
-			'ajax_set_collection_activity'
-		);
-
-		$this->loader->add_action( 
-			"wp_ajax_clear_collection",
-			$this->plugin->collection, 
-			'ajax_clear_collection'
-		);
-
-		$this->loader->add_action( 
-			"wp_ajax_search_videos",
-			$this->plugin->collection, 
-			'ajax_search_videos'
-		);			
-
-		$this->loader->add_filter( 
-			'streamtube/player/file/setup', 
-			$this->plugin->collection, 
-			'filter_player_setup',
-			30,
-			2
-		);
-
-		$this->loader->add_filter( 
-			'streamtube_get_share_embed_permalink', 
-			$this->plugin->collection, 
-			'filter_share_links',
-			100,
-			2
-		);
-
-		$this->loader->add_action(
-			'post_embed_url',
-			$this->plugin->collection,
-			'filer_embed_url',
-			10,
-			2
-		);
-	}
-
-	private function define_collection_hooks1(){
-
-		$this->include_file( 'third-party/collection/class-streamtube-core-collection.php' );
-
-		$this->plugin->collection = new Streamtube_Core_Collection();
-
-		$taxonomy = $this->plugin->collection->taxonomy::TAX_COLLECTION;
-
-		$this->loader->add_action(
-			'init',
-			$this->plugin->collection->taxonomy, 
-			'taxonomy'
-		);
-
-		$this->loader->add_action( 
-			"{$taxonomy}_add_form_fields",
-			$this->plugin->taxonomy, 
-			'add_thumbnail_field',
-			10,
-			1
-		);
-
-		$this->loader->add_action( 
-			"{$taxonomy}_edit_form_fields",
-			$this->plugin->taxonomy, 
-			'edit_thumbnail_field',
-			10,
-			2
-		);
-
-		$this->loader->add_action( 
-			"created_{$taxonomy}",
-			$this->plugin->taxonomy, 
-			'update_thumbnail_field',
-			10,
-			1
-		);			
-
-		$this->loader->add_action( 
-			"edited_{$taxonomy}",
-			$this->plugin->taxonomy, 
-			'update_thumbnail_field',
-			10,
-			1
-		);		
-
-		$this->loader->add_action( 
-			"{$taxonomy}_add_form_fields",
-			$this->plugin->collection,
-			'add_meta_field',
-			10,
-			1
-		);
-
-		$this->loader->add_action( 
-			"{$taxonomy}_edit_form_fields",
-			$this->plugin->collection,
-			'edit_meta_field',
-			10,
-			2
-		);		
-
-		$this->loader->add_action( 
-			"created_{$taxonomy}",
-			$this->plugin->collection,
-			'update_collection_metadata',
-			10,
-			1
-		);
-
-		$this->loader->add_action( 
-			"edited_{$taxonomy}",
-			$this->plugin->collection,
-			'update_collection_metadata',
-			10,
-			1
-		);
-
-		$this->loader->add_filter( 
-			"manage_edit-{$taxonomy}_columns",
-			$this->plugin->taxonomy, 
-			'add_thumbnail_column',
-			10,
-			1
-		);
-
-		$this->loader->add_filter( 
-			"manage_{$taxonomy}_custom_column",
-			$this->plugin->taxonomy, 
-			'add_thumbnail_column_content',
-			10,
-			3
-		);
-
-		$this->loader->add_filter( 
-			"manage_edit-{$taxonomy}_columns",
-			$this->plugin->collection,
-			'add_meta_field_columns',
-			10,
-			1
-		);
-
-		$this->loader->add_filter( 
-			"manage_{$taxonomy}_custom_column",
-			$this->plugin->collection,
-			'add_meta_field_content_content',
-			10,
-			3
-		);		
-
-		$this->loader->add_action( 
-			"wp_login",
-			$this->plugin->collection, 
-			'auto_create_user_collections',
-			10,
-			2
-		);
-		
-	}
-
 	/**
 	 * Register all of the hooks related to the comment functionality
 	 * of the plugin.
@@ -1993,14 +1388,6 @@ class Streamtube_Core {
 	 */
 	private function define_comment_hooks(){
 		$this->plugin->comment = new Streamtube_Core_Comment();
-
-		$this->loader->add_action( 
-			'streamtube/comment_list/comment/meta/right', 
-			$this->plugin->comment,
-			'load_control_buttons',
-			10,
-			3
-		);		
 
 		$this->loader->add_action(
 			'wp_ajax_nopriv_post_comment',
@@ -2018,45 +1405,13 @@ class Streamtube_Core {
 			'wp_ajax_get_comment',
 			$this->plugin->comment, 
 			'ajax_get_comment'
-		);
-
-		$this->loader->add_action(
-			'wp_ajax_get_comment_to_edit',
-			$this->plugin->comment, 
-			'ajax_get_comment'
-		);
-
-		$this->loader->add_action(
-			'wp_ajax_get_comment_to_report',
-			$this->plugin->comment, 
-			'ajax_get_comment_to_report'
-		);
+		);		
 
 		$this->loader->add_action(
 			'wp_ajax_edit_comment',
 			$this->plugin->comment, 
 			'ajax_edit_comment'
-		);
-
-		$this->loader->add_action(
-			'wp_ajax_report_comment',
-			$this->plugin->comment, 
-			'ajax_report_comment'
-		);
-
-		$this->loader->add_action(
-			'streamtube/core/comment/reported',
-			$this->plugin->comment, 
-			'report_comment_notify',
-			10,
-			2
 		);		
-
-		$this->loader->add_action(
-			'wp_ajax_remove_comment_report',
-			$this->plugin->comment, 
-			'ajax_remove_comment_report'
-		);
 
 		$this->loader->add_action(
 			'wp_ajax_moderate_comment',
@@ -2098,29 +1453,13 @@ class Streamtube_Core {
 			'wp_ajax_nopriv_load_comments',
 			$this->plugin->comment, 
 			'ajax_load_comments'
-		);
-
-		$this->loader->add_filter(
-			'comment_text',
-			$this->plugin->comment, 
-			'filter_reported_comment_content',
-			1,
-			3
-		);			
+		);		
 
 		$this->loader->add_filter(
 			'streamtube/comment/form_args',
 			$this->plugin->comment, 
 			'filter_comment_form_args'
-		);
-
-		$this->loader->add_filter(
-			'comment_class',
-			$this->plugin->comment, 
-			'filter_comment_classes',
-			10,
-			5
-		);			
+		);		
 
 		$this->loader->add_filter(
 			'comments_template',
@@ -2174,13 +1513,7 @@ class Streamtube_Core {
 			'save_form_registration',
 			10,
 			1
-		);
-
-		$this->loader->add_action( 
-			'wp_ajax_verify_user', 
-			$this->plugin->user, 
-			'ajax_verify_user'
-		);
+		);				
 
 		$this->plugin->user_profile = new Streamtube_Core_User_Profile();
 
@@ -2333,18 +1666,6 @@ class Streamtube_Core {
 		if( $this->plugin->googlesitekit->analytics->is_connected() ){
 
 			$this->loader->add_action( 
-				'wp_enqueue_scripts', 
-				$this->plugin->googlesitekit->analytics,
-				'enqueue_scripts' 
-			);				
-
-			$this->loader->add_action( 
-				'enqueue_embed_scripts', 
-				$this->plugin->googlesitekit->analytics,
-				'enqueue_embed_scripts' 
-			);				
-
-			$this->loader->add_action( 
 				'streamtube/user/dashboard/before', 
 				$this->plugin->googlesitekit->analytics, 
 				'dashboard'
@@ -2381,36 +1702,6 @@ class Streamtube_Core {
 				100
 			);
 
-			$this->loader->add_filter(
-				'streamtube_core_get_edit_post_nav_items',
-				$this->plugin->googlesitekit->analytics,
-				'add_post_nav_item',
-				10,
-				1
-			);	
-
-			$this->loader->add_action(
-				'streamtube/single/video/meta',
-				$this->plugin->googlesitekit->analytics,
-				'load_single_post_views'
-			);
-
-			$this->loader->add_filter(
-				'manage_video_posts_columns',
-				$this->plugin->googlesitekit->analytics,
-				'filter_post_table',
-				10,
-				1
-			);
-
-			$this->loader->add_action(
-				'manage_video_posts_custom_column',
-				$this->plugin->googlesitekit->analytics,
-				'filter_post_table_columns',
-				10,
-				2
-			);
-
 			/**
 			 * The class responsible for defining analytics rest API
 			 */
@@ -2428,12 +1719,6 @@ class Streamtube_Core {
 		$this->plugin->googlesitekit->tag_manager = new Streamtube_Core_GoogleSiteKit_Tag_Manager();
 
 		if( $this->plugin->googlesitekit->tag_manager->is_connected() ){
-
-			$this->loader->add_action( 
-				'enqueue_embed_scripts', 
-				$this->plugin->googlesitekit->tag_manager,
-				'enqueue_embed_scripts' 
-			);			
 
 			$this->loader->add_filter(
 				'streamtube/player/file/setup',
@@ -2519,7 +1804,7 @@ class Streamtube_Core {
 				'streamtube/player/file/setup',
 				$this->plugin->myCRED->sell_content,
 				'filter_player_setup',
-				40,
+				99999,
 				2				
 			);			
 
@@ -2551,7 +1836,8 @@ class Streamtube_Core {
 				'streamtube/core/post/edit/metaboxes',
 				$this->plugin->myCRED->sell_content,
 				'load_metabox_price',
-				20
+				20,
+				1
 			);
 
 			$this->loader->add_action(
@@ -2560,7 +1846,6 @@ class Streamtube_Core {
 				'ajax_transfers_points',
 				10
 			);
-			
 			$this->loader->add_action(
 				'wp_ajax_transfers_points',
 				$this->plugin->myCRED->transfers,
@@ -2718,6 +2003,7 @@ class Streamtube_Core {
 					1
 				);
 				
+
 				$this->loader->add_filter(
 					'body_class',
 					$this->plugin->better_messages,
@@ -2758,7 +2044,7 @@ class Streamtube_Core {
 					'widgets_init', 
 					'Streamtube_Core_Widget_LiveChat', 
 					'register'
-				);
+				);				
 			}
 		}
 	}
@@ -2895,11 +2181,6 @@ class Streamtube_Core {
 	}
 
 	private function define_bunnycdn(){
-
-		if( is_wp_error( $this->plugin->license->is_verified() ) ){
-			return;
-		}
-
 		$this->include_file( 'third-party/bunnycdn/class-streamtube-core-bunnycdn.php' );
 
 		$this->plugin->bunnycdn = new Streamtube_Core_BunnyCDN();
@@ -2943,6 +2224,14 @@ class Streamtube_Core {
 			);
 
 			$this->loader->add_action(
+				'save_post_video',
+				$this->plugin->bunnycdn,
+				'save_post_video',
+				10,
+				1
+			);
+
+			$this->loader->add_action(
 				'wp_after_insert_post',
 				$this->plugin->bunnycdn,
 				'fetch_external_video',
@@ -2972,15 +2261,7 @@ class Streamtube_Core {
 				'filter_player_output',
 				50,
 				3
-			);
-
-			$this->loader->add_action(
-				'streamtube/core/post/edit/thumbnail_content',
-				$this->plugin->bunnycdn,
-				'thumbnail_notice',
-				10,
-				1
-			);
+			);	
 
 			$this->loader->add_action(
 				'wp_ajax_get_bunnycdn_video_status',
@@ -3055,63 +2336,31 @@ class Streamtube_Core {
 			);
 
 			$this->loader->add_filter( 
-				'bulk_actions-upload', 
-				$this->plugin->bunnycdn, 
-				'admin_bulk_actions',
-				10,
-				2
-			);			
-
-			$this->loader->add_action(
-				'handle_bulk_actions-edit-video',
-				$this->plugin->bunnycdn,
-				'admin_handle_bulk_actions',
-				10,
-				3
-			);
-
-			$this->loader->add_action(
-				'handle_bulk_actions-upload',
-				$this->plugin->bunnycdn,
-				'admin_handle_bulk_actions',
-				10,
-				3
-			);
-
-			$this->loader->add_action(
-				'admin_notices',
-				$this->plugin->bunnycdn,
-				'admin_handle_bulk_admin_notices',
-				10
-			);
-			
-
-			$this->loader->add_filter( 
 				'manage_media_columns',
-				$this->plugin->bunnycdn,
-				'admin_media_table'
+				$this->plugin->bunnycdn->admin,
+				'media_table'
 			);
 
 			$this->loader->add_action( 
 				'manage_media_custom_column',
-				$this->plugin->bunnycdn,
-				'admin_media_table_columns',
+				$this->plugin->bunnycdn->admin,
+				'media_table_columns',
 				10,
 				2
 			);					
 
 			$this->loader->add_filter(
 				'manage_video_posts_columns',
-				$this->plugin->bunnycdn,
-				'admin_post_table',
+				$this->plugin->bunnycdn->admin,
+				'post_table',
 				10,
 				1
 			);
 
 			$this->loader->add_action(
 				'manage_video_posts_custom_column',
-				$this->plugin->bunnycdn,
-				'admin_post_table_columns',
+				$this->plugin->bunnycdn->admin,
+				'post_table_columns',
 				10,
 				2
 			);
@@ -3122,27 +2371,65 @@ class Streamtube_Core {
 				'add_meta_boxes'
 			);	
 
+			$this->loader->add_action(
+				'attachment_updated',
+				$this->plugin->bunnycdn->admin,
+				'video_details_save',
+				10,
+				1
+			);
+
 			$this->loader->add_filter( 
 				'bulk_actions-edit-video', 
-				$this->plugin->bunnycdn, 
-				'admin_bulk_actions',
+				$this->plugin->bunnycdn->admin, 
+				'add_bulk_actions',
 				10,
 				2
 			);
 
+			$this->loader->add_filter( 
+				'bulk_actions-upload', 
+				$this->plugin->bunnycdn->admin, 
+				'add_bulk_actions',
+				10,
+				2
+			);			
+
+			$this->loader->add_action(
+				'handle_bulk_actions-edit-video',
+				$this->plugin->bunnycdn->admin,
+				'handle_bulk_actions',
+				10,
+				3
+			);
+
+			$this->loader->add_action(
+				'handle_bulk_actions-upload',
+				$this->plugin->bunnycdn->admin,
+				'handle_bulk_actions',
+				10,
+				3
+			);
+
+			$this->loader->add_action(
+				'admin_notices',
+				$this->plugin->bunnycdn->admin,
+				'handle_bulk_admin_notices',
+				10
+			);
 
 			$this->loader->add_filter(
 				'manage_users_columns',
-				$this->plugin->bunnycdn,
-				'admin_user_table',
+				$this->plugin->bunnycdn->admin,
+				'user_table',
 				10,
 				1
 			);
 
 			$this->loader->add_filter(
 				'manage_users_custom_column',
-				$this->plugin->bunnycdn,
-				'admin_user_table_columns',
+				$this->plugin->bunnycdn->admin,
+				'user_table_columns',
 				10,
 				3
 			);					
@@ -3178,23 +2465,7 @@ class Streamtube_Core {
 				'wp_ajax_read_task_log_content',
 				$this->plugin->bunnycdn,
 				'ajax_read_task_log_content'
-			);
-
-			$this->loader->add_filter(
-				'wp_video_extensions',
-				$this->plugin->bunnycdn,
-				'filter_allow_formats',
-				9999,
-				1
-			);
-
-			$this->loader->add_filter(
-				'streamtube/core/generate_image_from_file',
-				$this->plugin->bunnycdn,
-				'rest_generate_thumbnail_image',
-				10,
-				2
-			);
+			);			
 		}
 	}
 
@@ -3225,7 +2496,6 @@ class Streamtube_Core {
 			 'enqueue_scripts' 
 		);	
 
-		/**
 		$this->loader->add_filter( 
 			'streamtube/core/user/is_verified', 
 			$this->plugin->pmpro, 
@@ -3233,7 +2503,6 @@ class Streamtube_Core {
 			10,
 			2
 		);
-		**/
 
 		$this->loader->add_action( 
 			'init', 
@@ -3289,22 +2558,7 @@ class Streamtube_Core {
 			'add_dashboard_menu',
 			10,
 			1
-		);
-
-		$this->loader->add_filter( 
-			'streamtube/core/user/profile/menu/items', 
-			$this->plugin->pmpro, 
-			'add_profile_menu',
-			10,
-			1
-		);
-
-		$this->loader->add_action( 
-			'streamtube/core/post/edit/metaboxes', 
-			$this->plugin->pmpro, 
-			'add_membership_levels_widget',
-			10
-		);			
+		);	
 	}
 
 	/**

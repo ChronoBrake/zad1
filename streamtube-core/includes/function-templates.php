@@ -128,16 +128,11 @@ function streamtube_core_the_field_control( $args = array() ){
 		'options'		=>	array(),
 		'current'		=>	'',
 		'data'			=>	array(),
-		'field_class'	=>	'form-control input-field',
+		'field_class'	=>	'form-control',
 		'wrap_class'	=>	'',
 		'spellcheck'	=>	'false',
 		'settings'		=>	array(),
 		'description'	=>	'',
-		'disabled'		=>	false,
-		'readonly'		=>	false,
-		'placeholder'	=>	'',
-		'autocomplete'	=>	true,
-		'wpmedia'		=>	false,
 		'echo'			=>	true
 	) );
 
@@ -178,7 +173,7 @@ function streamtube_core_the_field_control( $args = array() ){
 		case 'datetime-local':
 		case 'hidden':
 			$output = sprintf(
-				'<input class="%s" %s spellcheck="%s" type="%s" value="%s" name="%s" id="%s" %s %s %s %s autocomplete="%s">',
+				'<input class="%s" %s spellcheck="%s" type="%s" value="%s" name="%s" id="%s" %s>',
 				esc_attr( $args['field_class'] ),
 				$args['required'] ? ' required' : '',
 				esc_attr( $args['spellcheck'] ),
@@ -186,16 +181,8 @@ function streamtube_core_the_field_control( $args = array() ){
 				esc_attr( $args['value'] ),
 				esc_attr( $args['name'] ),
 				esc_attr( $args['id'] ),
-				$data,
-				$args['disabled'] ? 'disabled' : '',
-				$args['readonly'] ? 'readonly' : '',
-				$args['placeholder'] ? 'placeholder="'.esc_attr( $args['placeholder'] ).'"' : '',
-				$args['autocomplete'] ? 'on' : 'off'
+				$data
 			);
-
-			if( $args['type'] == 'password' ){
-				$output .= '<button type="button" class="btn btn-lock-pass position-absolute"><span class="btn__icon icon-eye"></span></button>';
-			}
 		break;
 
 		case 'textarea':
@@ -214,16 +201,11 @@ function streamtube_core_the_field_control( $args = array() ){
 		case 'editor':
 
 			$args['label_float'] = false;
-
 			ob_start();
 
 			if( ! array_key_exists( 'settings', $args ) ){
 				$args['settings'] = array();
 			}
-
-			$args['settings'] = array_merge( $args['settings'], array(
-				'textarea_rows'	=>	5
-			) );			
 
 			if( function_exists( 'streamtube_get_theme_mode' ) && streamtube_get_theme_mode() == 'dark' ){
 				$args['settings']['tinymce']['content_css'] = trailingslashit( STREAMTUBE_CORE_PUBLIC_URL ) . 'assets/css/editor-dark.css?ver=1';
@@ -240,7 +222,7 @@ function streamtube_core_the_field_control( $args = array() ){
 			 * @since 1.0.8
 			 * 
 			 */
-			$args['settings'] = apply_filters( 'streamtube/core/field/editor_settings', $args['settings'], $args['id'] );
+			$args['settings'] = apply_filters( 'streamtube/core/post/editor_settings', $args['settings'], $args['id'] );
 
 			wp_editor( $args['value'], $args['id'], $args['settings'] );
 
@@ -295,7 +277,7 @@ function streamtube_core_the_field_control( $args = array() ){
 
 	if( $output ){
 
-		$wrap_class[] = 'mb-4 field-group';
+		$wrap_class[] = 'mb-3';
 		$wrap_class[] = 'field-' . sanitize_html_class( $args['id'] );
 
 		if( $args['wrap_class'] ){
@@ -303,7 +285,7 @@ function streamtube_core_the_field_control( $args = array() ){
 		}
 
 		if( $args['label_float'] ){
-			$wrap_class[] = 'form-floating position-relative';
+			$wrap_class[] = 'form-floating';
 		}
 
 		if( in_array( $args['type'] , array( 'checkbox', 'radio' ) ) ){
@@ -346,15 +328,6 @@ function streamtube_core_the_field_control( $args = array() ){
 				$wrap .= sprintf(
 					'<div class="description text-muted small mt-2">%s</div>',
 					$args['description']
-				);
-			}
-
-			if( $args['wpmedia'] ){
-				wp_enqueue_media();
-				$wrap .= sprintf(
-					'<button type="button" class="btn btn-secondary rounded-0 p-1 btn-wpmedia" data-media-type="video" data-media-source="id">
-						<span class="icon icon-upload"></span>
-					</button>'
 				);
 			}
 
@@ -562,6 +535,43 @@ function streamtube_core_format_page_views( $int ){
 
 /**
  *
+ * The login form
+ * 
+ * @param  array  $args
+ * @return [type]       [description]
+ */
+function streamtube_core_the_login_form( $args = array() ){
+
+	$args = wp_parse_args( $args, array(
+		'echo'	=>	true
+	) );
+
+	$output = wp_login_form( array_merge( $args, array(
+		'echo'	=>	false
+	) ) );
+
+	/**
+	 *
+	 * Filter and output the login form
+	 *
+	 * @param string $output
+	 * @param array $args
+	 *
+	 * @since 1.1.5
+	 * 
+	 */
+	$output = apply_filters( 'streamtube_core_the_login_form', $output, $args );
+
+	if( $args['echo'] ){
+		echo $output;
+	}
+	else{
+		return $output;
+	}
+}
+
+/**
+ *
  * Get hostname
  * 
  * @return string
@@ -577,45 +587,6 @@ function streamtube_core_get_hostname( $scheme_included = false ){
     }
 
     return $parsed_url['host'];
-}
-
-/**
- *
- * The Login form
- * 
- * @param  array  $args
- * @return string
- * 
- */
-function streamtube_core_the_login_form( $args = array() ){
-	$args = wp_parse_args( $args, array(
-		'echo'	=>	false
-	) );
-
-	$output = wp_login_form( $args );
-
-	$output = str_replace( 'class="input"', 'class="form-control w-100"', $output );
-	$output = str_replace( 'button button-primary', 'btn btn-danger d-block w-100', $output );
-
-	$output .= '<div class="d-flex gap-3 justify-content-center border-top pt-3">';
-
-		if( get_option( 'users_can_register' ) ){
-			$output .= sprintf(
-				'<a class="register text-body fw-bold text-decoration-none" href="%s">%s</a>',
-				esc_url( wp_registration_url() ),
-				esc_html__( 'Register', 'streamtube-core' )
-			);
-		}
-
-		$output .= sprintf(
-			'<a class="lost-password text-body fw-bold text-decoration-none" href="%s">%s</a>',
-			esc_url( wp_lostpassword_url() ),
-			esc_html__( 'Lost your password?', 'streamtube-core' )
-		);		
-
-	$output .= '</div>';
-
-	return $output;
 }
 
 /**
@@ -680,72 +651,4 @@ function streamtube_core_the_upload_form( $args = array() ){
 		return $output;
 	}
 
-}
-
-/**
- *
- * The embed form
- * 
- * @param  array $args
- * @return string
- *
- * @since 2.1.7
- * 
- */
-function streamtube_core_the_embed_form( $args = array() ){
-
-	$output = '';
-
-	$args = wp_parse_args($args, array(
-		'echo'	=>	true
-	) );
-
-	// turn on buffering
-	ob_start();
-
-	streamtube_core_load_template( 'form/embed-video.php', false, $args );
-
-	/**
-	 *
-	 * Filter the form output
-	 * 
-	 * @param string
-	 *
-	 * @since 2.1.7
-	 * 
-	 */
-	$output = apply_filters( 'streamtube_core_the_embed_form', ob_get_clean(), $args );
-
-	if( $args['echo'] ){
-		echo $output;
-	}else{
-		return $output;
-	}
-}
-
-/**
- *
- * Get Max Upload Image size
- * 
- * @return int
- */
-function streamtube_core_get_max_upload_image_size(){
-
-    $max_size 		= (int)get_option( 'max_thumbnail_size', 2 ) * 1024 * 1024;
-    $wp_max_size 	= wp_max_upload_size();
-
-    $size = min( $max_size, $wp_max_size );
-
-    if( Streamtube_Core_Permission::moderate_posts() ){
-    	//$size = $wp_max_size;
-    }
-
-    /**
-     *
-     * Filter the size
-     *
-     * @param int $size
-     * 
-     */
-    return apply_filters( 'streamtube_core_get_max_upload_image_size', $size );
 }

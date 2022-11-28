@@ -26,25 +26,19 @@ if( ! defined('ABSPATH' ) ){
 class Streamtube_Core_Public {
 
 	/**
+	 *
+	 * Plugin instance
+	 * 
+	 */
+	private function plugin(){
+		return streamtube_core()->get();
+	}
+	/**
 	 * Register the stylesheets for the public-facing side of the site.
 	 *
 	 * @since    1.0.0
 	 */
 	public function enqueue_styles() {
-
-		wp_enqueue_style( 
-			'placeholder-loading', 
-			plugin_dir_url( __FILE__ ) . 'assets/css/placeholder-loading.min.css', 
-			array(), 
-			filemtime(trailingslashit( plugin_dir_path( __FILE__ ) ) . 'assets/css/placeholder-loading.min.css' )
-		);
-
-		wp_register_style( 
-			'select2', 
-			plugin_dir_url( __FILE__ ) . 'assets/vendor/select2/select2.min.css', 
-			array(), 
-			filemtime(trailingslashit( plugin_dir_path( __FILE__ ) ) . 'assets/vendor/select2/select2.min.css' )
-		);		
 
 		wp_register_style( 
 			'videojs', 
@@ -53,10 +47,6 @@ class Streamtube_Core_Public {
 			filemtime( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'assets/vendor/video.js/video-js.min.css' ),
 			'all' 
 		);
-
-		if( "" != $skin_css = get_option( 'player_skin_css' ) ){
-			wp_add_inline_style( 'videojs', $skin_css );
-		}
 
 		wp_register_style( 
 			'videojs-theme-forest', 
@@ -129,24 +119,6 @@ class Streamtube_Core_Public {
 			filemtime( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'assets/css/player.css' ),
 			'all' 
 		);
-
-	    if( ! function_exists( 'get_editable_roles' ) ){
-	        require_once ABSPATH . 'wp-admin/includes/user.php';
-	    }		
-
-		$custom_css = '';
-
-		foreach ( wp_roles()->roles as $key => $value ) {
-			if( "" != $color = get_option( 'role_badge_' . $key, '#6c757d' ) ){
-				$custom_css .= sprintf(
-					'.user-roles .user-role.role-%s{background: %s!important}',
-					$key,
-					$color
-				);
-			}
-		}
-
-		wp_add_inline_style( 'streamtube-style', $custom_css );
 	}
 
 	/**
@@ -158,18 +130,6 @@ class Streamtube_Core_Public {
 
 		wp_enqueue_script( 'heartbeat' );
 
-		if( is_user_logged_in() && ! is_embed() ){
-			wp_enqueue_editor();
-		}
-
-		wp_register_script(
-			'select2',
-			plugin_dir_url( __FILE__ ) . 'assets/vendor/select2/select2.min.js', 
-			array( 'jquery' ),
-			filemtime( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'assets/vendor/select2/select2.min.js' ),
-			true
-		);		
-
 		wp_register_script(
 			'videojs', 
 			plugin_dir_url( __FILE__ ) . 'assets/vendor/video.js/video.min.js', 
@@ -177,16 +137,6 @@ class Streamtube_Core_Public {
 			filemtime( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'assets/vendor/video.js/video.min.js' ),
 			true
 		);
-
-		if( "" != $player_language = get_option( 'player_language' ) ){
-			wp_register_script(
-				'videojs-language', 
-				plugin_dir_url( __FILE__ ) . 'assets/vendor/video.js/lang/'.sanitize_file_name( $player_language ).'.js', 
-				array( 'videojs' ), 
-				filemtime( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'assets/vendor/video.js/lang/'.sanitize_file_name( $player_language ).'.js' ),
-				true
-			);			
-		}
 
 		wp_register_script(
 			'videojs-http-streaming', 
@@ -306,7 +256,49 @@ class Streamtube_Core_Public {
 			array( 'jquery' ), 
 			filemtime( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'assets/js/masonry.pkgd.min.js' ),
 			true 
+		);	
+
+		wp_register_script( 
+			'streamtube-reports', 
+			plugin_dir_url( __FILE__ ) . 'assets/js/reports.js', 
+			array( 'jquery' ), 
+			filemtime( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'assets/js/reports.js' ),
+			true 
 		);
+
+		$analytics_jsvars = array(
+			'user_id'				=>	is_user_logged_in() ? get_current_user_id() : 0,
+			'home_url'				=>	untrailingslashit( home_url() ),
+			'hosturl'				=>	streamtube_core_get_hostname(true),
+			'rest_url'				=>	rest_url( '/streamtube/v1' ),
+			'hour'					=>	esc_html__( 'h', 'streamtube-core' ),
+			'minute'				=>	esc_html__( 'm', 'streamtube-core' ),
+			'second'				=>	esc_html__( 's', 'streamtube-core' ),
+			'title'					=>	esc_html__( 'Title', 'streamtube-core' ),
+			'channel'				=>	esc_html__( 'Channel', 'streamtube-core' ),
+			'percentage'			=>	esc_html__( 'Percentage', 'streamtube-core' ),
+			'country'				=>	esc_html__( 'Country', 'streamtube-core' ),
+			'users'					=>	esc_html__( 'Users', 'streamtube-core' ),
+			'mode'					=>	function_exists( 'streamtube_get_theme_mode' ) ? streamtube_get_theme_mode() : 'light',
+			'previous_period'		=>	esc_html__( 'Previous period', 'streamtube-core' ),
+			'data_not_available'	=>	esc_html__( 'Data Not Available', 'streamtube-core' ),
+			'keyword'				=>	esc_html__( 'Keyword', 'streamtube-core' ),
+			'clicks'				=>	esc_html__( 'Clicks', 'streamtube-core' ),
+			'impressions'			=>	esc_html__( 'Impressions', 'streamtube-core' ),
+			'ctr'					=>	esc_html__( 'CTR', 'streamtube-core' ),
+			'position'				=>	esc_html__( 'Position', 'streamtube-core' ),
+			'language'				=>	get_locale(),
+			'mapapikey'				=>	get_option( 'sitekit_mapapikey' ),
+			'session_storage'		=>	get_option( 'sitekit_session_storage', 1 ),
+			'no_keywords_found'		=>	esc_html__( 'No keywords were found.', 'streamtube-core' )
+		);
+
+		/**
+		 * @since 1.0.8
+		 */
+		$analytics_jsvars = apply_filters('streamtube/core/analytics/jsvars', $analytics_jsvars );
+
+		wp_localize_script( 'streamtube-reports', 'analytics', $analytics_jsvars );
 
 		wp_enqueue_script( 
 			'streamtube-core-functions', 
@@ -335,7 +327,7 @@ class Streamtube_Core_Public {
 			'restRootUrl'			=> esc_url_raw( rest_url() ),
 			'cart_url'				=> function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
 			'video_extensions'		=> wp_get_video_extensions(),
-			'max_upload_size'		=> (int)streamtube_core_get_max_upload_size(),
+			'max_upload_size'		=> streamtube_core_get_max_upload_size(),
 			'incorrect_image'		=> esc_html__( 'Incorrect file type, please choose an image file.', 'streamtube-core' ),
 			'can_upload_video'		=> current_user_can( 'edit_posts' ),
 			'can_upload_video_error_message'	=>	esc_html__( 'Sorry, You do not have permission to upload video, please contact administrator.', 'streamtube-core' ),
@@ -351,42 +343,26 @@ class Streamtube_Core_Public {
 			'pending_review'		=>	esc_html__( 'Pending Review', 'streamtube-core' ),
 			'file_encode_done'		=>	esc_html__( 'has been encoded successfully.', 'streamtube-core' ),
 			'view_video'			=>	esc_html__( 'view video', 'streamtube-core' ),
-			'light_logo'			=>	wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ),
+			'light_logo'			=>	wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ) ,
 			'dark_logo'				=>	get_option( 'dark_logo' ),
 			'light_mode_text'		=>	esc_html__( 'Light mode', 'streamtube-core' ),
 			'dark_mode_text'		=>	esc_html__( 'Dark mode', 'streamtube-core' ),
-			'dark_editor_css'		=>	trailingslashit( STREAMTUBE_CORE_PUBLIC_URL ) . 'assets/css/editor-dark.css?ver=1',
-			'light_editor_css'		=>	trailingslashit( STREAMTUBE_CORE_PUBLIC_URL ) . 'assets/css/editor-light.css?ver=1',
-			'editor_toolbar'		=>	array(
-				'bold',
-				'italic',
-				'underline',
-				'strikethrough',
-				'hr',
-				'bullist',
-				'numlist',
-				'link',
-				'unlink',
-				'forecolor',
-				'undo',
-				'redo',
-				'removeformat',
-				'blockquote'
-			),
 			'has_woocommerce'		=>	function_exists( 'WC' ) ? true : false,
 			'view_cart'				=>	esc_html__( 'view cart', 'streamtube-core' ),
 			'added_to_cart'			=>	esc_html__( '%s has been added to cart', 'streamtube-core' ),
 			'public'				=>	esc_html__( 'Public', 'streamtube-core' ),
 			'publish'				=>	esc_html__( 'Publish', 'streamtube-core' ),
 			'published'				=>	esc_html__( 'Published', 'streamtube-core' ),
+			'googlesitekit'			=>	array(
+				'analytics'	=>	array(
+					'is_connected'	=>	$this->plugin()->googlesitekit->analytics->is_connected()
+				),
+				'tag_manager'	=>	array(
+					'is_connected'	=>	$this->plugin()->googlesitekit->tag_manager->is_connected()
+				)
+			),
 			'bp_message_sent'		=>	esc_html__( 'You have sent message successfully.', 'streamtube-core' ),
-			'view_ad'				=>	esc_html__( 'View Ad', 'streamtube-core' ),
-			'cancel'				=>	esc_html__( 'Cancel', 'streamtube-core' ),
-			'play_now'				=>	esc_html__( 'Play now', 'streamtube-core' ),
-			'edit'					=>	esc_html__( 'Edit', 'streamtube-core' ),
-			'save'					=>	esc_html__( 'Save', 'streamtube-core' ),
-			'report'				=>	esc_html__( 'Report', 'streamtube-core' ),
-			'comment_reviewed'		=>	esc_html__( 'This comment is currently being reviewed', 'streamtube-core' )
+			'view_ad'				=>	esc_html__( 'View Ad', 'streamtube-core' )
 
 		);
 
@@ -403,6 +379,19 @@ class Streamtube_Core_Public {
 	 */
 	public function enqueue_embed_scripts(){
 
+		if( $this->plugin()->googlesitekit->analytics->is_connected() ){
+			wp_enqueue_script( 'google-analytics', '//www.google-analytics.com/analytics.js' );
+		}
+
+		if( $this->plugin()->googlesitekit->tag_manager->is_connected() ){
+
+			if( "" != $container_id = $this->plugin()->googlesitekit->tag_manager->get_container_id() ){
+				wp_enqueue_script( 'tag-manager', add_query_arg( array(
+					'id'	=>	$container_id
+				), '//www.googletagmanager.com/gtm.js' ) );
+			}
+		}
+
 		if( is_singular( Streamtube_Core_Post::CPT_VIDEO ) || ( is_singular( 'attachment' ) && wp_attachment_is( 'video', get_the_ID() ) ) ):
 
 			wp_register_style( 
@@ -412,10 +401,6 @@ class Streamtube_Core_Public {
 				filemtime( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'assets/vendor/video.js/video-js.min.css' ),
 				'all' 
 			);
-
-			if( "" != $skin_css = get_option( 'player_skin_css' ) ){
-				wp_add_inline_style( 'videojs', $skin_css );
-			}
 
 			wp_register_style( 
 				'videojs-theme-forest', 
@@ -480,16 +465,6 @@ class Streamtube_Core_Public {
 				filemtime( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'assets/vendor/video.js/video.min.js' ),
 				true 
 			);
-
-			if( "" != $player_language = get_option( 'player_language' ) ){
-				wp_register_script(
-					'videojs-language', 
-					plugin_dir_url( __FILE__ ) . 'assets/vendor/video.js/lang/'.sanitize_file_name( $player_language ).'.js', 
-					array( 'videojs' ), 
-					filemtime( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'assets/vendor/video.js/lang/'.sanitize_file_name( $player_language ).'.js' ),
-					true
-				);			
-			}			
 
 			wp_register_script(
 				'videojs-http-streaming', 
@@ -622,6 +597,7 @@ class Streamtube_Core_Public {
 	 * 
 	 */
 	public function load_modals(){
+
 		if( get_option( 'upload_files', 'on' ) && is_user_logged_in() ){
 			streamtube_core_load_template( "modal/upload-video.php", false );
 		}
@@ -629,9 +605,6 @@ class Streamtube_Core_Public {
 		if( get_option( 'embed_videos', 'on' ) && is_user_logged_in() ){
 			streamtube_core_load_template( "modal/embed-video.php", false );
 		}
-
-		if( ! is_user_logged_in() ){
-			streamtube_core_load_template( "modal/login.php", false );	
-		}
+	
 	}
 }

@@ -38,7 +38,7 @@ $output = apply_filters( 'streamtube/core/user/social_profiles', $output );
 
 if( $output ){
     printf(
-        '<div class="social-profiles d-flex mt-4 text-center">
+        '<div class="social-profiles d-flex my-4 text-center">
             <ul class="social-list social-list-sm list-unstyled mx-auto mb-0">%s</ul>
         </div>',
         $output

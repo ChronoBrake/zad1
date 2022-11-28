@@ -75,7 +75,7 @@
 	 * @param string type
 	 * @since 1.0.0
 	 */
-	$.showToast = function( message, type = true, delay = 2000 ){
+	$.showToast = function( message, type = true ){
 
 		var output = '';
 		var icon = '';
@@ -120,38 +120,7 @@
 
 		$( 'body' ).append( output );
 
-		$('#notify-toast').toast({
-			delay: delay
-		});
-		$('#notify-toast').toast( 'show' );
-	}
-
-	$.getEditorContentCSS =  function(){
-		var themeMode 	= $( 'html' ).attr( 'data-theme' );
-
-		return themeMode == 'dark' ? streamtube.dark_editor_css : streamtube.light_editor_css;
-	}
-
-	/**
-	 * WP Editor init
-	 */
-	$.editorInit = function( fieldId = '', content_css ){
-
-		wp.editor.initialize( fieldId, {
-			tinymce : {
-				toolbar1 	: streamtube.editor_toolbar.toString(),
-				content_css : $.getEditorContentCSS()
-			}
-		} );
-	}
-
-	/**
-	 *
-	 * Remove editor
-	 * 
-	 */
-	$.editorRemove = function( fieldId = ''){
-		wp.editor.remove( fieldId );
+		$('#notify-toast').toast('show');
 	}
 
 	/**
@@ -195,10 +164,6 @@
 
 		var formData 	= new FormData(form[0]);
 		var button 		= $(document.activeElement);
-
-		if(  button.attr( 'type' ) == 'submit' && button.val() == '' ){
-			button = $(event.originalEvent.submitter);
-		}
 
 		var action 		= formData.get( 'action' );
 
@@ -326,20 +291,12 @@
 			contentType: false,
 			type: method,
 			beforeSend: function( jqXHR ) {
-
-				var inputs = ['text', 'checkbox', 'radio', 'email', 'search', 'password'];
-
-				var elementType = element.attr( 'type' );
-
 	        	element.addClass( 'active waiting' );
 
 				element
 				.addClass( 'disabled' )
-				.attr( 'disabled', 'disabled' );
-
-				if( elementType && $.inArray( elementType, inputs ) == -1 ){
-					element.append( $.getSpinner(false) );
-				}
+				.attr( 'disabled', 'disabled' )
+				.append( $.getSpinner(false) );	        	
 
 	        	$( document.body ).trigger( action + '_before_send', [ element, formData ] );
 			}

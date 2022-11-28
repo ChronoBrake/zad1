@@ -1,4 +1,7 @@
 <?php
+
+global $post;
+
 $bunnycdn = streamtube_core()->get()->bunnycdn;
 ?>
 <table class="form-table">
@@ -12,13 +15,13 @@ $bunnycdn = streamtube_core()->get()->bunnycdn;
 				);?>
 			</th>
 			<td>
-				<select readonly disabled="disabled" name="bunnycdn[_bunnycdn_status]" id="status" class="regular-text">
+				<select name="bunnycdn[_bunnycdn_status]" id="status" class="regular-text">
 						
 					<?php foreach ( $bunnycdn->get_webhook_video_statuses() as $key => $value ): ?>
 						
 						<?php printf(
 							'<option %s value="%s">%s</option>',
-							selected( $bunnycdn->get_video_process_status( $args['post_id'] ), $key, false ),
+							selected( $bunnycdn->get_video_process_status( $post->ID ), $key, false ),
 							esc_attr( $key ),
 							esc_html( $value[1] )
 						);?>
@@ -36,7 +39,7 @@ $bunnycdn = streamtube_core()->get()->bunnycdn;
 					<?php printf(
 						'<label for="%s">%s</label>',
 						sanitize_key( $key ),
-						$bunnycdn->bunnyAPI->get_video_details_field_name( $key )
+						$bunnycdn->admin->get_video_details_field_name( $key )
 					);?>
 				</th>
 				<td>
@@ -44,7 +47,7 @@ $bunnycdn = streamtube_core()->get()->bunnycdn;
 						'<input readonly name="bunny_video_content[%s]" type="text" id="%s" value="%s" class="regular-text">',
 						$key,
 						sanitize_key( $key ),
-						esc_attr( $bunnycdn->bunnyAPI->get_format_video_details_field_value( $key, $value ) )
+						esc_attr( $bunnycdn->admin->get_format_video_details_field_value( $key, $value ) )
 					);?>
 				</td>
 			</tr>

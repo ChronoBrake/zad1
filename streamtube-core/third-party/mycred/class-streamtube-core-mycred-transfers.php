@@ -211,36 +211,7 @@ class Streamtube_Core_myCRED_Transfers extends Streamtube_Core_myCRED_Base{
             return;
         }
 
-        if( ! $this->is_activated() ){
-            return;
-        }
-
-        if( ! $this->settings['donate'] ){
-            return;
-        }
-
-        if( $this->settings['donate'] == 'verified' ){
-            global $streamtube;
-
-            $user_id = 0;
-            if( is_singular() ){
-                global $post;
-                $user_id = $post->post_author;
-            }
-
-            if( is_author() ){
-                $user_id = get_queried_object_id();
-            }
-
-            if( ! $user_id || ! $streamtube->get()->user->is_verified( $user_id ) ){
-                return;
-            }
-
-        }
-
-        $enable = apply_filters( 'streamtube/core/mycred/button_donate', true );
-
-        if( ! $enable ){
+        if( ! $this->is_activated() || ! $this->settings['donate'] ){
             return;
         }
 
@@ -263,7 +234,7 @@ class Streamtube_Core_myCRED_Transfers extends Streamtube_Core_myCRED_Base{
          * 
          * @var array $args
          */
-        $args = apply_filters( 'streamtube/core/mycred/button_donate/args', $args );
+        $args = apply_filters( 'streamtube/core/mycred/button_donate', $args );
 
         load_template( 
             untrailingslashit( plugin_dir_path( __FILE__ ) ) . '/public/button-donate.php', 

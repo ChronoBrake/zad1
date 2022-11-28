@@ -14,13 +14,9 @@ if( ! $types ){
 
     <?php foreach( $types as $type => $v ): ?>
 
-        <?php 
-        $show = is_string( $v['cap'] ) ? current_user_can( $v['cap'] ) : call_user_func( $v['cap'] );
+        <?php if( current_user_can( $v['cap'] ) ): ?>
 
-        if( $show === true ):
-        ?>
-
-         <li class="type-<?php echo esc_attr( $type ); ?>">
+         <li>
             <?php
             printf(
                 '<a href="#%2$s" class="dropdown-item %1$s" data-bs-toggle="modal" data-bs-target="#modal-%2$s">',

@@ -90,74 +90,6 @@ class Streamtube_Core_Term_Grid_Elementor extends \Elementor\Widget_Base{
                 )
             );
 
-            $this->add_control(
-                'thumbnail_size',
-                array(
-                    'label'     =>  esc_html__( 'Thumbnail Image Size', 'streamtube-core' ),
-                    'type'      =>  \Elementor\Controls_Manager::TEXT,
-                    'default'   =>  'streamtube-image-medium' 
-                )
-            );                        
-
-            $this->add_control(
-                'thumbnail_ratio',
-                array(
-                    'label'     =>  esc_html__( 'Thumbnail Image Ratio', 'streamtube-core' ),
-                    'type'      =>  \Elementor\Controls_Manager::SELECT,
-                    'default'   =>  get_option( 'thumbnail_ratio', '16x9' ),
-                    'options'   =>  Streamtube_Core_Widget_Term_Grid::get_image_ratio()
-                )
-            );
-
-            $this->add_control(
-                'layout',
-                array(
-                    'label'         =>  esc_html__( 'Layout', 'streamtube-core' ),
-                    'type'          =>  \Elementor\Controls_Manager::SELECT,
-                    'default'       =>  'default',
-                    'options'       =>  Streamtube_Core_Widget_Term_Grid::get_layouts()
-                )
-            );
-
-            $this->add_control(
-                'play_all',
-                array(
-                    'label'         =>  esc_html__( 'Play All', 'streamtube-core' ),
-                    'type'          =>  \Elementor\Controls_Manager::SWITCHER,
-                    'default'       =>  'yes',
-                    'condition'     =>  array(
-                        'layout'    =>  'playlist'
-                    ),
-                    'description'   =>  esc_html__( 'Enable Play All', 'streamtube-core' )
-                )
-            );            
-
-            $this->add_control(
-                'term_author',
-                array(
-                    'label'         =>  esc_html__( 'Author', 'streamtube-core' ),
-                    'type'          =>  \Elementor\Controls_Manager::SWITCHER,
-                    'default'       =>  'yes',
-                    'condition'     =>  array(
-                        'layout'    =>  'playlist'
-                    ),
-                    'description'   =>  esc_html__( 'Show collection author', 'streamtube-core' )
-                )
-            );
-
-            $this->add_control(
-                'term_status',
-                array(
-                    'label'         =>  esc_html__( 'Status', 'streamtube-core' ),
-                    'type'          =>  \Elementor\Controls_Manager::SWITCHER,
-                    'default'       =>  'yes',
-                    'condition'     =>  array(
-                        'layout'    =>  'playlist'
-                    ),
-                    'description'   =>  esc_html__( 'Show collection status', 'streamtube-core' )
-                )
-            );            
-
         $this->end_controls_section();
 
         $this->start_controls_section(
@@ -267,46 +199,7 @@ class Streamtube_Core_Term_Grid_Elementor extends \Elementor\Widget_Base{
                     'multiple'  =>  true,
                     'options'   =>  Streamtube_Core_Widget_Term_Grid::get_taxonomies()
                 )
-            );
-
-            $this->add_control(
-                'public_only',
-                array(
-                    'label'         =>  esc_html__( 'Public Collections', 'streamtube-core' ),
-                    'type'          =>  \Elementor\Controls_Manager::SWITCHER,
-                    'default'       =>  'yes',
-                    'description'   =>  esc_html__( 'Only retrieve public collections', 'streamtube-core' ),
-                    'condition'     =>  array(
-                        'taxonomy'  =>  'video_collection'
-                    )
-                )
-            );
-
-            $this->add_control(
-                'current_logged_in',
-                array(
-                    'label'         =>  esc_html__( 'Current Logged In', 'streamtube-core' ),
-                    'type'          =>  \Elementor\Controls_Manager::SWITCHER,
-                    'default'       =>  '',
-                    'description'   =>  esc_html__( 'Retrieve collections of current logged in user', 'streamtube-core' ),
-                    'condition'     =>  array(
-                        'taxonomy'  =>  'video_collection'
-                    )                    
-                )
-            );
-
-            $this->add_control(
-                'user_id',
-                array(
-                    'label'         =>  esc_html__( 'User IDs', 'streamtube-core' ),
-                    'type'          =>  \Elementor\Controls_Manager::TEXT,
-                    'default'       =>  '',
-                    'description'   =>  esc_html__( 'User IDs to retrieve terms of, separated by comma.', 'streamtube-core' ),
-                    'condition'     =>  array(
-                        'taxonomy'  =>  'video_collection'
-                    )                    
-                )
-            );             
+            );   
 
             $this->add_control(
                 'child_of',
@@ -361,7 +254,7 @@ class Streamtube_Core_Term_Grid_Elementor extends \Elementor\Widget_Base{
             $this->add_control(
                 'childless',
                 array(
-                    'label'         =>  esc_html__( 'Childless', 'streamtube-core' ),
+                    'label'         =>  esc_html__( 'Exclude Tree', 'streamtube-core' ),
                     'type'          =>  \Elementor\Controls_Manager::SWITCHER,
                     'default'       =>  '',
                     'description'   =>  esc_html__( 'Limit results to terms that have no children.', 'streamtube-core' )
@@ -371,12 +264,12 @@ class Streamtube_Core_Term_Grid_Elementor extends \Elementor\Widget_Base{
         $this->end_controls_section();
 
         $this->start_controls_section(
-            'section-responsive',
+            'section-layout',
             array(
-                'label'     =>  esc_html__( 'Responsive', 'streamtube-core' ),
+                'label'     =>  esc_html__( 'Layout', 'streamtube-core' ),
                 'tab'       =>  \Elementor\Controls_Manager::TAB_CONTENT
             )
-        );      
+        );
 
             $this->add_control(
                 'margin_bottom',
@@ -391,7 +284,7 @@ class Streamtube_Core_Term_Grid_Elementor extends \Elementor\Widget_Base{
             $this->add_control(
                 'col_xxl',
                 array(
-                    'label'     =>  esc_html__( 'Columns - Extra extra large ≥1400px', 'streamtube-core' ),
+                    'label'     =>  esc_html__( 'Extra extra large ≥1400px', 'streamtube-core' ),
                     'type'      =>  \Elementor\Controls_Manager::NUMBER,
                     'default'   =>  4
                 )
@@ -400,7 +293,7 @@ class Streamtube_Core_Term_Grid_Elementor extends \Elementor\Widget_Base{
             $this->add_control(
                 'col_xl',
                 array(
-                    'label'     =>  esc_html__( 'Columns - Extra large ≥1200px', 'streamtube-core' ),
+                    'label'     =>  esc_html__( 'Extra large ≥1200px', 'streamtube-core' ),
                     'type'      =>  \Elementor\Controls_Manager::NUMBER,
                     'default'   =>  4
                 )
@@ -409,7 +302,7 @@ class Streamtube_Core_Term_Grid_Elementor extends \Elementor\Widget_Base{
             $this->add_control(
                 'col_lg',
                 array(
-                    'label'     =>  esc_html__( 'Columns - Large ≥992px', 'streamtube-core' ),
+                    'label'     =>  esc_html__( 'Large ≥992px', 'streamtube-core' ),
                     'type'      =>  \Elementor\Controls_Manager::NUMBER,
                     'default'   =>  2
                 )
@@ -418,7 +311,7 @@ class Streamtube_Core_Term_Grid_Elementor extends \Elementor\Widget_Base{
             $this->add_control(
                 'col_md',
                 array(
-                    'label'     =>  esc_html__( 'Columns - Medium ≥768px', 'streamtube-core' ),
+                    'label'     =>  esc_html__( 'Medium ≥768px', 'streamtube-core' ),
                     'type'      =>  \Elementor\Controls_Manager::NUMBER,
                     'default'   =>  2
                 )
@@ -427,7 +320,7 @@ class Streamtube_Core_Term_Grid_Elementor extends \Elementor\Widget_Base{
             $this->add_control(
                 'col_sm',
                 array(
-                    'label'     =>  esc_html__( 'Columns - Small ≥576px', 'streamtube-core' ),
+                    'label'     =>  esc_html__( 'Small ≥576px', 'streamtube-core' ),
                     'type'      =>  \Elementor\Controls_Manager::NUMBER,
                     'default'   =>  1
                 )
@@ -436,7 +329,7 @@ class Streamtube_Core_Term_Grid_Elementor extends \Elementor\Widget_Base{
             $this->add_control(
                 'col',
                 array(
-                    'label'     =>  esc_html__( 'Columns - Extra small <576px', 'streamtube-core' ),
+                    'label'     =>  esc_html__( 'Extra small <576px', 'streamtube-core' ),
                     'type'      =>  \Elementor\Controls_Manager::NUMBER,
                     'default'   =>  1
                 )
@@ -457,7 +350,7 @@ class Streamtube_Core_Term_Grid_Elementor extends \Elementor\Widget_Base{
                 array(
                     'label'     =>  esc_html__( 'Order by', 'streamtube-core' ),
                     'type'      =>  \Elementor\Controls_Manager::SELECT,
-                    'default'   =>  'count',
+                    'default'   =>  'name',
                     'options'   =>  Streamtube_Core_Widget_Term_Grid::get_orderby()
                 )
             );

@@ -25,6 +25,13 @@ if( ! defined('ABSPATH' ) ){
 
 class Streamtube_Core_oEmbed{
 
+    /**
+     * Get plugin objects
+     */
+    private function plugin(){
+        return streamtube_core()->get();
+    }	
+
 	/**
 	 *
 	 * Add oembed providers
@@ -137,6 +144,13 @@ class Streamtube_Core_oEmbed{
 	 * 
 	 */
 	public function generate_image( $post_id, $url ){
+
+		if( is_wp_error( $this->plugin()->license->is_verified() ) ){
+			return new WP_Error(
+				'unverified_version',
+				esc_html__( 'Unverified Version', 'streamtube-core' )
+			);
+		}
 
 		$data = $this->get_data( $url );
 

@@ -155,34 +155,6 @@ extract( $template );
                     }
                 break;
 
-                case 'collection':
-
-                    $collection_args = array(
-                        'taxonomy'              =>  array( Streamtube_Core_Collection::TAX_COLLECTION ),
-                        'number'                =>  $query_args['posts_per_page'],
-                        'public_only'           =>  true,
-                        'search'                =>  get_search_query(),
-                        'layout'                =>  'playlist',
-                        'pagination'            =>  $pagination,
-                        'hide_empty_thumbnail'  =>  true,
-                        'term_author'           =>  true,
-                        'term_status'           =>  false,                        
-                        'col_xxl'               =>  (int)$posts_per_column,
-                        'col_xl'                =>  (int)$col_xl,
-                        'col_lg'                =>  (int)$col_lg,
-                        'col_md'                =>  (int)$col_md,
-                        'col_sm'                =>  (int)$col_sm,
-                        'col'                   =>  (int)$col
-                    );
-
-                    if( Streamtube_Core_Permission::moderate_posts() ){
-                        $collection_args['public_only'] = false;
-                    }
-
-                    the_widget( 'Streamtube_Core_Widget_Term_Grid', $collection_args, array() );
-
-                break;
-
                 case 'user':
                     echo streamtube_core()->get()->shortcode->_user_grid( array(
                         'search'        =>  get_search_query(),

@@ -119,10 +119,8 @@ class StreamTube_Core_User_Rest_Controller extends StreamTube_Core_Rest_API{
      * 
      */
     public function upload_photo( $request ){
-
-        $user = new Streamtube_Core_User();
         
-        $attachment_id = $user->upload_photo();
+        $attachment_id = $this->plugin()->user->upload_photo();
 
         if( is_wp_error( $attachment_id ) ){
             wp_send_json_error( array(
@@ -141,7 +139,7 @@ class StreamTube_Core_User_Rest_Controller extends StreamTube_Core_Rest_API{
             $response['output'] = get_avatar( get_current_user_id(), 200 );
         }
         else{
-            $response['output'] = $user->get_profile_photo( array(
+            $response['output'] = $this->plugin()->user->get_profile_photo( array(
                 'user_id'   =>  get_current_user_id(),
                 'link'      =>  false,
                 'echo'      =>  false

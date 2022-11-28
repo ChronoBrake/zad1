@@ -3,7 +3,7 @@ if( ! defined('ABSPATH' ) ){
     exit;
 }
 
-global $post;
+$post_id = $args instanceof WP_Post ? $args->ID : 0;
 
 $settings = streamtube_core()->get()->myCRED->sell_content->get_mycred_settings();
 
@@ -11,7 +11,7 @@ if ( empty( $settings['filters'][ $post->post_type ] ) || $settings['filters'][ 
     return;
 }
 
-echo '<div class="widget widget-sell-content shadow-sm rounded bg-white border">';
+echo '<div class="widget shadow-sm rounded bg-white border">';
 
     echo '<div class="widget-title-wrap d-flex m-0 p-3 bg-light">';
         printf(
@@ -45,7 +45,7 @@ echo '<div class="widget widget-sell-content shadow-sm rounded bg-white border">
                     $suffix = '';
                 }
 
-                $sale_setup = (array)mycred_get_post_meta( $post->ID, 'myCRED_sell_content' . $suffix );
+                $sale_setup = (array)mycred_get_post_meta( $post_id, 'myCRED_sell_content' . $suffix );
 
                 $sale_setup = empty($sale_setup) ? $sale_setup : $sale_setup[0];
 

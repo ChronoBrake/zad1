@@ -15,9 +15,7 @@ if( ! defined('ABSPATH' ) ){
     exit;
 }
 
-global $post;
-
-$post_id = $post->ID;
+$post_id = streamtube_core()->get()->post->get_edit_post_id();
 
 $better_messages = streamtube_core()->get()->better_messages;
 ?>

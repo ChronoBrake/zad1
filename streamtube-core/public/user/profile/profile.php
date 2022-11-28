@@ -31,11 +31,11 @@ $bio = apply_filters( 'streamtube/core/user/profile/about/bio', $bio );
             echo '<div class="not-found p-3 text-center text-muted fw-normal h6"><p>';
 
                 if( streamtube_core_is_my_profile() ){
-                    esc_html_e( 'You have not updated your profile yet.', 'streamtube' );
+                    esc_html_e( 'You have not updated your profile.', 'streamtube' );
                 }
                 else{
                     printf(
-                        esc_html__( '%s has not updated profile yet.', 'streamtube' ),
+                        esc_html__( '%s has not updated profile.', 'streamtube' ),
                         '<strong>'. get_user_by( 'ID', get_queried_object_id() )->display_name .'</strong>'
                     );
                 }

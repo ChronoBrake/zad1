@@ -169,45 +169,17 @@ class Streamtube_Core_myCRED_Sell_Content extends Streamtube_Core_myCRED_Base{
      * 
      */
     public function render_sell_content( $content = '' ){
-
-        global $post, $streamtube;
-
         $content = mycred_render_sell_this( array(), $content );
 
-        $content = str_replace( 'text-center', 'text-center position-absolute top-50 start-50 translate-middle', $content );
+        $content = str_replace( 'text-center', 'text-center error-message position-absolute top-50 start-50 translate-middle text-white', $content );
 
-        if( strpos( $content , 'mycred-sell-this-wrapper' ) !== false ){
+        if( strpos( $content , 'mycred-sell-this-wrapper' ) !== false && ( $thumbnail_url = $this->get_thumbnail_url() ) ){
 
-            $content = str_replace( 'mycred-sell-this-wrapper', 'mycred-sell-this-wrapper error-message', $content );
-
-            if( "" != $thumbnail_url = $this->get_thumbnail_url() ){
-
-                if( "" != $thumbnail_url2 = $streamtube->get()->post->get_thumbnail_image_url_2( $post->ID  ) ){
-                    $thumbnail_url = $thumbnail_url2;
-                }                
-
-                $content .= sprintf(
-                    '<div class="player-poster bg-cover" style="background-image:url(%s)"></div>',
-                    $thumbnail_url
-                );
-            }
-
-            $content = str_replace( '%login_url%', wp_login_url( get_permalink( $post->ID ) ), $content );
-
-            $trailer_url = '';
-
-            if( "" != $trailer = $streamtube->get()->post->get_video_trailer( $post->ID ) ){
-
-                $trailer_url = sprintf(
-                    '<br/><a class="btn btn-danger btn-trailer px-4" href="%s">%s</a>',
-                    esc_url( add_query_arg( array( 'view_trailer' => '1', 'autoplay' => '1' ) ) ),
-                    esc_html__( 'Trailer', 'streamtube-core' )
-                );                
-
-            }
-
-            $content = str_replace( '%view_trailer%', $trailer_url, $content );
-        }
+            $content .= sprintf(
+                '<div class="player-poster bg-cover" style="background-image:url(%s)"></div>',
+                $thumbnail_url
+            );
+        } 
 
         return $content;
     }
@@ -240,7 +212,6 @@ class Streamtube_Core_myCRED_Sell_Content extends Streamtube_Core_myCRED_Base{
      * Filter player setup params
      */
     public function filter_player_setup( $setup, $source ){
-
         if( is_wp_error( $this->is_verified() ) ){
             return $setup;
         }
@@ -281,12 +252,6 @@ class Streamtube_Core_myCRED_Sell_Content extends Streamtube_Core_myCRED_Base{
      */
     public function filter_player( $player ){
 
-        global $post, $streamtube;
-
-        if( ! $post instanceof WP_Post ){
-            return $player;
-        }
-
         if( is_wp_error( $this->is_verified() ) ){
             return $player;
         }
@@ -295,15 +260,6 @@ class Streamtube_Core_myCRED_Sell_Content extends Streamtube_Core_myCRED_Base{
          * Return player if Sell Content isn't activated yet.
          */
         if( ! $this->is_activated() || ! $this->settings['sell_video_content'] ){
-            return $player;
-        }
-
-        if( $streamtube->get()->post->get_video_trailer( $post->ID ) && isset( $_GET['view_trailer'] ) ){
-
-            global $mycred_partial_content_sale;
-
-            $mycred_partial_content_sale = true;            
-
             return $player;
         }
 
@@ -392,11 +348,11 @@ class Streamtube_Core_myCRED_Sell_Content extends Streamtube_Core_myCRED_Base{
      * @since 1.1
      * 
      */
-    public function load_metabox_price(){
+    public function load_metabox_price( $args ){
 
         if( is_wp_error( $this->is_verified() ) ){
             return;
-        }
+        }          
 
         /**
          * Return player if Sell Content isn't activated yet.
@@ -405,10 +361,12 @@ class Streamtube_Core_myCRED_Sell_Content extends Streamtube_Core_myCRED_Base{
             return;
         }
 
-        global $post;
+        if( $args['post'] instanceof WP_Post && $this->can_user_set_price( $args['post']->ID, $args['post']->post_type ) ){
+            return $this->load_template( 'form-price.php', true, $args['post'] );
+        }
 
-        if( $post && $post->post_type == 'video' && $this->can_user_set_price( $post->ID, $post->post_type ) ){
-            return $this->load_template( 'form-price.php', true );
+        if( ! $args['post'] && $this->can_user_set_price( null, $args['args']['post_type'] ) ){
+            return $this->load_template( 'form-price.php', true, array() );
         }
     }
 }

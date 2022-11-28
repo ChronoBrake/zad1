@@ -32,14 +32,11 @@ class Streamtube_Core_MetaBox {
      */
     private $nonce = 'nonce';
 
-    protected $Post;
-
-    protected $oEmbed;
-
-    public function __construct(){
-        $this->Post     = new Streamtube_Core_Post();
-
-        $this->oEmbed   = new Streamtube_Core_oEmbed();
+    /**
+     * Get plugin objects
+     */
+    private function plugin(){
+        return streamtube_core()->get();
     }
 
     private function make_video_image( $post_id, $source = '' ){
@@ -51,14 +48,14 @@ class Streamtube_Core_MetaBox {
         }
 
         if( empty( $source ) ){
-            $source = $this->Post->get_source( $post_id );
+            $source = $this->plugin()->post->get_source( $post_id );
         }
 
         if( empty( $source ) ){
             return;
         }
 
-        return $results = $this->oEmbed->generate_image( $post_id, $source );
+        return $this->plugin()->oembed->generate_image( $post_id, $source );
     }
 
     /**
@@ -69,16 +66,6 @@ class Streamtube_Core_MetaBox {
      * 
      */
     public function add_meta_boxes(){
-
-        add_meta_box(
-            'video-preview',
-            esc_html__( 'Video Preview', 'streamtube-core' ),
-            array( $this , 'video_preview_html' ),
-            Streamtube_Core_Post::CPT_VIDEO,
-            'advanced',
-            'high'
-        );
-
         add_meta_box(
             'video-data',
             esc_html__( 'Video Data', 'streamtube-core' ),
@@ -88,32 +75,16 @@ class Streamtube_Core_MetaBox {
             'core'
         );
 
-        add_meta_box(
-            'altsources-data',
-            esc_html__( 'Alternative Sources', 'streamtube-core' ),
-            array( $this , 'altsources_html' ),
-            Streamtube_Core_Post::CPT_VIDEO,
-            'advanced',
-            'core'
-        );        
-
-        add_meta_box(
-            'video-text_tracks',
-            esc_html__( 'Subtitles', 'streamtube-core' ),
-            array( $this , 'video_text_tracks_html' ),
-            Streamtube_Core_Post::CPT_VIDEO,
-            'advanced',
-            'core'
-        );
-
-        add_meta_box(
-            'featured-image-2',
-            esc_html__( 'Featured Image 2', 'streamtube-core' ),
-            array( $this , 'featured_image_2_html' ),
-            Streamtube_Core_Post::CPT_VIDEO,
-            'side',
-            'core'
-        );
+        if( ! is_wp_error( $this->plugin()->license->is_verified() ) ){
+            add_meta_box(
+                'featured-image-2',
+                esc_html__( 'Featured Image 2', 'streamtube-core' ),
+                array( $this , 'featured_image_2_html' ),
+                Streamtube_Core_Post::CPT_VIDEO,
+                'side',
+                'core'
+            );
+        }
 
         add_meta_box(
             'template-options',
@@ -126,31 +97,6 @@ class Streamtube_Core_MetaBox {
     }
 
     /**
-     * Preview video
-     */
-    public function video_preview_html( $post ){
-
-        if( in_array( $post->post_status , array( 'auto-draft' )) ){
-            return printf(
-                esc_html__( 'This video is %s and preview is unavailable', 'streamtube-core' ),
-                $post->post_status
-            );
-        }
-
-        $embed_url = add_query_arg( array(
-            'post_type' =>  $post->post_type,
-            'p'         =>  $post->ID,
-            'embed'     =>  'on',
-            'autoplay'  =>  false
-        ), get_post_embed_url( $post->ID ) );
-        ?>
-        <div class="ratio ratio-16x9">
-            <iframe src="<?php echo esc_url( $embed_url );?>" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"></iframe>
-        </div>
-        <?php
-    }
-
-    /**
      *
      * The video data box
      * 
@@ -160,18 +106,6 @@ class Streamtube_Core_MetaBox {
      */
     public function video_data_html( $post ){
         include plugin_dir_path( __FILE__ ) . 'partials/video-data.php';
-    }
-
-    /**
-     *
-     * The Altsources box
-     * 
-     * @param  object $post
-     * @since 1.0.0
-     * 
-     */
-    public function altsources_html( $post ){
-        include plugin_dir_path( __FILE__ ) . 'partials/altsources.php';
     }
 
     /**
@@ -202,53 +136,37 @@ class Streamtube_Core_MetaBox {
 
         $source = '';
 
-        if( isset( $_POST['video_trailer'] ) ){
-            $this->Post->update_video_trailer( $post_id, $_POST['video_trailer'] );
-        }        
-
         if( isset( $_POST['video_url'] ) ){
-            $this->Post->update_source( $post_id, $_POST['video_url'] );
+            $source = wp_unslash( $_POST['video_url'] );
+            $this->plugin()->post->update_source( $post_id, $_POST['video_url'] );
         }
 
         if( isset( $_POST['thumbnail_image_url_2'] ) ){
-            $this->Post->update_thumbnail_image_url_2( $post_id, $_POST['thumbnail_image_url_2'] );
+            $this->plugin()->post->update_thumbnail_image_url_2( $post_id, $_POST['thumbnail_image_url_2'] );
         }           
 
         if( isset( $_POST['length'] ) ){
-            $this->Post->update_length( $post_id, $_POST['length'] );
+            $this->plugin()->post->update_length( $post_id, $_POST['length'] );
         }        
 
         if( isset( $_POST['aspect_ratio'] ) ){
-            $this->Post->update_aspect_ratio( $post_id, $_POST['aspect_ratio'] );
+            $this->plugin()->post->update_aspect_ratio( $post_id, $_POST['aspect_ratio'] );
         }
 
         if( isset( $_POST['disable_ad'] ) ){
-           $this->Post->disable_ad( $post_id );
+           $this->plugin()->post->disable_ad( $post_id );
         }
         else{
-            $this->Post->enable_ad( $post_id );
+            $this->plugin()->post->enable_ad( $post_id );
         }
 
         if( isset( $_POST['ad_schedules'] ) ){
-            $this->Post->update_ad_schedules( $post_id, $_POST['ad_schedules'] );
+            $this->plugin()->post->update_ad_schedules( $post_id, $_POST['ad_schedules'] );
         }else{
-            $this->Post->update_ad_schedules( $post_id, array() );
+            $this->plugin()->post->update_ad_schedules( $post_id, array() );
         }
-
-        // Update tracks
-        if( isset( $_POST['text_tracks'] ) ){
-            update_post_meta( $post_id, 'text_tracks', wp_unslash( $_POST['text_tracks'] ) );
-        }
-
-        if( isset( $_POST['altsources'] ) ){
-            update_post_meta( $post_id, 'altsources', wp_unslash( $_POST['altsources'] ) );
-        }        
 
         $this->make_video_image( $post_id, $source );
-    }
-
-    public function video_text_tracks_html( $post ){
-        include plugin_dir_path( __FILE__ ) . 'partials/text-tracks.php';
     }
 
     /**
@@ -288,10 +206,7 @@ class Streamtube_Core_MetaBox {
             'header_alignment'              =>  'default',
             'header_padding'                =>  '5',
             'remove_content_box'            =>  '',
-            'disable_content_padding'       =>  '',
-            'disable_primary_sidebar'       =>  '',
-            'disable_bottom_sidebar'        =>  '',
-            'disable_comment_box'           =>  ''
+            'disable_content_padding'       =>  ''
         );
 
         $options = get_post_meta( $post_id, 'template_options', true );

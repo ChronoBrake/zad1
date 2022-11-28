@@ -44,12 +44,12 @@ $heading = apply_filters( 'streamtube/core/user/profile/blog', esc_html__( 'Blog
         extract( $template );        
 
         $not_found_text = sprintf(
-            esc_html__( '%s has not added any posts yet.', 'streamtube' ),
+            esc_html__( '%s has not added any posts.', 'streamtube' ),
             '<strong>'. get_user_by( 'ID', get_queried_object_id() )->display_name .'</strong>'
         );
 
         if( streamtube_core_is_my_profile() ){
-            $not_found_text = esc_html__( 'You have not added any posts yet.', 'streamtube' );
+            $not_found_text = esc_html__( 'You have not added any posts.', 'streamtube' );
         }
 
         if( ! count_user_posts( get_queried_object_id(), 'post', true ) ){

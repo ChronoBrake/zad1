@@ -78,8 +78,6 @@ final class Streamtube_Core_Elementor{
         require_once( plugin_dir_path( __FILE__ ) . 'elementor/class-streamtube-core-livechatroom-elementor.php' );
         require_once( plugin_dir_path( __FILE__ ) . 'elementor/class-streamtube-core-page-header-elementor.php' );
         require_once( plugin_dir_path( __FILE__ ) . 'elementor/class-streamtube-core-term-grid-elementor.php' );
-        require_once( plugin_dir_path( __FILE__ ) . 'elementor/class-streamtube-core-user-library-elementor.php' );
-        require_once( plugin_dir_path( __FILE__ ) . 'elementor/class-streamtube-core-world-map.php' );
 
         if( function_exists( 'pmpro_activation' ) ){
             require_once( plugin_dir_path( __FILE__ ) . 'elementor/class-streamtube-core-pmpro-levels-elementor.php' );    

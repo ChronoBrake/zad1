@@ -29,7 +29,7 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 			'term-grid-widget' ,
 			esc_html__('[StreamTube] Taxonomy Term Grid', 'streamtube-core' ), 
 			array( 
-				'classname'		=>	'term-grid-widget streamtube-widget', 
+				'classname'		=>	'term-grid streamtube-widget', 
 				'description'	=>	esc_html__( 'Create a Taxonomy Term Grid widget', 'streamtube-core')
 			),
 			array(
@@ -47,58 +47,6 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 
 	/**
 	 *
-	 * AJAX load more terms
-	 * 
-	 */
-	public static function load_more_terms(){
-		check_ajax_referer( '_wpnonce' );
-
-		if( ! isset( $_POST['data'] ) ){
-			wp_send_json_error( new WP_Error(
-				'no_data',
-				esc_html__( 'Invalid Request', 'streamtube-core' )
-			));
-		}
-
-		$instance = json_decode( wp_unslash( $_POST['data'] ), true );
-
-		$instance['page'] = (int)$instance['page']+1;
-
-		ob_start();
-
-		the_widget( __CLASS__, array_merge( $instance, array(
-			'title'			=>	'',
-			'icon'			=>	'',			
-			'wrapper'		=>	false
-		) ), array(
-			'before_widget'	=>	'',
-			'after_widget'	=>	'',
-			'before_title'	=>	'',
-			'after_title'	=>	''
-		) );
-
-		$output = trim( ob_get_clean() );
-
-		$instance = json_encode( $instance );
-
-		wp_send_json_success( compact( 'instance', 'output' ) );
-	}
-
-	/**
-	 *
-	 * Get array of layout
-	 * 
-	 * @return array
-	 */
-    public static function get_layouts(){
-    	return array(
-    		'default'	=>	esc_html__( 'Default', 'streamtube-core' ),
-    		'playlist'	=>	esc_html__( 'Playlist', 'streamtube-core' )
-    	);
-    }	
-
-	/**
-	 *
 	 * Get array of taxonomies
 	 * 
 	 * @return array
@@ -109,7 +57,6 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
         $taxonomies = array(
         	'category'			=>	esc_html__( 'Blog Category', 'streamtube-core' ),
         	'categories'		=>	esc_html__( 'Video Category', 'streamtube-core' ),
-        	'video_collection'	=>	esc_html__( 'Video Collection', 'streamtube-core' ),
         	'product_cat'		=>	esc_html__( 'Product Category', 'streamtube-core' )
         );
 
@@ -157,62 +104,7 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 		);
 
 		return $r;
-	}
-
-	/**
-	 *
-	 * Query terms
-	 * 
-	 * @param  array $term_args
-	 * 
-	 */
-	public function get_terms( $term_args ){
-		return new WP_Term_Query( $term_args );
-	}
-
-	/**
-	 *
-	 * Get total terms
-	 * 
-	 * @param  array $term_args
-	 * 
-	 */
-	public function get_total_terms( $term_args ){
-
-		$term_args = array_merge( $term_args, array(
-			'page'		=>	1,
-			'offset'	=>	0,
-			'number'	=>	0,
-			'count'		=>	true
-		) );
-
-		$term_query = $this->get_terms( $term_args );
-
-		return $term_query->terms ? count( $term_query->terms ) : 0;
-	}
-
-	/**
-	 *
-	 * Get max pages
-	 * 
-	 * @param  array $term_args
-	 * @return int
-	 * 
-	 */
-	public function get_max_pages( $term_args ){
-		if( (int)$term_args['number'] > 0 ){
-			return ceil( $this->get_total_terms( $term_args )/(int)$term_args['number'] );	
-		}
-		return 0;
-	}
-
-	public static function get_image_ratio(){
-		return array(
-			'default'	=> esc_html__( 'Default', 'streamtube-core' ),	
-			'16x9'		=> esc_html__( 'Landscape', 'streamtube-core' ),
-			'9x16'		=> esc_html__( 'Portrait', 'streamtube-core' )
-		);
-	}	
+	}    
 
 	/**
 	 * {@inheritDoc}
@@ -225,34 +117,21 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 		$instance = wp_parse_args( $instance, array(
 			'id'					=>	'',
 			'title'					=>	'',
-			'icon'					=>	'',
-			'layout'				=>	'default',
-			'play_all'				=>	'yes',
-			'term_author'			=>	'',
-			'term_status'			=>	'',
 			'taxonomy'				=>	array( 'categories' ),
-			'public_only'			=>	'yes',
-			'exclude_builtin'		=>	'yes',
-			'user_id'				=>	'',
-			'current_logged_in'		=>	'',
 			'child_of'				=>	'',
 			'parent'				=>	'',
 			'include'				=>	'',
 			'exclude'				=>	'',
 			'exclude_tree'			=>	'',
 			'childless'				=>	'',			
-			'search'				=>	'',
 			'hide_empty'			=>	false,
 			'orderby'				=>	'count',
-			'order'					=>	'DESC',
+			'order'					=>	'ASC',
 			'number'				=>	get_option( 'posts_per_page' ),
-			'thumbnail_size'		=>	'streamtube-image-medium',
-			'thumbnail_ratio'		=>	get_option( 'thumbnail_ratio', '16x9' ),
-			'offset'				=>	0,
 			'hide_empty_thumbnail'	=>	'',
 			'meta_query'			=>	array(),
 			'hierarchical'			=>	false,
-			'margin_bottom'			=>	4,
+			'margin_bottom'			=>	3,
 			'col_xxl'				=>	3,
 			'col_xl'				=>	3,
 			'col_lg'				=>	3,
@@ -268,11 +147,7 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 			'slide_speed'			=>	'2000',
 			'slide_autoplay'		=>	'',
 			'slide_autoplaySpeed'	=>	'2000',
-			'is_elementor'			=>	'',
-			'template'				=>	'',
-			'page'					=>	1,
-			'pagination'			=>	'',
-			'wrapper'				=>	true
+			'is_elementor'			=>	''
 		) );
 
 		/**
@@ -286,29 +161,7 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 
 		if( $this->id_base ){
 			$instance['id_base'] = $this->id_base;
-		}
-
-		$instance['title'] = apply_filters( 'widget_title', $instance['title'] );
-
-		if( $instance['pagination'] ){
-			if( ! wp_doing_ajax() ){
-				$instance['page'] = max( 1, isset( $_GET['cpage'] ) ? (int)$_GET['cpage'] : 1 );
-			}
-		}
-
-		if( empty( $instance['layout'] ) ){
-			$instance['layout'] = 'default';
-		}
-
-		switch ( $instance['layout'] ) {
-			case 'playlist':
-				$instance['template'] = 'taxonomy-playlist';
-			break;
-			
-			default:
-				$instance['template'] = 'taxonomy';
-			break;
-		}
+		}		
 
 		$instance['number'] = (int)$instance['number'];
 
@@ -323,52 +176,6 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 			);
 		}
 
-		if( is_array( $instance['taxonomy'] ) && in_array( 'video_collection', $instance['taxonomy'] ) ){
-
-			if( $instance['public_only'] ){
-				$instance['meta_query'][] = array(
-					'key'		=>	'status',
-					'compare'	=>	'=',
-					'value'		=>	'public'
-				);
-			}
-
-			if( $instance['exclude_builtin'] ){
-				$instance['meta_query'][] = array(
-					'key'		=>	'type',
-					'value'		=>	'collection',
-					'compare'	=>	'='
-				);
-			}
-
-			if( $instance['user_id'] ){
-				$user_id = array_map( 'trim', explode(',', $instance['user_id'] ));
-				if( $user_id ){
-					$instance['meta_query'][] = array(
-						'key'		=>	'user_id',
-						'compare'	=>	'IN',
-						'value'		=>	$user_id
-					);
-				}
-			}
-
-			if( $instance['current_logged_in'] && is_user_logged_in() ){
-				$instance['meta_query'][] = array(
-					'key'		=>	'user_id',
-					'compare'	=>	'IN',
-					'value'		=>	get_current_user_id()
-				);
-			}
-		}
-
-		if( is_array( $instance['meta_query'] ) && count( $instance['meta_query'] ) > 0 ){
-			$instance['meta_query']['relation'] = 'AND';
-		}		
-
-		$instance['offset'] = ((int)$instance['page'] - 1) * (int)$instance['number'];
-
-		$instance = apply_filters( 'streamtube/core/widget/term_grid/instance', $instance );
-
 		extract( $instance );
 
 		$term_args = compact( 
@@ -379,37 +186,22 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 			'exclude',
 			'exclude_tree',
 			'childless',
-			'search',
 			'hide_empty', 
 			'orderby', 
 			'order', 
 			'meta_query', 
 			'number', 
-			'offset',
-			'hierarchical'
+			'hierarchical' 
 		);
 
 		/**
 		 * @since 2.2.1
 		 */
-		$term_args = apply_filters( 'streamtube/core/widget/term_grid/term_args', $term_args, $instance );
+		$term_args = apply_filters( 'streamtube/core/term_grid/term_args', $term_args, $instance );
 
-		$term_query = $this->get_terms( $term_args );
+		$terms = get_terms( $term_args );
 
-		if( $term_query->terms ){
-
-			$wrap_classes = array(
-				'term-grid',
-				'term-layout-' . $instance['layout']
-			);
-
-			if( is_string( $taxonomy )){
-				$wrap_classes[] = 'term-' . $taxonomy;
-			};
-
-			if( is_array( $taxonomy )){
-				$wrap_classes[] = 'term-' . join( '-', $taxonomy );
-			};			
+		if( $terms ){
 
 			$row_classes = array( 'row' );
 
@@ -418,7 +210,7 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 			$row_classes[] = 'row-cols-md-' 	. $col_md;
 			$row_classes[] = 'row-cols-lg-' 	. $col_lg;
 			$row_classes[] = 'row-cols-xl-' 	. $col_xl;
-			$row_classes[] = 'row-cols-xxl-' 	. $col_xxl;
+			$row_classes[] = 'row-cols-xxl-' 	. $col_xxl;			
 
 			if( $slide ){
 				$slick = array(
@@ -484,26 +276,17 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 				);
 			}
 
+
 			echo $args['before_widget'];
 
-				if( ! empty( $title ) ){
-
-					if( $icon ){
-						$title = sprintf(
-							'<span class="title-icon %s"></span>',
-							esc_attr( $icon )
-						) . $title;
-					}
-
+				if( $title ){
 					echo $args['before_title'] . $title . $args['after_title'];
 				}
 
-				if( $wrapper ):
-					printf(
-						'<div class="%s">',
-						esc_attr( join( ' ', $wrap_classes ) )
-					);
-				endif;
+				printf(
+					'<div class="term-grid term-%s">',
+					is_string( $taxonomy ) ? $taxonomy : join( ' ', $taxonomy )
+				);
 
 					printf(
 						'<div class="%s" %s>',
@@ -511,95 +294,28 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 						$slide ? 'data-slick="'. esc_attr( json_encode( $slick ) ) .'"' : ''
 					);
 
-						foreach( $term_query->terms as $term ) :
-
-							$GLOBALS['term'] = $term;
-
-							$GLOBALS['term_grid_settings'] = $instance;
+						foreach( $terms as $term ) :
 
 							printf(
-								'<div id="term-%s" class="term-item term-%s taxonomy-%s mb-%s">',
-								$term->term_id,
+								'<div class="term-item term-%s mb-%s">',
 								esc_attr( sanitize_html_class( $term->slug ) ),
-								esc_attr( sanitize_html_class( $term->taxonomy ) ),
 								esc_attr( $margin_bottom )
 							);
 
-								get_template_part( 'template-parts/content/content', $instance['template'] );
+							get_template_part( 'template-parts/content/content', 'taxonomy', $term );
 
 							echo '</div><!--.term-item-->';
 
-							unset( $GLOBALS['term'] );
-							unset( $GLOBALS['term_grid_settings'] );
-
 						endforeach;
 
-					if( $wrapper ):
-						echo '</div><!--.term-grid-->';
-					endif;
-
-					if( $instance['slide'] && ! wp_doing_ajax() ){
-						streamtube_core_preplaceholder( $wrap_classes, $row_classes, array_merge( $instance, array(
-							'layout'	=>	'grid'
-						) ) );
-					}
-
-					if( $pagination && ! wp_doing_ajax() && $this->get_max_pages( $term_args ) > 1 ) :
-						if( in_array( $pagination , array( 'click', 'scroll' )) && $this->get_total_terms( $term_args ) >= $number ):
-						?>
-						<div class="d-flex justify-content-center navigation border-bottom mb-5 position-relative">
-							<?php printf(
-								'<button type="button" class="btn border text-secondary ajax-elm jsappear bg-light shadow-none btn-load-more-terms load-on-%s" data-params="%s" data-action="%s">',
-								$pagination,
-								esc_attr( json_encode( $instance ) ),
-								'load_more_tax_terms'
-							);?>
-
-								<?php if( $pagination == 'click' ):?>
-
-									<span class="load-icon icon-angle-down position-absolute top-50 start-50 translate-middle"></span>
-
-								<?php else:?>
-									<span class="spinner spinner-border text-info" role="status">
-										<span class="visually-hidden">
-											<?php esc_html_e( 'Loading...', 'streamtube-core' ); ?>
-										</span>
-									</span>
-								<?php endif;?>
-							</button>
-						</div>
-						<?php		
-						else:
-							$paginate = paginate_links( array(
-								'format' 	=> '?cpage=%#%',
-								'current' 	=> $instance['page'],
-								'total' 	=> $this->get_max_pages( $term_args ),
-								'type'		=> 'list'
-							) );
-
-							if( ! empty( $paginate ) ){
-								printf(
-									'<div class="navigation-wrap"><nav class="navigation pagination">%s</nav></div>',
-									$paginate
-								);
-							}
-						endif;
-					endif;
-
+					echo '</div><!--.term-grid-->';
 				echo '</div><!--.row-->';
 
 			echo $args['after_widget'];
 
-		}else{
-			if( ! empty( $search ) && ! wp_doing_ajax() ){
-				printf(
-					'<div class="not-found p-3 text-center text-muted fw-normal h6"><p class="text-secondary">%s</p></div>',
-					esc_html__( 'Sorry, but nothing matched your search terms. Please try again with some different keywords.', 'streamtube-core' )
-				);
-			}
 		}
 
-	}
+	}	
 
 	/**
 	 * {@inheritDoc}
@@ -624,13 +340,8 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 		$instance = wp_parse_args( $instance, array(
 			'title'					=>	'',
 			'number'				=>	get_option( 'posts_per_page' ),
-			'icon'					=>	'',
 			'hide_empty'			=>	'',
-			'hide_empty_thumbnail'	=>	'',
-			'layout'				=>	'default',
-			'play_all'				=>	'yes',
-			'term_author'			=>	'',
-			'term_status'			=>	''
+			'hide_empty_thumbnail'	=>	''
 		) );
 
 		ob_start();
@@ -652,22 +363,6 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 
 			);?>
 		</div>
-
-		<div class="field-control">
-			<?php printf(
-				'<label for="%s">%s</label>',
-				esc_attr( $this->get_field_id( 'icon' ) ),
-				esc_html__( 'Icon', 'streamtube-core')
-
-			);?>
-			
-			<?php printf(
-				'<input type="text" class="widefat" id="%s" name="%s" value="%s" />',
-				esc_attr( $this->get_field_id( 'icon' ) ),
-				esc_attr( $this->get_field_name( 'icon' ) ),
-				esc_attr( $instance['icon'] )
-			);?>
-		</div>			
 
 		<div class="field-control">
 			<?php printf(
@@ -720,95 +415,6 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 			
 		</div>
 
-		<div class="field-control">
-			<?php printf(
-				'<label for="%s">%s</label>',
-				esc_attr( $this->get_field_id( 'layout' ) ),
-				esc_html__( 'Layout', 'streamtube-core')
-
-			);?>
-
-			<?php printf(
-				'<select class="widefat" id="%s" name="%s" />',
-				esc_attr( $this->get_field_id( 'layout' ) ),
-				esc_attr( $this->get_field_name( 'layout' ) )
-
-			);?>
-
-				<?php foreach( self::get_layouts() as $layout => $text ):?>
-
-					<?php printf(
-						'<option value="%s" %s>%s</option>',
-						esc_attr( $layout ),
-						selected( $instance['layout'], $layout, false ),
-						esc_html( $text )
-					);?>
-
-				<?php endforeach;?>
-
-			</select><!-- end <?php echo $this->get_field_id( 'layout' );?> -->
-		</div>
-
-		<div class="field-control">
-			<?php printf(
-				'<input type="checkbox" class="widefat" id="%s" name="%s" %s />',
-				esc_attr( $this->get_field_id( 'play_all' ) ),
-				esc_attr( $this->get_field_name( 'play_all' ) ),
-				checked( 'on', $instance['play_all'], false )
-
-			);?>
-
-			<?php printf(
-				'<label for="%s">%s</label>',
-				esc_attr( $this->get_field_id( 'play_all' ) ),
-				esc_html__( 'Play All', 'streamtube-core')
-			);?>
-			<span class="field-help">
-				<?php esc_html_e( 'Enable Play All, supports Collection Taxonomy only', 'streamtube-core' ); ?>
-			</span>			
-		</div>
-
-		<div class="field-control">
-			<?php printf(
-				'<input type="checkbox" class="widefat" id="%s" name="%s" %s />',
-				esc_attr( $this->get_field_id( 'term_author' ) ),
-				esc_attr( $this->get_field_name( 'term_author' ) ),
-				checked( 'on', $instance['term_author'], false )
-
-			);?>
-
-			<?php printf(
-				'<label for="%s">%s</label>',
-				esc_attr( $this->get_field_id( 'term_author' ) ),
-				esc_html__( 'Author', 'streamtube-core')
-			);?>
-
-			<span class="field-help">
-				<?php esc_html_e( 'Show collection author, supports Collection Taxonomy only', 'streamtube-core' ); ?>
-			</span>
-			
-		</div>
-
-		<div class="field-control">
-			<?php printf(
-				'<input type="checkbox" class="widefat" id="%s" name="%s" %s />',
-				esc_attr( $this->get_field_id( 'term_status' ) ),
-				esc_attr( $this->get_field_name( 'term_status' ) ),
-				checked( 'on', $instance['term_status'], false )
-
-			);?>
-
-			<?php printf(
-				'<label for="%s">%s</label>',
-				esc_attr( $this->get_field_id( 'term_status' ) ),
-				esc_html__( 'Status', 'streamtube-core')
-			);?>
-
-			<span class="field-help">
-				<?php esc_html_e( 'Show collection status, supports Collection Taxonomy only', 'streamtube-core' ); ?>
-			</span>
-			
-		</div>						
 		<?php
 
 		return ob_get_clean();
@@ -826,19 +432,19 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 	 */
 	private function tab_layout( $instance ){
 
-		$instance = wp_parse_args( $instance, array(	
-			'margin_bottom'			=>	4,
-			'col_xxl'				=>	4,
-			'col_xl'				=>	4,
-			'col_lg'				=>	2,
-			'col_md'				=>	2,
-			'col_sm'				=>	1,
-			'col'					=>	1
+		$instance = wp_parse_args( $instance, array(
+			'margin_bottom'	=>	4,
+			'col_xxl'		=>	4,
+			'col_xl'		=>	4,
+			'col_lg'		=>	2,
+			'col_md'		=>	2,
+			'col_sm'		=>	1,
+			'col'			=>	1
 		) );
 
 		ob_start();
 
-		?>		
+		?>
 
 		<div class="field-control">
 			<?php printf(
@@ -861,7 +467,7 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 			<?php printf(
 				'<label for="%s">%s</label>',
 				esc_attr( $this->get_field_id( 'col_xxl' ) ),
-				esc_html__( 'Columns - Extra extra large ≥1400px', 'streamtube-core')
+				esc_html__( 'Extra extra large ≥1400px', 'streamtube-core')
 
 			);?>
 			
@@ -878,7 +484,7 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 			<?php printf(
 				'<label for="%s">%s</label>',
 				esc_attr( $this->get_field_id( 'col_xl' ) ),
-				esc_html__( 'Columns - Extra large ≥1200px', 'streamtube-core')
+				esc_html__( 'Extra large ≥1200px', 'streamtube-core')
 
 			);?>
 			
@@ -895,7 +501,7 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 			<?php printf(
 				'<label for="%s">%s</label>',
 				esc_attr( $this->get_field_id( 'col_lg' ) ),
-				esc_html__( 'Columns - Large ≥992px', 'streamtube-core')
+				esc_html__( 'Large ≥992px', 'streamtube-core')
 
 			);?>
 			
@@ -912,7 +518,7 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 			<?php printf(
 				'<label for="%s">%s</label>',
 				esc_attr( $this->get_field_id( 'col_md' ) ),
-				esc_html__( 'Columns - Medium ≥768px', 'streamtube-core')
+				esc_html__( 'Medium ≥768px', 'streamtube-core')
 
 			);?>
 			
@@ -929,7 +535,7 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 			<?php printf(
 				'<label for="%s">%s</label>',
 				esc_attr( $this->get_field_id( 'col_sm' ) ),
-				esc_html__( 'Columns - Small ≥576px', 'streamtube-core')
+				esc_html__( 'Small ≥576px', 'streamtube-core')
 
 			);?>
 			
@@ -946,7 +552,7 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 			<?php printf(
 				'<label for="%s">%s</label>',
 				esc_attr( $this->get_field_id( 'col' ) ),
-				esc_html__( 'Columns - Extra small <576px', 'streamtube-core')
+				esc_html__( 'Extra small <576px', 'streamtube-core')
 
 			);?>
 			
@@ -1150,9 +756,6 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 
 		$instance = wp_parse_args( $instance, array(
 			'taxonomy'				=>	array( 'categories' ),
-			'public_only'			=>	'',
-			'current_logged_in'		=>	'',
-			'user_id'				=>	'',
 			'child_of'				=>	'',
 			'parent'				=>	'',
 			'include'				=>	'',
@@ -1198,67 +801,6 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 
 			</select>
 
-		</div>
-
-		<div class="field-control">
-			<?php printf(
-				'<input type="checkbox" class="widefat" id="%s" name="%s" %s />',
-				esc_attr( $this->get_field_id( 'public_only' ) ),
-				esc_attr( $this->get_field_name( 'public_only' ) ),
-				checked( 'on', $instance['public_only'], false )
-
-			);?>
-
-			<?php printf(
-				'<label for="%s">%s</label>',
-				esc_attr( $this->get_field_id( 'public_only' ) ),
-				esc_html__( 'Public Collections', 'streamtube-core')
-			);?>
-
-			<span class="field-help">
-				<?php esc_html_e( 'Only retrieve public collections, supports Collection Taxonomy only', 'streamtube-core' ); ?>
-			</span>
-			
-		</div>
-
-		<div class="field-control">
-			<?php printf(
-				'<input type="checkbox" class="widefat" id="%s" name="%s" %s />',
-				esc_attr( $this->get_field_id( 'current_logged_in' ) ),
-				esc_attr( $this->get_field_name( 'current_logged_in' ) ),
-				checked( 'on', $instance['current_logged_in'], false )
-
-			);?>
-
-			<?php printf(
-				'<label for="%s">%s</label>',
-				esc_attr( $this->get_field_id( 'current_logged_in' ) ),
-				esc_html__( 'Current Logged In', 'streamtube-core')
-			);?>
-
-			<span class="field-help">
-				<?php esc_html_e( 'Retrieve collections of current logged in user, supports Collection Taxonomy only', 'streamtube-core' ); ?>
-			</span>
-			
-		</div>
-
-		<div class="field-control">
-			<?php printf(
-				'<label for="%s">%s</label>',
-				esc_attr( $this->get_field_id( 'user_id' ) ),
-				esc_html__( 'User IDs', 'streamtube-core')
-			);?>			
-			<?php printf(
-				'<input type="text" class="widefat" id="%s" name="%s" %s />',
-				esc_attr( $this->get_field_id( 'user_id' ) ),
-				esc_attr( $this->get_field_name( 'user_id' ) ),
-				checked( 'on', $instance['user_id'], false )
-
-			);?>
-			<span class="field-help">
-				<?php esc_html_e( 'User IDs to retrieve terms of, separated by comma, supports Collection Taxonomy only', 'streamtube-core' ); ?>
-			</span>
-			
 		</div>
 
 		<div class="field-control">
@@ -1429,6 +971,7 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 
 				<?php endforeach;?>
 
+
 			</select><!-- end <?php echo $this->get_field_id( 'orderby' );?> -->
 		</div>
 
@@ -1485,7 +1028,7 @@ class Streamtube_Core_Widget_Term_Grid extends WP_Widget{
 		);
 
 		$tabs['layout'] = array(
-			'title'		=>	esc_html__( 'Responsive', 'streamtube-core' ),
+			'title'		=>	esc_html__( 'Layout', 'streamtube-core' ),
 			'callback'	=>	array( $this , 'tab_layout' )
 		);
 

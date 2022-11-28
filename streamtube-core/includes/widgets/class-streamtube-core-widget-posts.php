@@ -161,35 +161,6 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 
 	/**
 	 *
-	 * Yes/No options
-	 * 
-	 * @return array
-	 */
-	public static function get_yes_no(){
-		return array(
-			'true'	=>	esc_html__( 'Yes', 'streamtube-core' ),
-			'false'	=>	esc_html__( 'No', 'streamtube-core' )
-		);
-	}
-
-	/**
-	 *
-	 * Title Size options
-	 * 
-	 * @return array
-	 */
-	public static function get_title_sizes(){
-		return array(
-            ''      =>  esc_html__( 'Default', 'streamtube-core' ),
-            'md'    =>  esc_html__( 'Medium', 'streamtube-core' ),
-            'lg'    =>  esc_html__( 'Large', 'streamtube-core' ),
-            'xl'    =>  esc_html__( 'Extra Large', 'streamtube-core' ),
-            'xxl'   =>  esc_html__( 'Extra Extra Large', 'streamtube-core' )
-		);
-	}
-
-	/**
-	 *
 	 * Get default supported post types
 	 * 
 	 * @return array
@@ -216,25 +187,6 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 
 		return apply_filters( 'streamtube/core/widget/posts/post_types', $r );
 	}
-
-	/**
-	 *
-	 * Get default supported live statuses
-	 * 
-	 * @return array
-	 *
-	 * @since  1.0.0
-	 * 
-	 */
-	public static function get_live_statuses(){
-		$r = array(
-			'connected'		=>	esc_html__( 'Connected', 'streamtube-core' ),
-			'disconnected'	=>	esc_html__( 'Disconnected', 'streamtube-core' ),
-			'close'			=>	esc_html__( 'Closed', 'streamtube-core' )
-		);
-
-		return $r;		
-	}	
 
 	/**
 	 *
@@ -376,8 +328,6 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 			'style'									=>	'light',
 			'_current_post'							=>	$_current_post,
 			'_current_author'						=>	$_current_author,
-			'live_stream'							=>	'',
-			'live_status'							=>	array( 'connected' ),
 			'related_posts'							=>	'',
 			'exclude_current_post'					=>	'',
 			'post_type'								=>	'video',
@@ -393,8 +343,6 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 			'comment_count'							=>	'',
 			'comment_compare'						=>	'',
 			'current_logged_in'						=>	'',
-			'current_logged_in_history'				=>	'',
-			'current_logged_in_watch_later'			=>	'',
 			'current_logged_in_following'			=>	'',
 			'current_author'						=>	'',
 			'current_author_following'				=>	'',
@@ -421,7 +369,7 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 			'show_post_date'						=>	'normal',// normal or diff
 			'show_post_comment'						=>	'',
 			'show_author_name'						=>	'',
-			'show_post_view'						=>	'on',
+			'show_post_view'						=>	streamtube_core()->get()->googlesitekit->analytics->is_connected(),
 			'author_avatar'							=>	'',
 			'avatar_size'							=>	'sm',
 			'avatar_name'							=>	'',
@@ -535,17 +483,11 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 			);
 		}
 
-		if( $live_stream ){
-
-			if( is_string( $live_status ) ){
-				$live_status = array_map( 'trim', explode( ',', $live_status ) );
-			}
-
+		if( $post_type == Streamtube_Core_Post::CPT_VIDEO ){
 			$query_args['meta_query'][] = array(
-				'key'		=>	'live_status',
-				'compare'	=>	'IN',
-				'value'		=>	$live_status
-			);
+				'key'		=>	Streamtube_Core_Post::VIDEO_URL,
+				'compare'	=>	'EXISTS'
+			);			
 		}
 
 		if( $exclude_current_post && $_current_post ){
@@ -577,47 +519,20 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 
 		if( $related_posts && $taxonomies && $_current_post ){
 
-			$exclude_related_taxes = array( 'video_collection', 'report_category' );
-
-			/**
-			 * Filter the Exclude Taxes
-			 */
-			$exclude_related_taxes = apply_filters( 'streamtube/core/widget/posts/related_taxes', $exclude_related_taxes, $taxonomies, $_current_post, $instance );
-
 			$_terms = array();
 
 			foreach ( $taxonomies as $tax => $object ) {
+				$_terms = get_the_terms( $_current_post, $tax );
 
-				if( ! in_array( $tax, $exclude_related_taxes ) ){
-
-					$_terms = get_the_terms( $_current_post, $tax );
-
-					if( $_terms ){
-						$query_args['tax_query'][] = array(
-							'taxonomy'	=>	$tax,
-							'field'		=>	'slug',
-							'terms'		=>	wp_list_pluck( $_terms, 'slug' ),
-							'operator'	=>	'IN'
-						);
-					}
+				if( $_terms ){
+					$query_args['tax_query'][] = array(
+						'taxonomy'	=>	$tax,
+						'field'		=>	'slug',
+						'terms'		=>	wp_list_pluck( $_terms, 'slug' ),
+						'operator'	=>	'IN'
+					);
 				}
 			}
-		}
-
-		if( $current_logged_in_history && $_current_logged_in ){
-			$query_args['tax_query'][] = array(
-				'taxonomy'	=>	'video_collection',
-				'field'		=>	'term_id',
-				'terms'		=>	(int)get_user_meta( $_current_logged_in, 'collection_history', true )
-			);			
-		}
-
-		if( $current_logged_in_watch_later && $_current_logged_in ){
-			$query_args['tax_query'][] = array(
-				'taxonomy'	=>	'video_collection',
-				'field'		=>	'term_id',
-				'terms'		=>	(int)get_user_meta( $_current_logged_in, 'collection_watch_later', true )
-			);			
 		}
 
 		if( count( $query_args['tax_query'] ) > 1 ){
@@ -720,14 +635,13 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 
 		// Set orderby
 		if( $query_args['orderby'] == 'post_view' ){
+			$query_args['meta_query'][] = array(
+				'key'		=>	streamtube_core()->get()->post->get_post_views_meta(),
+				//'compare'	=>	'EXISTS'
+			);
 			$query_args['meta_key'] = streamtube_core()->get()->post->get_post_views_meta();
 			$query_args['orderby'] = 'meta_value_num';
-		}
-
-		if( $query_args['orderby'] == 'post_like' ){
-			$query_args['meta_key'] = '_like_count';
-			$query_args['orderby'] 	= 'meta_value_num';
-		}
+		}		
 
 		/**
 		 *
@@ -810,6 +724,7 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 
 			?>
 			<?php 
+
 				printf(
 					'<div %s class="%s" data-page="%s" data-max-pages="%s">',
 					array_search( 'is-ajax' , $wrap_classes ) ? 'style="display: none"' : '',
@@ -936,7 +851,7 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 								$instance
 							);
 
-						echo '</div>';// post-item
+						echo '</div>';
 
 					endwhile;
 					
@@ -944,11 +859,6 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 				<?php if( ! wp_doing_ajax() ):?>
 				</div><!--.row-->
 			</div><!--.post-grid-->
-
-				<?php if( $instance['slide'] ): ?>
-					<?php streamtube_core_preplaceholder( $wrap_classes, $row_classes, $instance ); ?>
-				<?php endif;?>
-
 			<?php endif;?>
 
 			<?php
@@ -961,9 +871,9 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 					case 'scroll':
 					case 'click':
 						?>
-						<div class="pagination-nav d-flex justify-content-center navigation border-bottom mb-5 position-relative">
+						<div class="d-flex justify-content-center navigation border-bottom mb-5 position-relative">
 							<?php printf(
-								'<button type="button" class="btn border text-secondary widget-load-more-posts jsappear bg-light shadow-none load-on-%s" data-params="%s" data-action="%s">',
+								'<button class="btn border text-secondary widget-load-more-posts jsappear bg-light shadow-none load-on-%s" data-params="%s" data-action="%s">',
 								$pagination,
 								esc_attr( json_encode( $instance ) ),
 								'widget_load_more_posts'
@@ -1062,6 +972,7 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 			echo $widget_content;
 
 		echo $container ? $args['after_widget'] : '';
+
 	}
 
 	/**
@@ -1441,8 +1352,6 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 
 		$instance = wp_parse_args( $instance, array(
 			'layout'		=>	'grid',
-			'title_size'	=>	'',
-			'margin'		=>	'yes',
 			'margin_bottom'	=>	4,
 			'overlay'		=>	'',
 			'col_xxl'		=>	4,
@@ -1486,64 +1395,6 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 		</div>
 
 		<div class="field-control">
-
-			<?php printf(
-				'<label for="%s">%s</label>',
-				esc_attr( $this->get_field_id( 'title_size' ) ),
-				esc_html__( 'Title Size', 'streamtube-core')
-
-			);?>
-			<?php printf(
-				'<select class="widefat" id="%s" name="%s"/>',
-				esc_attr( $this->get_field_id( 'title_size' ) ),
-				esc_attr( $this->get_field_name( 'title_size' ) )
-			);?>
-
-				<?php foreach( self::get_title_sizes() as $key => $value ): ?>
-
-					<?php printf(
-						'<option value="%s" %s>%s</option>',
-						esc_attr( $key ),
-						selected( $instance['title_size'], $key, false ),
-						esc_html( $value )
-					);?>
-
-				<?php endforeach;?>
-				
-			</select>
-		</div>		
-
-		<div class="field-control">
-
-			<?php printf(
-				'<label for="%s">%s</label>',
-				esc_attr( $this->get_field_id( 'margin' ) ),
-				esc_html__( 'Margin', 'streamtube-core')
-
-			);?>
-			<?php printf(
-				'<select class="widefat" id="%s" name="%s"/>',
-				esc_attr( $this->get_field_id( 'margin' ) ),
-				esc_attr( $this->get_field_name( 'margin' ) )
-			);?>
-
-				<?php foreach( self::get_yes_no() as $key => $text ): ?>
-
-					<?php printf(
-						'<option value="%s" %s>%s</option>',
-						esc_attr( $key ),
-						selected( $instance['margin'], $key, false ),
-						esc_html( $text )
-					);?>
-
-				<?php endforeach;?>
-			</select>
-			<span class="field-help">
-				<?php esc_html_e( 'Enable margin between items', 'streamtube-core' );?>
-			</span>			
-		</div>
-
-		<div class="field-control">
 			<?php printf(
 				'<label for="%s">%s</label>',
 				esc_attr( $this->get_field_id( 'margin_bottom' ) ),
@@ -1578,11 +1429,12 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 			);?>
 		</div>
 
+
 		<div class="field-control">
 			<?php printf(
 				'<label for="%s">%s</label>',
 				esc_attr( $this->get_field_id( 'col_xxl' ) ),
-				esc_html__( 'Columns - Extra extra large ≥1400px', 'streamtube-core')
+				esc_html__( 'Extra extra large ≥1400px', 'streamtube-core')
 
 			);?>
 			
@@ -1599,7 +1451,7 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 			<?php printf(
 				'<label for="%s">%s</label>',
 				esc_attr( $this->get_field_id( 'col_xl' ) ),
-				esc_html__( 'Columns - Extra large ≥1200px', 'streamtube-core')
+				esc_html__( 'Extra large ≥1200px', 'streamtube-core')
 
 			);?>
 			
@@ -1616,7 +1468,7 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 			<?php printf(
 				'<label for="%s">%s</label>',
 				esc_attr( $this->get_field_id( 'col_lg' ) ),
-				esc_html__( 'Columns - Large ≥992px', 'streamtube-core')
+				esc_html__( 'Large ≥992px', 'streamtube-core')
 
 			);?>
 			
@@ -1633,7 +1485,7 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 			<?php printf(
 				'<label for="%s">%s</label>',
 				esc_attr( $this->get_field_id( 'col_md' ) ),
-				esc_html__( 'Columns - Medium ≥768px', 'streamtube-core')
+				esc_html__( 'Medium ≥768px', 'streamtube-core')
 
 			);?>
 			
@@ -1650,7 +1502,7 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 			<?php printf(
 				'<label for="%s">%s</label>',
 				esc_attr( $this->get_field_id( 'col_sm' ) ),
-				esc_html__( 'Columns - Small ≥576px', 'streamtube-core')
+				esc_html__( 'Small ≥576px', 'streamtube-core')
 
 			);?>
 			
@@ -1667,7 +1519,7 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 			<?php printf(
 				'<label for="%s">%s</label>',
 				esc_attr( $this->get_field_id( 'col' ) ),
-				esc_html__( 'Columns - Extra small <576px', 'streamtube-core')
+				esc_html__( 'Extra small <576px', 'streamtube-core')
 
 			);?>
 			
@@ -1889,8 +1741,6 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 	private function tab_data_source( $instance ){
 
 		$instance = wp_parse_args( $instance, array(
-			'live_stream'			=>	'',
-			'live_status'			=>	array( 'connected' ),
 			'related_posts'			=>	'',
 			'exclude_current_post'	=>	'',
 			'post_type'				=>	'video',
@@ -1937,54 +1787,6 @@ class Streamtube_Core_Widget_Posts extends WP_Widget{
 
 			);?>
 		</div>
-
-		<?php if( function_exists( 'wp_cloudflare_stream' ) ): ?>
-			<div class="field-control">
-				
-				<?php printf(
-					'<input type="checkbox" class="widefat" id="%s" name="%s" %s />',
-					esc_attr( $this->get_field_id( 'live_stream' ) ),
-					esc_attr( $this->get_field_name( 'live_stream' ) ),
-					checked( 'on', $instance['live_stream'], false )
-
-				);?>
-
-				<?php printf(
-					'<label for="%s">%s</label>',
-					esc_attr( $this->get_field_id( 'live_stream' ) ),
-					esc_html__( 'Retrieve Live Streams.', 'streamtube-core')
-				);?>
-			</div>
-
-			<div class="field-control">
-				<?php printf(
-					'<label for="%s">%s</label>',
-					esc_attr( $this->get_field_id( 'live_status' ) ),
-					esc_html__( 'Live Status', 'streamtube-core')
-
-				);?>
-
-				<?php printf(
-					'<select multiple class="widefat select-select2" id="%s" name="%s"/>',
-					esc_attr( $this->get_field_id( 'live_status' ) ),
-					esc_attr( $this->get_field_name( 'live_status[]' ) )
-				);?>
-
-					<?php foreach( self::get_live_statuses() as $live_status => $text ):?>
-
-						<?php printf(
-							'<option value="%s" %s>%s</option>',
-							esc_attr( $live_status ),
-							in_array( $live_status, $instance['live_status'] ) ? 'selected' : '',
-							esc_html( $text )
-						);?>
-
-					<?php endforeach;?>
-
-
-				</select><!-- end <?php echo $this->get_field_id( 'live_status' );?> -->
-			</div>
-		<?php endif;?>
 
 		<div class="field-control">
 			<?php printf(

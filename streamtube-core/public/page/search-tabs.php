@@ -25,20 +25,13 @@ if( array_key_exists( 'any', $args['post_types'] ) ){
 	unset( $args['post_types']['any'] );
 }
 
-$http_get = wp_parse_args( $_GET, array(
-	'tab'			=>	'',
-	'search'		=>	'',
-	'search_filter'	=>	'',
-	'cpage'			=>	''
-) );
-
 ?>
 <ul class="search-tabs nav-tabs secondary-nav nav">
 	<?php foreach ( $args['post_types'] as $post_type => $label ): ?>
 		<?php
-		$search_url = add_query_arg( array_merge( $http_get, array(
+		$search_url = add_query_arg( array(
 			'tab'	=>	$post_type
-		) ), home_url('/') );
+		) );
 		?>
 		<li class="nav-item">
 			<?php printf(

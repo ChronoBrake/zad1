@@ -19,9 +19,8 @@ extract( $args );
 
     <div class="button-group">
         <?php printf(
-            '<button class="%s" data-bs-toggle="modal" data-bs-target="#modal-%s">',
-            esc_attr( join( ' ', $button_classes ) ),
-            is_user_logged_in() ? 'donate' : 'login'
+            '<button class="%s" data-bs-toggle="modal" data-bs-target="#modal-donate">',
+            esc_attr( join( ' ', $button_classes ) )
         );?>
             <?php printf(
                 '<span class="btn__icon %s"></span>',

@@ -38,19 +38,6 @@ class Streamtube_Core_GoogleSiteKit_Tag_Manager extends Streamtube_Core_GoogleSi
 
     /**
      *
-     * Enqueue embed scripts
-     * 
-     */
-    public function enqueue_embed_scripts(){
-        if( "" != $container_id = $this->get_container_id() ){
-            wp_enqueue_script( 'tag-manager', add_query_arg( array(
-                'id'    =>  $container_id
-            ), '//www.googletagmanager.com/gtm.js' ) );
-        }
-    }
-
-    /**
-     *
      * Check if Google Tag manager module activated
      * 
      * @return true|false

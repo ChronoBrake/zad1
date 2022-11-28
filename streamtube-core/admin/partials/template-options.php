@@ -104,43 +104,4 @@ $options = $metabox->get_template_options( $post->ID );
         </label>
     </p>
 
-    <p>
-        <label for="disable_primary_sidebar">
-
-            <?php printf(
-                '<input type="checkbox" name="template_options[disable_primary_sidebar]" id="disable_primary_sidebar" %s>',
-                $options['disable_primary_sidebar'] ? 'checked' : ''
-            );?>
-
-            <?php esc_html_e( 'Disable Primary Sidebar', 'streamtube-core' ); ?>
-
-        </label>
-    </p>
-
-    <p>
-        <label for="disable_bottom_sidebar">
-
-            <?php printf(
-                '<input type="checkbox" name="template_options[disable_bottom_sidebar]" id="disable_bottom_sidebar" %s>',
-                $options['disable_bottom_sidebar'] ? 'checked' : ''
-            );?>
-
-            <?php esc_html_e( 'Disable Content Bottom Sidebar', 'streamtube-core' ); ?>
-
-        </label>
-    </p>
-
-    <p>
-        <label for="disable_comment_box">
-
-            <?php printf(
-                '<input type="checkbox" name="template_options[disable_comment_box]" id="disable_comment_box" %s>',
-                $options['disable_comment_box'] ? 'checked' : ''
-            );?>
-
-            <?php esc_html_e( 'Disable Comments Box', 'streamtube-core' ); ?>
-
-        </label>
-    </p>     
-
 </div>

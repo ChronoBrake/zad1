@@ -21,14 +21,6 @@ if( ! streamtube_core_can_user_moderate_comments() ){
 	$query_args['post_author'] = get_queried_object_id();
 }
 
-if( isset( $_GET['comment_status'] ) && $_GET['comment_status'] == 'reported' ){
-	$query_args['status'] = 'all';
-	$query_args['meta_query'][] = array(
-		'key'		=>	'report_content',
-		'compare'	=>	'EXISTS'
-	);
-}
-
 if( isset( $_GET['submit'] ) && ! empty( $_GET['submit'] ) ){
 
 	$get = wp_parse_args( $_GET, array(
@@ -156,9 +148,7 @@ if( $query_args['post_id'] ){
 
 				<div class="tablenav top mb-4">
 
-					<?php streamtube_core_load_template( 'comment/table/top-bar.php', false, array_merge( $query_args, array(
-						'status'	=>	$comment_status
-					) ) );?>
+					<?php streamtube_core_load_template( 'comment/table/top-bar.php', false, $query_args );?>
 
 					<div class="d-sm-flex my-3">
 

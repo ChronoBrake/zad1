@@ -305,14 +305,14 @@ class StreamTube_Core_PMPro{
 
     public function redirect_default_pages(){
 
-        $User_Dashboard = new Streamtube_Core_User_Dashboard();
+        $user_dashboard = streamtube_core()->get()->user_dashboard;
 
         $is_logged_in = is_user_logged_in();
 
         $redirect_url = wp_login_url();
 
         if( $is_logged_in ){
-            $redirect_url = trailingslashit( $User_Dashboard->get_endpoint( get_current_user_id(), self::PAGE_SLUG ) );
+            $redirect_url = trailingslashit( $user_dashboard->get_endpoint( get_current_user_id(), self::PAGE_SLUG ) );
         }
 
         // Set account page
@@ -349,30 +349,18 @@ class StreamTube_Core_PMPro{
      */
     public function filter_player_output( $player ){
 
-        global $post, $streamtube;
+        global $post;
 
         if( ! $post instanceof WP_Post ){
             return $player;
-        }
-
-        $view_trailer   = false;
-
-        $trailer_url    = '';
-
-        if( $streamtube->get()->post->get_video_trailer( $post->ID ) ){
-            $trailer_url = add_query_arg( array( 'view_trailer' => '1', 'autoplay' => '1' ) );
         }        
-
-        if( isset( $_GET['view_trailer'] ) && ! empty( $trailer_url ) ){
-            $view_trailer = true;
-        }
 
         if( ! function_exists( 'pmpro_membership_content_filter' ) ){
             return $player;
         }
 
-        // Return player if current logged in user is moderator
-        if( Streamtube_Core_Permission::moderate_posts() || $view_trailer ){
+        // Return player if current logged in user is mod
+        if( Streamtube_Core_Permission::moderate_posts() ){
             /**
              * Show full content since we have protected video content only.
              */
@@ -416,18 +404,9 @@ class StreamTube_Core_PMPro{
             $player .= '</div>';
 
             if( has_post_thumbnail( $post->ID ) ){
-
-                $thumbnail_url = wp_get_attachment_url( get_post_thumbnail_id( $post->ID ) );
-
-                global $streamtube;
-
-                if( "" != $thumbnail_url2 = $streamtube->get()->post->get_thumbnail_image_url_2( $post->ID  ) ){
-                    $thumbnail_url = $thumbnail_url2;
-                }
-
                 $player .= sprintf(
                     '<div class="player-poster bg-cover" style="background-image:url(%s)"></div>',
-                    $thumbnail_url
+                    wp_get_attachment_url( get_post_thumbnail_id( $post->ID ) )
                 );
             }
 
@@ -437,8 +416,6 @@ class StreamTube_Core_PMPro{
             add_filter( 'pmpro_membership_content_filter', function( $return, $content, $hasaccess ){
                 return $content;
             }, 9999, 3 );
-
-            $player = str_replace( '!!trailer_url!!', $trailer_url, $player );
         }
 
         return $player;
@@ -516,42 +493,5 @@ class StreamTube_Core_PMPro{
         );
 
         return $items;
-    }
-
-    /**
-     *
-     * Add dashboard menu
-     *
-     * @since 2.2
-     * ]
-     */
-    public function add_profile_menu( $items ){
-        $items[self::PAGE_SLUG]  = array(
-            'title'         =>  esc_html__( 'Membership', 'streamtube-core' ),
-            'icon'          =>  'icon-credit-card',
-            'url'           =>  trailingslashit( get_author_posts_url( get_current_user_id() ) ) . 'dashboard/' . self::PAGE_SLUG,
-            'priority'      =>  50,
-            'private'       =>  true
-        );
-
-        return $items;
-    }    
-
-    /**
-     *
-     * Add Require Membership levels widget
-     * 
-     */
-    public function add_membership_levels_widget(){
-
-        $can =  current_user_can( 'administrator' );
-
-        if( ! function_exists( 'pmpro_page_meta' ) ){
-            return;
-        }
-
-        if( apply_filters( 'streamtube/core/pmp/post/edit/membership', $can ) == true ){
-            load_template( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'public/post/edit-membership-levels.php' );
-        }
     }
 }

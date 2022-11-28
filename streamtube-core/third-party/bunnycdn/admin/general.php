@@ -94,18 +94,7 @@ if( ! defined( 'ABSPATH' ) ){
 				<?php endif;?>
 
 			</td>
-		</tr>
-
-		<tr>
-			<th scope="row"><label for="allow_formats"><?php esc_html_e( 'Allow Formats', 'streamtube-core' );?></label></th>
-			<td>
-				<?php printf(
-					'<input name="bunnycdn[allow_formats]" type="text" id="allow_formats" value="%s" class="regular-text">',
-					esc_attr( $settings['allow_formats'] )
-
-				);?>
-			</td>
-		</tr>
+		</tr>				
 
 		<tr>
 			<th scope="row"><label for="sync_type"><?php esc_html_e( 'Sync Type', 'streamtube-core' );?></label></th>
@@ -195,24 +184,8 @@ if( ! defined( 'ABSPATH' ) ){
 					);?>
 					<?php esc_html_e( 'Delete the original file after syncing successfully', 'streamtube-core' );?>
 				</label>
-				<p class="description" style="color: red">
-					<?php esc_html_e( 'Caution: your files will be deleted permanently from the WordPress media library.', 'streamtube-core' );?>
-				</p>				
 			</td>
 		</tr>
-
-		<tr>
-			<th scope="row"><label for="auto_import_thumbnail"><?php esc_html_e( 'Thumbnail Image', 'streamtube-core' );?></label></th>
-			<td>
-				<label for="auto_import_thumbnail">
-					<?php printf(
-						'<input name="bunnycdn[auto_import_thumbnail]" type="checkbox" id="auto_import_thumbnail" %s>',
-						checked( 'on', $settings['auto_import_thumbnail'], false )
-					);?>
-					<?php esc_html_e( 'Auto Import Thumbnail Image', 'streamtube-core' );?>
-				</label>
-			</td>
-		</tr>		
 
 		<tr>
 			<th scope="row"><label for="animation_image"><?php esc_html_e( 'Animation (WebP) Image', 'streamtube-core' );?></label></th>

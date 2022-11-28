@@ -52,16 +52,7 @@ if( in_array( $query_args['orderby'], array( 'last_seen', 'post_view' ) ) ){
 }
 
 if( isset( $_GET['post_status'] ) ){
-
-	if( $_GET['post_status'] == 'live' ){
-		$query_args['meta_query'][] = array(
-			'key'		=>	'live_status',
-			'compare'	=>	'IN',
-			'value'		=>	array( 'connected', 'disconnected' )
-		);		
-	}else{
-		$query_args['post_status'] = $_GET['post_status'];	
-	}	
+	$query_args['post_status'] = $_GET['post_status'];
 }
 
 if( current_user_can( 'edit_others_posts' ) ){
@@ -71,12 +62,12 @@ if( current_user_can( 'edit_others_posts' ) ){
 if( isset( $_GET['submit'] ) && ! empty( $_GET['submit'] ) ){
 
 	$get = wp_parse_args( $_GET, array(
-		'submit'				=>	'',
-		'search_query'			=>	'',
+		'submit'			=>	'',
+		'search_query'		=>	'',
 		'bulk_action'			=>	'',
 		'bulk_action_top'		=>	'',
 		'bulk_action_bottom'	=>	'',
-		'entry_ids'				=>	array()
+		'entry_ids'			=>	array()
 	) );
 
 	switch ( $get['submit'] ) {
@@ -181,7 +172,7 @@ $template_args = array(
 );
 
 ?>
-<div class="widget manage-posts">
+<div class="widget manage-videos">
 	<form method="get">
 
 		<div class="tablenav top mb-4">

@@ -6,7 +6,7 @@ if( ! defined('ABSPATH' ) ){
 ?>
 <div class="page-head mb-3 d-flex gap-3 align-items-center">
 	<h1 class="page-title h4">
-		<?php esc_html_e( 'Shopping', 'streamtube-core' );?>
+		<?php esc_html_e( 'Shop', 'streamtube-core' );?>
 	</h1>
 
 	<a class="btn btn-danger text-white px-4" href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>">

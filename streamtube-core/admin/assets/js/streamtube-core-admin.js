@@ -25,16 +25,13 @@
 		var button = $(this);
 		var userId = button.attr( 'data-user-id' );
 
-		button.attr( 'disabled', 'disabled' );
-
 		$.post( streamtube.ajax_url, {
-			action 		: 'verify_user',
+			action 		: 'set_user_verification',
 			user_id		: userId,
 			_wpnonce  	: streamtube.ajax_nonce
 		}, function( response ){
 			if( response.success === true ){
 				button.replaceWith( response.data.button );
-				button.removeAttr( 'disabled' );
 			}
 		} );
 	});
@@ -139,11 +136,10 @@
 	    	}
 
 	    	if( mediaType == 'image' ){
-
-	    		var imgWrap = button
+	    		button
 	    		.closest( '.field-group' )
-				.find( '.placeholder-image' );
-				imgWrap.removeClass( 'no-image' ).append( '<img src="'+mediaId+'">' );
+				.find( '.button-image' )
+				.html( '<img src="'+mediaId+'">' );
 	    	}
 
 	    	button
@@ -156,13 +152,6 @@
 	    
     	 // Finally, open the modal on click
         frame.open();		
-	});
-
-	$( document ).on( 'click', '.field-group .button-delete', function(e){
-		var fieldGroup = $(this).closest( '.field-group' );
-		fieldGroup.find( '.placeholder-image' ).addClass( 'no-image' );
-		fieldGroup.find( 'img' ).remove();
-		fieldGroup.find( '.input-field' ).val('');
 	});
 
 	/**
@@ -179,19 +168,16 @@
 
 		if( isNaN( mediaId ) ){
 			button.closest( 'form' ).find( 'textarea[name=video_url]' ).addClass( 'error' ).focus();
-			button.closest( '.field-group' ).find( '.alert' ).remove();
 
             $('html, body').animate({
                 scrollTop: $( '#video-data' ).offset().top
             }, 1000 );
 
-            button.after( '<div class="alert error">'+streamtube.cannot_generate_image+'</div>' );
-
 			return false;
 		}
 
 		$.ajax( {
-			url: streamtube.rest_url + 'streamtube/v1/generate-image',
+			url: streamtube.rest_url + 'wp-video-encoder/v1/generate-image',
 			method: 'POST',
 			beforeSend: function ( xhr ) {
 				xhr.setRequestHeader( 'X-WP-Nonce', streamtube.nonce );
@@ -207,9 +193,9 @@
 				.remove();
 			},
 			data:{
-				'mediaid' 		: mediaId,
+				'attachment_id' : mediaId,
 				'parent'		: postId,
-				'type'			: 'animated_image'
+				'type'			: 'webp'
 			}
 		} ).done( function ( response ) {
 
@@ -219,12 +205,12 @@
 				button
 				.closest( '.field-group' )
 				.find( 'input[name=thumbnail_image_url_2]' )
-				.val( response.data.thumbnail_url );
+				.val( response.data.image_url );
 
 				button
 				.closest( '.field-group' )
 				.find( 'button#button-featured-image-2' )
-				.html( '<img src="'+response.data.thumbnail_url+'">' );
+				.html( '<img src="'+response.data.image_url+'">' );
 			}
 
 			button
@@ -277,8 +263,7 @@
 			},
 			data:{
 				'mediaid'	: mediaId,
-				'parent'	: postId,
-				'type'		: 'image'
+				'parent'	: postId
 			}
 		} ).done( function ( response ) {
 

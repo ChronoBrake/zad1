@@ -1,9 +1,5 @@
 <?php
 
-if( ! defined('ABSPATH' ) ){
-    exit;
-}
-
 global $post;
 
 $restrict_content = streamtube_core()->get()->restrict_content;

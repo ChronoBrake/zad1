@@ -49,8 +49,7 @@ class Streamtube_Core_Menu{
 			'menu_items'	=>	array(),
 			'menu_classes'	=>	array(),
 			'item_classes'	=>	array(),
-			'icon'			=>	false,
-			'location'		=>	''
+			'icon'			=>	false
 		) );
 
 		$this->user_id 		= $args['user_id'];
@@ -74,8 +73,6 @@ class Streamtube_Core_Menu{
 		$this->item_classes = array_merge( $args['item_classes'], $this->item_classes );
 
 		$this->icon 		= $args['icon'];
-
-		$this->location 	= $args['location'];
 	}
 
 	protected function uasort( &$items ){
@@ -144,9 +141,7 @@ class Streamtube_Core_Menu{
 
 				if( $menu['cap'] && user_can( $this->user_id, $menu['cap'] ) ):
 
-					$is_visible = $menu['private'] === false || $this->location != 'main' ? true : false;
-
-					if( apply_filters( 'streamtube/core/menu/is_visible', $is_visible , $menu, $this->menu_items ) === true ){
+					if( ! $menu['private'] || ( $menu['private'] && get_current_user_id() == $this->user_id ) ){
 
 						$menu_li = sprintf(
 							'<li class="nav-item nav-%s">',

@@ -16,15 +16,6 @@ class StreamTube_Core_GoogleSiteKit_Analytics_Rest_Controller extends StreamTube
 
     protected $path = '/googlesitekit';
 
-    protected $analytics;
-
-    protected $search_console;
-
-    public function __construct(){
-        $this->analytics        = new Streamtube_Core_GoogleSiteKit_Analytics();
-        $this->search_console   = new Streamtube_Core_GoogleSiteKit_Search_Console();
-    }
-
     /**
      * @since 1.0.8
      */
@@ -349,7 +340,7 @@ class StreamTube_Core_GoogleSiteKit_Analytics_Rest_Controller extends StreamTube
                 )
             );
         }else{
-            if( $this->analytics->can_moderate() ){
+            if( $this->plugin()->googlesitekit->analytics->can_moderate() ){
                 $params['dimensionFilter']['andGroup']['expressions'][] = array(
                     'filter'    =>  array(
                         'stringFilter'  =>  array(
@@ -380,7 +371,7 @@ class StreamTube_Core_GoogleSiteKit_Analytics_Rest_Controller extends StreamTube
             }
         }
 
-        $response = $this->analytics->get_reports( $params );
+        $response = $this->plugin()->googlesitekit->analytics->get_reports( $params );
 
         if( is_wp_error( $response )){
             wp_send_json_error( array_merge( compact( 'response', 'params' ), array(
@@ -683,7 +674,7 @@ class StreamTube_Core_GoogleSiteKit_Analytics_Rest_Controller extends StreamTube
 
         $params = array_merge( $params, $date_ranges[0] );
 
-        $response = $this->search_console->get_reports( $params );
+        $response = $this->plugin()->googlesitekit->search_console->get_reports( $params );
 
         if( is_wp_error( $response )){
             wp_send_json_error( array_merge( compact( 'response', 'params' ), array(

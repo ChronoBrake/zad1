@@ -4,7 +4,7 @@ if( ! defined('ABSPATH' ) ){
 }
 ?>
 <div class="dropdown">
-	<button class="btn p-1 shadow-none" type="button" id="postControlButtons" data-bs-toggle="dropdown" aria-expanded="false">
+	<button class="btn" type="button" id="postControlButtons" data-bs-toggle="dropdown" aria-expanded="false">
 		<span class="btn__icon icon-ellipsis-vert"></span>
 	</button>
 

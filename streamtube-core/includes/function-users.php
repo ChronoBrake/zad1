@@ -186,5 +186,5 @@ function streamtube_core_get_user_sortby_options(){
 function streamtube_core_can_user_moderate_comments( $comment_id = 0 ){
 	global $streamtube;
 
-	return $streamtube->get()->comment->can_moderate_comments( (int)$comment_id );
+	return $streamtube->get()->comment->can_moderate_comments( $comment_id );
 }

@@ -239,7 +239,18 @@ class Streamtube_Core_Flat_Posts_Elementor extends \Elementor\Widget_Base{
                     'label'     =>  esc_html__( 'Order by', 'streamtube-core' ),
                     'type'      =>  \Elementor\Controls_Manager::SELECT,
                     'default'   =>  'date',
-                    'options'   =>  streamtube_core_get_orderby_options()
+                    'options'   =>  array(
+                        'none'              =>  esc_html__( 'None', 'streamtube-core' ),
+                        'ID'                =>  esc_html__( 'Order by post id.', 'streamtube-core' ),
+                        'author'            =>  esc_html__( 'Order by author', 'streamtube-core' ),
+                        'title'             =>  esc_html__( 'Order by post title', 'streamtube-core' ),
+                        'name'              =>  esc_html__( 'Order by post slug', 'streamtube-core' ),
+                        'date'              =>  esc_html__( 'Order by date (default)', 'streamtube-core' ),
+                        'modified'          =>  esc_html__( 'Order by last modified date.', 'streamtube-core' ),
+                        'rand'              =>  esc_html__( 'Random order', 'streamtube-core' ),
+                        'comment_count'     =>  esc_html__( 'Order by number of comments', 'streamtube-core' ),
+                        'relevance'         =>  esc_html__( 'Relevance', 'streamtube-core' )
+                    )
                 )
             );
 
@@ -311,19 +322,7 @@ class Streamtube_Core_Flat_Posts_Elementor extends \Elementor\Widget_Base{
             if( $tax_query ){
                 $query_args['tax_query'] = $tax_query;
             }
-        }
-
-
-        // Set orderby
-        if( $query_args['orderby'] == 'post_view' ){
-            $query_args['meta_key'] = streamtube_core()->get()->post->get_post_views_meta();
-            $query_args['orderby'] = 'meta_value_num';
-        }
-
-        if( $query_args['orderby'] == 'post_like' ){
-            $query_args['meta_key'] = '_like_count';
-            $query_args['orderby']  = 'meta_value_num';
-        }
+        } 
 
         $post_query = new WP_Query( $query_args );
 

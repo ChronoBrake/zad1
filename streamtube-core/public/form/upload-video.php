@@ -8,6 +8,8 @@ $can_upload = Streamtube_Core_Permission::can_upload();
 
 /**
  *
+ * Fires after open form
+ *
  * @since  1.0.0
  * 
  */
@@ -16,14 +18,20 @@ do_action( 'streamtube/core/form/upload_video/before' );
 
 <div id="drag-drop-upload" class="drag-drop-upload upload-form__group">
 
-	<?php
-	/**
-	 *
-	 * @since  1.0.0
-	 * 
-	 */
-	do_action( 'streamtube/core/form/upload_video/container/before' );
-	?>
+	<?php if( ! $can_upload ):?>
+
+		<div class="alert alert-danger d-flex align-items-center mb-3">
+			<span class="icon-cancel-circled h4 m-0"></span>
+			<div class="error-messsage">
+				<p>
+					<?php echo $args['no_perm_text'] ?>
+				</p>
+
+				<?php do_action( 'streamtube/core/form/upload_video/no_perm_text' );?>
+			</div>
+		</div>
+
+	<?php endif;?>
 
 	<?php echo $can_upload ? '<label class="upload-form__label">' : '<div class="upload-form__label">'; ?>
 
@@ -48,15 +56,7 @@ do_action( 'streamtube/core/form/upload_video/before' );
 			<div class="row">
 
 				<div class="col-12 col-md-3">
-					<div class="post-thumbnail ratio ratio-16x9 rounded overflow-hidden bg-dark">
-						<div class="spinner-wrap">
-							<div class="top-50 start-50 translate-middle position-absolute">
-								<?php get_template_part( 'template-parts/spinner', null, array(
-									'type'	=>	'success'
-								) );?>
-							</div>
-						</div>
-					</div>
+					<div class="post-thumbnail ratio ratio-16x9 rounded overflow-hidden bg-dark"></div>
 				</div>
 
 				<div class="col-12 col-md-9 col__main">
@@ -75,19 +75,12 @@ do_action( 'streamtube/core/form/upload_video/before' );
 		</div>
 
 	<?php endif;?>
-
-	<?php
-	/**
-	 *
-	 * @since  1.0.0
-	 * 
-	 */
-	do_action( 'streamtube/core/form/upload_video/container/after' );
-	?>
 </div>
 
 <?php 
 /**
+ *
+ * Fires after close form
  *
  * @since  1.0.0
  * 

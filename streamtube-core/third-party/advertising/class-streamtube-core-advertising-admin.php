@@ -33,10 +33,11 @@ class Streamtube_Core_Advertising_Admin{
      */
     const ADMIN_MENU_SLUG   = 'advertising';
 
-    protected $license;
-
-    public function __construct(){
-        $this->license = new Streamtube_Core_License();
+    /**
+     * Plugin instance
+     */
+    private function plugin(){
+        return streamtube_core()->get();
     }
 
     /**
@@ -65,7 +66,7 @@ class Streamtube_Core_Advertising_Admin{
             esc_html__( 'Advertising', 'streamtube-core' ), 
             'administrator', 
             self::ADMIN_MENU_SLUG, 
-            array( $this->license , 'unregistered_template' ), 
+            array( $this->plugin()->license , 'unregistered_template' ), 
             'dashicons-welcome-widgets-menus',
             50
         );

@@ -46,7 +46,7 @@ if( $comment->comment_approved == 0 ){
 
 		<div class="d-flex flex-column">
 
-			<div class="comment-content comment-text">
+			<div class="comment-content">
 				<?php echo force_balance_tags( wpautop( wp_trim_words( $comment->comment_content, 20 ) ) ); ?>
 			</div>
 

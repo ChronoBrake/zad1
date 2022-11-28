@@ -3,61 +3,32 @@ if( ! defined('ABSPATH' ) ){
     exit;
 }
 
-global $post, $post_type_screen, $streamtube;
+$postdata = $args['post'];
 
-/**
- *
- * Fires before title
- *
- * @since  1.0.0
- * 
- */
-do_action( 'streamtube/core/post/edit/title/before', $post );
-
-if( $post && $post->post_status == 'future' ): ?>
-    <div class="alert alert-scheduled alert-info p-2 px-3">
-        <?php printf(
-            esc_html__( 'This %s is scheduled.', 'streamtube-core' ),
-            $post->post_type
-        );?>
-    </div>
-<?php endif;
+$args = $args['args'];
 
 streamtube_core_the_field_control( array(
     'label'         =>  esc_html__( 'Title', 'streamtube-core' ),
     'type'          =>  'text',
     'name'          =>  'post_title',
-    'value'         =>  $post ? $post->post_title : ''
+    'value'         =>  $postdata ? $postdata->post_title : ''
 ) );
 
-if( apply_filters( 'streamtube/core/post/edit/slug', true ) === true ){
-    streamtube_core_the_field_control( array(
-        'label'         =>  esc_html__( 'Slug', 'streamtube-core' ),
-        'type'          =>  'text',
-        'name'          =>  'post_name',
-        'value'         =>  $post ? $post->post_name : ''
-    ) );
-}
+streamtube_core_the_field_control( array(
+    'label'         =>  esc_html__( 'Slug', 'streamtube-core' ),
+    'type'          =>  'text',
+    'name'          =>  'post_name',
+    'value'         =>  $postdata ? $postdata->post_name : ''
+) );
 
-if( $post && $post->post_type == 'video' && ! wp_doing_ajax() ){
-    if( get_option( 'allow_edit_source' ) || current_user_can( 'administrator' ) ){
-        streamtube_core_the_field_control( array(
-            'label'         =>  esc_html__( 'Trailer', 'streamtube-core' ),
-            'type'          =>  'text',
-            'name'          =>  'video_trailer',
-            'value'         =>  $post ? esc_attr( $streamtube->get()->post->get_video_trailer( $post->ID ) ) : '',
-            'wpmedia'       =>  true
-        ) );
-
-        streamtube_core_the_field_control( array(
-            'label'         =>  esc_html__( 'Main Source', 'streamtube-core' ),
-            'type'          =>  'text',
-            'name'          =>  'video_source',
-            'value'         =>  $post ? esc_attr( $streamtube->get()->post->get_source( $post->ID ) ) : '',
-            'wpmedia'       =>  true
-        ) );        
-    }
-}
+if( $postdata && $postdata->post_status == 'future' ): ?>
+    <div class="alert alert-scheduled alert-info p-2 px-3">
+        <?php printf(
+            esc_html__( 'This %s is scheduled.', 'streamtube-core' ),
+            $postdata->post_type
+        );?>
+    </div>
+<?php endif;
 
 /**
  *
@@ -66,9 +37,18 @@ if( $post && $post->post_type == 'video' && ! wp_doing_ajax() ){
  * @since  1.0.0
  * 
  */
-do_action( 'streamtube/core/post/edit/content/before', $post );
+do_action( 'streamtube/core/post/edit/content/before' );
 
-if( ! wp_doing_ajax() ){
+if( array_key_exists( 'mode', $args ) && $args['mode'] == 'simple' ){
+    streamtube_core_the_field_control( array(
+        'type'          =>  'textarea',
+        'label'         =>  esc_html__( 'Content', 'streamtube-core' ),
+        'name'          =>  'post_content',
+        'value'         =>  $postdata ? $postdata->post_title : ''
+    ) );
+}
+else{
+
     $editor_setings = array(
         'teeny'             =>  false,
         'media_buttons'     =>  false,
@@ -82,101 +62,26 @@ if( ! wp_doing_ajax() ){
         ) );
     }
 
-    if( apply_filters( 'streamtube/core/wpeditor/teeny', false ) === true ){
+    if( ! current_user_can( 'administrator' ) ){
         $editor_setings = array_merge( $editor_setings, array(
-            'teeny'             =>  true,
-            'media_buttons'     =>  false,
-            'drag_drop_upload'  =>  false,
+            'teeny'         => true,
             'tinymce'       => array(
-                'toolbar1'      => 'bold,italic,underline,bullist,numlist,link,unlink,forecolor,undo,redo,image'
+                'toolbar1'      => 'bold,italic,underline,bullist,numlist,unlink,forecolor,undo,redo,image'
             ),
             'quicktags'     =>  array(
                 'buttons'   => 'strong,em,underline,ul,ol,li,code,img'
             )
         ) );
-    }
+    }    
 
     streamtube_core_the_field_control( array(
         'label'     =>  esc_html__( 'Content', 'streamtube-core' ),
         'type'      =>  'editor',
         'name'      =>  'post_content',
         'settings'  =>  $editor_setings,
-        'value'     =>  $post ? $post->post_content : ''
-    ) );    
+        'value'     =>  $postdata ? $postdata->post_content : ''
+    ) );
 }
-else{
-    echo '<div class="wp-editor-wrap">';
-        streamtube_core_the_field_control( array(
-            'type'      =>  'textarea',
-            'name'      =>  'post_content',
-            'id'        =>  '_post_content',
-            'value'     =>  $post ? $post->post_content : ''
-        ) );
-    echo '</div>';
-}
-
-
-?>
-<style type="text/css">
-
-    <?php if( ! current_user_can( 'administrator' ) ): ?>
-        #wp-link-wrap{
-            height:  320px;
-        }            
-        #wp-link-wrap #search-panel,
-        #wp-link-wrap #wplink-link-existing-content,
-        #wp-link .link-target label span{
-            display: none!important;
-        }
-    <?php endif;?>
-
-    #wp-link-wrap .link-target{
-        margin-top: 1rem
-    }
-
-    #wp-link-wrap #link-options label,
-    #wp-link-wrap #link-options label input[type=text],
-    #wp-link-wrap #link-options label input[type=url]{
-        width:  100%;
-    }
-
-    #wp-link-wrap #link-options label span{
-        width:  auto;
-    }
-
-    html[data-theme=dark] div.mce-panel,
-    html[data-theme=dark] #wp-link-wrap{
-        background: #333;
-        border: 1px solid #444;
-    }
-
-    html[data-theme=dark] #wp-link-wrap #link-modal-title{
-        background:  #222;
-        border-bottom: 1px solid #666;
-    }
-
-    html[data-theme=dark] #wp-link-wrap .submitbox{
-        background:  #222;
-        border-top: 1px solid #666;
-    }
-
-    html[data-theme=dark] #wp-link-wrap .submitbox #wp-link-cancel button{
-        color: #f9f9f9;
-        border-color: #444;
-        background: #333;            
-    }
-
-    html[data-theme=dark] .mce-window-head{
-        background:  #222;
-        border-bottom: 1px solid #666;
-        color: #f9f9f9;
-    }
-
-    html[data-theme=dark] .mce-window-head .mce-title{
-        color: #f9f9f9;
-    }
-</style>
-<?php
 /**
  *
  * Fires after content field.
@@ -184,24 +89,32 @@ else{
  * @since  1.0.0
  * 
  */
-do_action( 'streamtube/core/post/edit/content/after', $post );
+do_action( 'streamtube/core/post/edit/content/after' );
 
-$tax = sprintf( '%s_tag', $post_type_screen );
+$tax = '';
 
 $terms = array();
 
-if( $post ){
-    $terms = get_the_terms( $post->ID,  $tax );
+if( $postdata ){
+
+    $args['post_type'] = $postdata->post_type;
+
+    $tax = sprintf( '%s_tag', $postdata->post_type );
+
+    $terms = get_the_terms( $postdata->ID,  $tax );
+}
+else{
+    $tax = sprintf( '%s_tag', $args['post_type'] );
 }
 
-if( get_option( $post_type_screen . '_taxonomy_' . $tax, 'on' ) ){
+if( get_option( $args['post_type'] . '_taxonomy_' . $tax, 'on' ) ){
     streamtube_core_the_field_control( array(
     	'label'			=>	esc_html__( 'Tags', 'streamtube-core' ),
     	'name'			=>	sprintf( 'tax_input[%s]', $tax ),
     	'value'			=>	is_array( $terms ) ? join(',', wp_list_pluck( $terms, 'name' ) ) : '',
         'data'          =>  array(
             'data-role'     =>  'tagsinput',
-            'data-max-tags' =>  get_option( $post_type_screen . '_taxonomy_' . $tax . '_max_items', 0 )
+            'data-max-tags' =>  get_option( $args['post_type'] . '_taxonomy_' . $tax . '_max_items', 0 )
         ),
     	'wrap_class'	=>	'taginput-wrap'
     ) );
@@ -235,9 +148,9 @@ if( get_option( 'auto_publish', 'on' ) ){
  * @since  1.0.0
  * 
  */
-$post_statuses = apply_filters( 'streamtube/core/post/edit/statuses', $post_statuses, $post );
+$post_statuses = apply_filters( 'streamtube/core/post/edit/statuses', $post_statuses );
 
-$post_status = $post ? $post->post_status : '';
+$post_status = $postdata ? $postdata->post_status : '';
 
 if( $post_status == 'future' ){
     $post_status = 'publish';
@@ -255,7 +168,7 @@ streamtube_core_the_field_control( array(
     'label'         =>  esc_html__( 'Publish', 'streamtube-core' ),
     'type'          =>  'datetime-local',
     'name'          =>  'post_date',
-    'value'         =>  $post ? date( 'Y-m-d\TH:i' , strtotime( $post->post_date ) ) : ''
+    'value'         =>  $postdata ? date( 'Y-m-d\TH:i' , strtotime( $postdata->post_date ) ) : ''
 ) );
 
 /**
@@ -265,9 +178,9 @@ streamtube_core_the_field_control( array(
  * @since 1.1
  * 
  */
-do_action( 'streamtube/core/post/edit/meta/before', $post );
+do_action( 'streamtube/core/post/edit/meta/before', $postdata );
 
-if( $post && $post->post_type == 'video' ):
+if( $postdata && $postdata->post_type == 'video' ):
 
     ?>
     <div class="row">
@@ -277,7 +190,7 @@ if( $post && $post->post_type == 'video' ):
         		'label'			=>	esc_html__( 'Aspect Ratio', 'streamtube-core' ),
         		'type'			=>	'select',
         		'name'			=>	'meta_input[_aspect_ratio]',
-                'current'       =>  $post ? streamtube_core()->get()->post->get_aspect_ratio( $post->ID ) : '',
+                'current'       =>  $postdata ? streamtube_core()->get()->post->get_aspect_ratio( $postdata->ID ) : '',
         		'options'		=>	array(
                     ''      =>  esc_html__( 'Default', 'streamtube-core' ),
         			'21x9'	=>	esc_html__( '21x9', 'streamtube-core' ),
@@ -294,7 +207,7 @@ if( $post && $post->post_type == 'video' ):
                 'label'         =>  esc_html__( 'Video Length', 'streamtube-core' ),
                 'type'          =>  'text',
                 'name'          =>  'meta_input[_length]',
-                'value'         =>  $post ? streamtube_core()->get()->post->get_length( $post->ID ) : ''
+                'value'         =>  $postdata ? streamtube_core()->get()->post->get_length( $postdata->ID ) : ''
             ) );
             ?>
         </div>
@@ -311,19 +224,12 @@ endif;
  * @since 1.1
  * 
  */
-do_action( 'streamtube/core/post/edit/meta/after', $post );
+do_action( 'streamtube/core/post/edit/meta/after', $postdata );
 
 streamtube_core_the_field_control( array(
 	'label'			=>	esc_html__( 'Allow comments', 'streamtube-core' ),
 	'type'			=>	'checkbox',
 	'name'			=>	'comment_status',
     'value'         =>  'open',
-    'current'       =>  $post ? $post->comment_status : 'open'
+    'current'       =>  $postdata ? $postdata->comment_status : 'open'
 ) );
-
-if( $post ){
-    printf(
-        '<input type="hidden" name="post_ID" value="%s">',
-        $post->ID
-    );
-}

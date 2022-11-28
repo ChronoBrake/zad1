@@ -14,8 +14,7 @@ if( ! defined('ABSPATH' ) ){
 			<div class="navbar-collapse collapse" id="navbarUserDropdown">
 				<?php streamtube_core_the_user_profile_menu( array(
 					'user_id'		=>	get_queried_object_id(),
-					'icon'			=>	false,
-					'location'		=>	'main'
+					'icon'			=>	false
 				) );?>
 			</div>
 

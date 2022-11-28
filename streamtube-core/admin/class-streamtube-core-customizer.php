@@ -24,43 +24,15 @@ if( ! defined('ABSPATH' ) ){
 
 class Streamtube_Core_Customizer{
 
+	protected $plugin;
+
 	protected $customizer;
-
-	protected $License;
-
-	protected $Content_Restriction;
-
-	protected $Google_Analytics;
-
-	protected $Google_Analytics_Rest;	
-
-	protected $User_Dashboard;
-
-	protected $User_Profile;
-
-	protected $myCred;
 
 	public function register( $customizer ){
 
-		$this->License = new Streamtube_Core_License();
-
-		$this->Content_Restriction = new Streamtube_Core_Restrict_Content();
-
-		$this->Google_Analytics = new Streamtube_Core_GoogleSiteKit_Analytics();
-
-		if( ! class_exists( 'StreamTube_Core_GoogleSiteKit_Analytics_Rest_Controller' ) ){
-			require_once plugin_dir_path( dirname( __FILE__ ) ) . '/third-party/googlesitekit/class-streamtube-core-rest-googlesitekit-analytics-controller.php';
-		}
-
-		$this->Google_Analytics_Rest = new StreamTube_Core_GoogleSiteKit_Analytics_Rest_Controller();
-
-		$this->User_Dashboard = new Streamtube_Core_User_Dashboard();
-
-		$this->User_Profile = new Streamtube_Core_User_Profile();
-
-		$this->myCred = new Streamtube_Core_myCRED();
-
 		$this->customizer = $customizer;
+
+		$this->plugin = streamtube_core()->get();
 
 		$this->customizer->add_panel( 'streamtube' , array(
 			'title'		=>	esc_html__( 'Theme Options', 'streamtube-core' ),
@@ -70,8 +42,6 @@ class Streamtube_Core_Customizer{
 		$this->section_logo();
 
 		$this->section_general();
-
-		$this->section_slug();
 
 		$this->section_woocommerce();
 
@@ -83,15 +53,11 @@ class Streamtube_Core_Customizer{
 
 		$this->section_seach_template();
 
-		$this->section_user_role_badges();
-
 		$this->section_user_dashboard();
 
 		$this->section_user_template();
 
 		$this->section_user_registration();
-
-		$this->section_comment();		
 
 		$this->section_upload();
 
@@ -124,18 +90,18 @@ class Streamtube_Core_Customizer{
 	 * @since 1.1
 	 */
 	private function is_verified(){
-		return $this->License->is_verified();
+		return true;
 	}
 
 	/**
-	 * $this->is_verified()
+	 * $this->plugin->license->is_verified()
 	 */
 	private function description( $text = '' ){
 
 		if( is_wp_error( $this->is_verified() ) ){
 			return sprintf(
 				'<div class="bg-danger license-alert">%1$s</div><div class="need-verify-section"></div>',
-				$this->License->get_message()
+				$this->plugin->license->get_message()
 			);			
 		}else{
 			return $text;
@@ -173,30 +139,6 @@ class Streamtube_Core_Customizer{
 			'flickr'		=>	esc_html__( 'Flickr', 'streamtube-core' ),
 			'github'		=>	esc_html__( 'Github', 'streamtube-core' )
 		);
-	}
-
-	/**
-	 *
-	 * Get thumbnail sizes
-	 * 
-	 * @return array
-	 * 
-	 */
-	public function get_thumbnail_sizes(){
-
-		$sizes = array();
-
-		global $_wp_additional_image_sizes;
-
-		if( ! $_wp_additional_image_sizes ){
-			return $sizes;
-		}
-
-		foreach ( $_wp_additional_image_sizes as $key => $value) {
-			$sizes[ $key ] = sprintf( '%s (%sx%spx)', $key, $value['width'], $value['height'] );
-		}
-
-		return $sizes;
 	}
 
 	private function section_logo(){	
@@ -371,19 +313,6 @@ class Streamtube_Core_Customizer{
 				'section'			=>	'general'
 			) );
 
-			$this->customizer->add_setting( 'sidebar_float_collapse', array(
-				'default'			=>	'',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'sidebar_float_collapse' , array(
-				'label'				=>	esc_html__( 'Collapse Floating Sidebar', 'streamtube-core' ),
-				'type'				=>	'checkbox',
-				'section'			=>	'general',
-			) );			
-
 			$this->customizer->add_setting( 'thumbnail_ratio', array(
 				'default'			=>	'16x9',
 				'type'				=>	'option',
@@ -404,60 +333,7 @@ class Streamtube_Core_Customizer{
 
 	/**
 	 *
-	 * Page Slug section
-	 *
-	 */
-	private function section_slug(){
-		$this->customizer->add_section( 'slug' , array(
-			'title'			=>	esc_html__( 'Slug', 'streamtube-core' ),
-			'panel'			=>	'streamtube',
-			'priority'		=>	10,
-			'description'	=>	sprintf(
-				esc_html__( 'You have to %s after changing default slugs', 'streamtube-core' ),
-				'<a target="_blank" href="'. esc_url( admin_url( 'options-permalink.php' ) ) .'">'. esc_html__( 'Update Permalinks', 'streamtube-core' ) .'</a>'
-			)
-		) );
-
-			$this->customizer->add_setting( 'video_slug', array(
-				'default'			=>	'video',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_key',
-			) );
-
-			$this->customizer->add_control( 'video_slug' , array(
-				'label'				=>	esc_html__( 'Video Slug', 'streamtube-core' ),
-				'type'				=>	'text',
-				'section'			=>	'slug'
-			) );
-
-			$taxonomies = get_object_taxonomies( 'video', 'object' );
-
-			if( $taxonomies ){
-				foreach ( $taxonomies as $tax => $object ){
-
-					if( $tax != 'report_category' ){
-
-						$this->customizer->add_setting( 'taxonomy_' . $tax . '_slug', array(
-							'default'			=>	$tax,
-							'type'				=>	'option',
-							'capability'		=>	'edit_theme_options',
-							'sanitize_callback'	=>	'sanitize_key',
-						) );
-
-						$this->customizer->add_control( 'taxonomy_' . $tax . '_slug', array(
-							'label'				=>	$object->label,
-							'type'				=>	'text',
-							'section'			=>	'slug'
-						) );	
-					}
-				}
-			}
-	}
-
-	/**
-	 *
-	 * Woocommerce section
+	 * Woocommerce options
 	 *
 	 */
 	private function section_woocommerce(){
@@ -538,20 +414,6 @@ class Streamtube_Core_Customizer{
 					'page-templates/single-v2.php'		=>	esc_html__( 'Single 2', 'streamtube-core' )
 				)
 			) );
-
-			$this->customizer->add_setting( 'blog_thumbnail_size', array(
-				'default'			=>	'post-thumbnails',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'blog_thumbnail_size' , array(
-				'label'				=>	esc_html__( 'Default Thumbnail Size', 'streamtube-core' ),
-				'type'				=>	'select',
-				'section'			=>	'blog',
-				'choices'			=>	$this->get_thumbnail_sizes()
-			) );			
 
 			$this->customizer->add_setting( 'blog_author_box', array(
 				'default'			=>	'',
@@ -939,7 +801,7 @@ class Streamtube_Core_Customizer{
 			'title'			=>	esc_html__( 'Search Template', 'streamtube-core' ),
 			'panel'			=>	'streamtube',
 			'priority'		=>	10
-		) );		
+		) );
 
 			$this->customizer->add_setting( 'search_content_width', array(
 				'default'			=>	'container',
@@ -1129,35 +991,6 @@ class Streamtube_Core_Customizer{
 				}
 			) );			
 
-			$this->customizer->add_setting( 'search_autocomplete', array(
-				'default'			=>	'on',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'search_autocomplete' , array(
-				'label'				=>	esc_html__( 'Search Autocomplete', 'streamtube-core' ),
-				'type'				=>	'checkbox',
-				'section'			=>	'search_template'
-			) );
-
-			$this->customizer->add_setting( 'search_autocomplete_number', array(
-				'default'			=>	20,
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'search_autocomplete_number' , array(
-				'label'				=>	esc_html__( 'Number Of Results', 'streamtube-core' ),
-				'type'				=>	'number',
-				'section'			=>	'search_template',
-				'active_callback'	=>	function(){
-					return get_option( 'search_autocomplete', 'on' ) ? true : false;
-				}
-			) );				
-
 			$this->customizer->add_setting( 'search_post_excerpt_length', array(
 				'default'			=>	'20',
 				'type'				=>	'option',
@@ -1238,43 +1071,14 @@ class Streamtube_Core_Customizer{
 
 	}
 
-	private function section_user_role_badges(){
-		$this->customizer->add_section( 'user_role_badges' , array(
-			'title'			=>	esc_html__( 'User Role Badges', 'streamtube' ),
-			'panel'			=>	'streamtube',
-			'priority'		=>	10
-		) );
-
-		    $this->customizer->add_section( 'role_badges', array(
-		        'title'             =>  esc_html__( 'Role Badges', 'streamtube' ),
-		        'priority'          =>  10
-		    ) );
-
-		    foreach ( wp_roles()->roles as $key => $value ) {
-		        $this->customizer->add_setting( 'role_badge_' . $key, array(
-		            'default'           =>  '#6c757d',
-		            'type'              =>  'option',
-		            'capability'        =>  'edit_theme_options',
-		            'sanitize_callback' =>  'sanitize_hex_color'
-		        ) );
-
-		        $this->customizer->add_control( 'role_badge_' . $key, array(
-		            'label'             =>  $value['name'],
-		            'type'              =>  'color',
-		            'section'           =>  'user_role_badges'
-		        ) );
-		    }
-	}
-
 	private function section_user_dashboard(){
-
 		$this->customizer->add_section( 'dashboard' , array(
 			'title'			=>	esc_html__( 'User Dashboard', 'streamtube-core' ),
 			'panel'			=>	'streamtube',
 			'priority'		=>	10
 		) );
 
-		$menus = $this->User_Dashboard->get_menu_items();
+		$menus = streamtube_core()->get()->user_dashboard->get_menu_items();
 
 		foreach ( $menus as $key => $value) {
 
@@ -1302,14 +1106,13 @@ class Streamtube_Core_Customizer{
 	}
 
 	private function section_user_template(){
-
 		$this->customizer->add_section( 'user_template' , array(
 			'title'			=>	esc_html__( 'User Profile', 'streamtube-core' ),
 			'panel'			=>	'streamtube',
 			'priority'		=>	10
 		) );
 
-			$menus = $this->User_Profile->get_menu_items();
+			$menus = streamtube_core()->get()->user_profile->get_menu_items();
 
 			foreach ( $menus as $key => $value) {
 
@@ -1567,86 +1370,6 @@ class Streamtube_Core_Customizer{
 			) );
 	}
 
-	private function section_comment(){
-		$this->customizer->add_section( 'comment' , array(
-			'title'			=>	esc_html__( 'Comment', 'streamtube-core' ),
-			'panel'			=>	'streamtube',
-			'priority'		=>	10
-		) );	
-			$this->customizer->add_setting( 'comment_report', array(
-				'default'			=>	'',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'comment_report' , array(
-				'label'				=>	esc_html__( 'Enable Report Comment', 'streamtube-core' ),
-				'type'				=>	'checkbox',
-				'section'			=>	'comment'
-			) );
-
-			$this->customizer->add_setting( 'comment_report_role', array(
-				'default'			=>	'read',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'comment_report_role' , array(
-				'label'				=>	esc_html__( 'Report Role/Capability', 'streamtube-core' ),
-				'type'				=>	'text',
-				'section'			=>	'comment',
-				'active_callback'	=>	function(){
-					return get_option( 'comment_report' ) ? true : false;
-				},
-				'description'		=>	esc_html__( 'Set the role or capability of who can mark the report, all logged in users are default', 'streamtube-core' )
-			) );			
-
-			$this->customizer->add_setting( 'comment_report_notify', array(
-				'default'			=>	'on',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'comment_report_notify' , array(
-				'label'				=>	esc_html__( 'Enable Report Notification', 'streamtube-core' ),
-				'type'				=>	'checkbox',
-				'section'			=>	'comment',
-				'active_callback'	=>	function(){
-					return get_option( 'comment_report' ) ? true : false;
-				},				
-			) );			
-
-			$this->customizer->add_setting( 'comment_edit', array(
-				'default'			=>	'',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'comment_edit' , array(
-				'label'				=>	esc_html__( 'Allows users to edit their comments', 'streamtube-core' ),
-				'type'				=>	'checkbox',
-				'section'			=>	'comment'
-			) );
-
-			$this->customizer->add_setting( 'comment_delete', array(
-				'default'			=>	'',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'comment_delete' , array(
-				'label'				=>	esc_html__( 'Allows users to delete their comments', 'streamtube-core' ),
-				'type'				=>	'checkbox',
-				'section'			=>	'comment'
-			) );
-
-	}
-
 	private function section_restrict_content(){
 
 		$section_args = array(
@@ -1718,7 +1441,7 @@ class Streamtube_Core_Customizer{
 				)
 			) );
 
-			$roles = $this->Content_Restriction->get_editable_roles();
+			$roles = $this->plugin->restrict_content->get_editable_roles();
 
 			foreach ( $roles as $role => $value ) {
 				$this->customizer->add_setting( 'restrict_content[roles]['.$role.']', array(
@@ -1785,7 +1508,7 @@ class Streamtube_Core_Customizer{
 				'label'				=>	esc_html__( 'Operator', 'streamtube-core' ),
 				'type'				=>	'select',
 				'section'			=>	'restrict_content',
-				'choices'			=>	$this->Content_Restriction->get_operator_options(),
+				'choices'			=>	$this->plugin->restrict_content->get_operator_options(),
 				'active_callback'	=>	function(){
 					$settings = get_option( 'restrict_content' );
 
@@ -1802,13 +1525,12 @@ class Streamtube_Core_Customizer{
 	}
 
 	private function section_myCRED_content(){
-
-		if( ! $this->myCred->is_enabled() ){
+		if( ! $this->plugin->myCRED->is_enabled() ){
 			return;
 		}
 
 		$this->customizer->add_panel( 'mycred' , array(
-			'title'			=>	esc_html__( 'myCred', 'streamtube-core' ),
+			'title'			=>	esc_html__( 'myCRED', 'streamtube-core' ),
 			'priority'		=>	100
 		) );
 
@@ -1827,14 +1549,10 @@ class Streamtube_Core_Customizer{
 				) );
 
 				$this->customizer->add_control( 'plugin_mycred[donate]' , array(
-					'label'				=>	esc_html__( 'Enable', 'streamtube-core' ),
-					'type'				=>	'select',
+					'label'				=>	esc_html__( 'Donation', 'streamtube-core' ),
+					'type'				=>	'checkbox',
 					'section'			=>	'mycred_donation',
-					'choices'			=>	array(
-						''				=>	esc_html__( 'No', 'streamtube-core' ),
-						'all'			=>	esc_html__( 'All Users', 'streamtube-core' ),
-						'verified'		=>	esc_html__( 'Verified Users Only', 'streamtube-core' )
-					)
+					'description'		=>	esc_html__( 'Enable donation', 'streamtube-core' )
 				) );
 
 				$this->customizer->add_setting( 'plugin_mycred[donate_point_type]', array(
@@ -2003,23 +1721,6 @@ class Streamtube_Core_Customizer{
 					'<a target="_blank" href="https://vi.wordpress.org/plugins/tuxedo-big-file-uploads/">Big File Uploads</a>'
 				)
 			) );
-
-			$this->customizer->add_setting( 'max_thumbnail_size', array(
-				'default'			=>	'2',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'max_thumbnail_size' , array(
-				'label'				=>	esc_html__( 'Max Thumbnail Size', 'streamtube-core' ),
-				'type'				=>	'number',
-				'section'			=>	'upload',
-				'description'		=>	sprintf(
-					esc_html__( 'Maximum upload thumbnail image size in MB, must be smaller than %s, 2MB is default', 'streamtube-core' ),
-					'<strong style="color: red">'. number_format_i18n( ceil( wp_max_upload_size()/1048576 ) ) .'MB</strong>'
-				),				
-			) );			
 	}
 
 	/**
@@ -2034,66 +1735,46 @@ class Streamtube_Core_Customizer{
 			'panel'			=>	'streamtube',
 			'priority'		=>	10
 		) );		
-
-			$this->customizer->add_setting( 'allow_edit_source', array(
-				'default'			=>	'',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'allow_edit_source' , array(
-				'label'				=>	esc_html__( 'Edit Source', 'streamtube-core' ),
-				'type'				=>	'checkbox',
-				'section'			=>	'video_submit',
-				'description'		=>	esc_html__( 'Allow authors to edit video source after submitting, Admin and Editor can always edit source without any restriction', 'streamtube-core' )		
-			) );
-
-
 			$taxonomies = get_object_taxonomies( 'video', 'object' );
 
 			if( $taxonomies ){
 				foreach ( $taxonomies as $tax => $object ){
+					$this->customizer->add_setting( 'video_taxonomy_' . $tax, array(
+						'default'			=>	'on',
+						'type'				=>	'option',
+						'capability'		=>	'edit_theme_options',
+						'sanitize_callback'	=>	'sanitize_text_field',
+					) );
 
-					if( $tax != 'report_category' ){
+					$this->customizer->add_control( 'video_taxonomy_' . $tax, array(
+						'label'				=>	$object->label,
+						'type'				=>	'checkbox',
+						'section'			=>	'video_submit',
+						'description'		=>	sprintf(
+							esc_html__( 'Enable %s taxonomy', 'streamtube-core' ),
+							'<strong>'. $object->label .'</strong>'
+						)
+					) );
 
-						$this->customizer->add_setting( 'video_taxonomy_' . $tax, array(
-							'default'			=>	'on',
-							'type'				=>	'option',
-							'capability'		=>	'edit_theme_options',
-							'sanitize_callback'	=>	'sanitize_text_field',
-						) );
+					$this->customizer->add_setting( 'video_taxonomy_' . $tax . '_max_items', array(
+						'default'			=>	0,
+						'type'				=>	'option',
+						'capability'		=>	'edit_theme_options',
+						'sanitize_callback'	=>	'sanitize_text_field',
+					) );
 
-						$this->customizer->add_control( 'video_taxonomy_' . $tax, array(
-							'label'				=>	$object->label,
-							'type'				=>	'checkbox',
-							'section'			=>	'video_submit',
-							'description'		=>	sprintf(
-								esc_html__( 'Enable %s taxonomy', 'streamtube-core' ),
-								'<strong>'. $object->label .'</strong>'
-							)
-						) );
-
-						$this->customizer->add_setting( 'video_taxonomy_' . $tax . '_max_items', array(
-							'default'			=>	0,
-							'type'				=>	'option',
-							'capability'		=>	'edit_theme_options',
-							'sanitize_callback'	=>	'sanitize_text_field',
-						) );
-
-						$this->customizer->add_control( 'video_taxonomy_' . $tax . '_max_items', array(
-							'label'				=>	esc_html__( 'Max Items', 'streamtube-core' ),
-							'type'				=>	'number',
-							'section'			=>	'video_submit',
-							'description'		=>	sprintf(
-								esc_html__( 'Maximum of %s items can be submitted, 0 is unlimited', 'streamtube-core' ),
-								'<strong>'. $object->label .'</strong>'
-							),
-							'active_callback'	=>	function() use ($tax){
-								return get_option( 'video_taxonomy_' . $tax, 'on' ) ? true : false;
-							}
-						) );	
-					}				
+					$this->customizer->add_control( 'video_taxonomy_' . $tax . '_max_items', array(
+						'label'				=>	esc_html__( 'Max Items', 'streamtube-core' ),
+						'type'				=>	'number',
+						'section'			=>	'video_submit',
+						'description'		=>	sprintf(
+							esc_html__( 'Maximum of %s items can be submitted, 0 is unlimited', 'streamtube-core' ),
+							'<strong>'. $object->label .'</strong>'
+						),
+						'active_callback'	=>	function() use ($tax){
+							return get_option( 'video_taxonomy_' . $tax, 'on' ) ? true : false;
+						}
+					) );					
 				}
 			}
 	}
@@ -2213,55 +1894,13 @@ class Streamtube_Core_Customizer{
 			) );
 
 			$this->customizer->add_control( 'player_skin_custom' , array(
-				'label'				=>	esc_html__( 'Skin Class Name', 'streamtube-core' ),
+				'label'				=>	esc_html__( 'Skin Class', 'streamtube-core' ),
 				'type'				=>	'text',
 				'section'			=>	'player',
-				'description'		=>	esc_html__( 'Custom skin class name', 'streamtube-core' ),
+				'description'		=>	esc_html__( 'Your custom skin class name', 'streamtube-core' ),
 				'active_callback'	=>	function(){
 					return get_option( 'player_skin', 'forest' ) == 'custom' ? true : false;
 				}
-			) );
-
-			$this->customizer->add_setting( 'player_skin_css', array(
-				'default'			=>	'',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_textarea_field',
-			) );
-
-			$this->customizer->add_control( 'player_skin_css' , array(
-				'label'				=>	esc_html__( 'Custom Skin CSS', 'streamtube-core' ),
-				'type'				=>	'textarea',
-				'section'			=>	'player',
-				'description'		=>	esc_html__( 'Custom skin CSS', 'streamtube-core' )
-			) );
-
-			$this->customizer->add_setting( 'player_language', array(
-				'default'			=>	'',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'player_language' , array(
-				'label'				=>	esc_html__( 'Language', 'streamtube-core' ),
-				'type'				=>	'text',
-				'section'			=>	'player',
-				'description'		=>	esc_html__( 'Default player language', 'streamtube-core' )
-			) );
-
-			$this->customizer->add_setting( 'inactivity_timeout', array(
-				'default'			=>	1000,
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'inactivity_timeout' , array(
-				'label'				=>	esc_html__( 'Inactivity Timeout', 'streamtube-core' ),
-				'type'				=>	'number',
-				'section'			=>	'player',
-				'description'		=>	esc_html__( 'Determines how many milliseconds of inactivity is required before declaring the user inactive', 'streamtube-core' )
 			) );
 
 			$this->customizer->add_setting( 'player_share', array(
@@ -2336,18 +1975,6 @@ class Streamtube_Core_Customizer{
 					)
 				)
 			);
-
-			$this->customizer->add_setting( 'player_playbackrates', array(
-				'default'			=>	implode( ',' , array( 0.25, 0.5, 1,1.25, 1.5, 1.75, 2 ) ),
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options'
-			) );
-
-			$this->customizer->add_control( 'player_playbackrates' , array(
-				'label'				=>	esc_html__( 'Playback Rates', 'streamtube-core' ),
-				'type'				=>	'text',
-				'section'			=>	'player'
-			) );			
 
 			$this->customizer->add_setting( 'player_autoplay', array(
 				'default'			=>	'on',
@@ -2550,14 +2177,15 @@ class Streamtube_Core_Customizer{
 					get_bloginfo( 'name' )
 				),
 				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options'
+				'capability'		=>	'edit_theme_options',
+				'sanitize_callback'	=>	'sanitize_text_field',
 			) );
 
 			$this->customizer->add_control( 'copyright_text' , array(
 				'label'				=>	esc_html__( 'Copyright Text', 'streamtube-core' ),
 				'type'				=>	'textarea',
 				'section'			=>	'footer'
-			) );
+			) );	
 
 	}
 
@@ -2675,88 +2303,6 @@ class Streamtube_Core_Customizer{
 			'panel'			=>	'streamtube',
 			'priority'		=>	10
 		) );
-
-			$this->customizer->add_setting( 'custom_login_page', array(
-				'default'			=>	'',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'custom_login_page' , array(
-				'label'				=>	esc_html__( 'Custom Login Page', 'streamtube-core' ),
-				'type'				=>	'dropdown-pages',
-				'section'			=>	'misc'
-			) );
-
-			$this->customizer->add_setting( 'custom_register_page', array(
-				'default'			=>	'',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'custom_register_page' , array(
-				'label'				=>	esc_html__( 'Custom Register Page', 'streamtube-core' ),
-				'type'				=>	'dropdown-pages',
-				'section'			=>	'misc'
-			) );
-
-			$this->customizer->add_setting( 'hide_admin_bar', array(
-				'default'			=>	'',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'hide_admin_bar' , array(
-				'label'				=>	esc_html__( 'Hide Admin Bar', 'streamtube-core' ),
-				'type'				=>	'checkbox',
-				'section'			=>	'misc'
-			) );
-
-			$this->customizer->add_setting( 'block_admin_access', array(
-				'default'			=>	'',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'block_admin_access' , array(
-				'label'				=>	esc_html__( 'Block Admin Access', 'streamtube-core' ),
-				'type'				=>	'checkbox',
-				'section'			=>	'misc'
-			) );
-
-			$this->customizer->add_setting( 'block_admin_access_url', array(
-				'default'			=>	'',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'block_admin_access_url' , array(
-				'label'				=>	esc_html__( 'Error Page', 'streamtube-core' ),
-				'type'				=>	'dropdown-pages',
-				'section'			=>	'misc',
-				'active_callback'	=>	function(){
-					return get_option( 'block_admin_access' ) ? true : false;
-				}
-			) );
-
-			$this->customizer->add_setting( 'video_gutenberg', array(
-				'default'			=>	'',
-				'type'				=>	'option',
-				'capability'		=>	'edit_theme_options',
-				'sanitize_callback'	=>	'sanitize_text_field',
-			) );
-
-			$this->customizer->add_control( 'video_gutenberg' , array(
-				'label'				=>	esc_html__( 'Gutenberg Editor', 'streamtube-core' ),
-				'type'				=>	'checkbox',
-				'section'			=>	'misc',
-				'description'		=>	esc_html__( 'Enable Gutenberg Editor for Video post type, apply to backend form only', 'streamtube-core' )
-			) );		
 
 			$this->customizer->add_setting( 'show_current_user_attachment', array(
 				'default'			=>	'on',
@@ -2899,16 +2445,13 @@ class Streamtube_Core_Customizer{
 	 */
 	private function section_google_sitekit(){
 
-		$Google_Analytics = new Streamtube_Core_GoogleSiteKit_Analytics();
-		$Google_Analytics_Rest = new StreamTube_Core_GoogleSiteKit_Analytics_Rest_Controller();
-
-		if( ! $Google_Analytics->is_connected() ){
+		if( ! streamtube_core()->get()->googlesitekit->analytics->is_connected() ){
 			return;
 		}
 
-		$overview_metrics = $Google_Analytics_Rest->get_overview_metrics();
+		$overview_metrics = $this->plugin->googlesitekit->analytics_rest_api->get_overview_metrics();
 
-		$overview_playevent_metrics = $Google_Analytics_Rest->get_overview_video_metrics();
+		$overview_playevent_metrics = $this->plugin->googlesitekit->analytics_rest_api->get_overview_video_metrics();
 
 		$this->customizer->add_section( 'gsitekit' , array(
 			'title'			=>	esc_html__( 'Google Sitekit', 'streamtube-core' ),

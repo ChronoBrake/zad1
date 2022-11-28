@@ -9,7 +9,7 @@
  * Plugin Name:       StreamTube Core
  * Plugin URI:        https://1.envato.market/qny3O5
  * Description:       StreamTube Core Plugin, made for StreamTube theme
- * Version:           2.6.4
+ * Version:           2.2.2
  * Requires at least: 5.3
  * Tested up to:      5.8
  * Requires PHP:      5.6
@@ -26,7 +26,7 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-define( 'STREAMTUBE_CORE_VERSION', '2.6.4' );
+define( 'STREAMTUBE_CORE_VERSION', '2.2.2' );
 
 define( 'STREAMTUBE_CORE_PLUGIN', trailingslashit( plugin_dir_path( __FILE__ ) ) );
 
@@ -74,13 +74,8 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-streamtube-core.php';
  */
 function streamtube_core() {
 
-    global $streamtube;
+	$GLOBALS['streamtube'] = new Streamtube_Core();
+	return $GLOBALS['streamtube'];
 
-    if( $streamtube instanceof Streamtube_Core ){
-        return $streamtube;
-    }else{
-        $streamtube = new Streamtube_Core();
-    }
-    return $streamtube;
 }
 streamtube_core()->run();

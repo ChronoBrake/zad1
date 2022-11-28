@@ -18,50 +18,36 @@ if( ! defined('ABSPATH' ) ){
 
         <?php
 
-        $posts = WPPL()->get()->query->get( array(
+        $reaction = wprp()->get()->query->get( array(
             'user_id'       =>  get_queried_object_id(),
-            'post_type'     =>  array( 'video' )
+            'content_type'  =>  array( 'video' ),
+            'react_term_id' =>  wprp_get_settings( 'profile_react_terms', array() )
         ) );
 
-        $_post__in = wp_list_pluck( $posts, 'post_id' );
+        $_post__in = wp_list_pluck( $reaction, 'content_id' );
 
         if( $_post__in ):
 
-            $template = streamtube_get_user_template_settings();
-
-            extract( $template );                    
-
             the_widget( 'Streamtube_Core_Widget_Posts', array(
-                'hide_empty_thumbnail'  =>  true,
-                'posts_per_page'        =>  (int)$posts_per_column * (int)$rows_per_page,
-                'orderby'               =>  isset( $_GET['orderby'] ) ? $_GET['orderby'] : 'date',
-                'order'                 =>  isset( $_GET['order'] ) ? $_GET['order'] : 'DESC',
-                'paged'                 =>  get_query_var( 'page' ),
-                'grid'                  =>  'on',
-                'col_xxl'               =>  (int)$posts_per_column,
-                'col_xl'                =>  (int)$col_xl,
-                'col_lg'                =>  (int)$col_lg,
-                'col_md'                =>  (int)$col_md,
-                'col_sm'                =>  (int)$col_sm,
-                'col'                   =>  (int)$col,
-                'post__in'              =>  $_post__in,
-                'grid'                  =>  'on',
-                'pagination'            =>  $pagination,
+                'posts_per_page'    =>  get_option( 'posts_per_page' ),
+                'post__in'          =>  $_post__in,
+                'grid'              =>  'on',
+                'pagination'        =>  'scroll'
             ), array() );
 
         else:
 
             ?>
-            <div class="not-found p-3 text-center text-muted fw-normal h6"><p>
+            <div class="not-found p-3 text-center text-muted h5"><p>
                 <?php
                  if( streamtube_core_is_my_profile() ){
-                    esc_html_e( 'You have not liked any posts yet.', 'streamtube-core' );
+                    printf(
+                        esc_html__( '%s has not liked any posts.', 'streamtube-core' ),
+                        '<strong>'. get_user_by( 'ID', get_queried_object_id() )->display_name .'</strong>'
+                    );
                  }
                  else{
-                    printf(
-                        esc_html__( '%s has not liked any posts yet.', 'streamtube-core' ),
-                        '<strong>'. get_user_by( 'ID', get_queried_object_id() )->display_name .'</strong>'
-                    );                    
+                    esc_html_e( 'You have not liked any posts.', 'streamtube-core' );
                  }
                 ?>
             </p></div>

@@ -7,9 +7,6 @@
 if( ! defined('ABSPATH' ) ){
     exit;
 }
-
-global $post, $streamtube;
-
 wp_enqueue_style( 'select2' );
 wp_enqueue_script( 'select2' );
 ?>
@@ -24,14 +21,14 @@ wp_enqueue_script( 'select2' );
     do_action( 'streamtube/core/admin/metabox/videodata/before', $post );
     ?>
 
-    <?php if( ! is_wp_error( $streamtube->get()->license->is_verified() ) ): ?>
+    <?php if( ! is_wp_error( streamtube_core()->get()->license->is_verified() ) ): ?>
 
     <div class="field-group">
         <label for="disable_ad">
         
             <?php printf(
                 '<input type="checkbox" name="disable_ad" id="disable_ad" class="input-field" %s>',
-                $streamtube->get()->post->is_ad_disabled() ? 'checked' : ''
+                $this->plugin()->post->is_ad_disabled() ? 'checked' : ''
             );?>
             <?php esc_html_e( 'Disable Advertising', 'streamtube-core' ); ?>
             
@@ -49,7 +46,7 @@ wp_enqueue_script( 'select2' );
         );?>
 
             <?php
-            $ad_schedules = $streamtube->get()->post->get_ad_schedules();
+            $ad_schedules = $this->plugin()->post->get_ad_schedules();
 
             if( $ad_schedules ){
                 for ( $i=0; $i < count( $ad_schedules ); $i++) { 
@@ -72,57 +69,20 @@ wp_enqueue_script( 'select2' );
     <?php endif;?>
 
     <div class="field-group">
-        <label for="video_trailer"><?php esc_html_e( 'Trailer', 'streamtube-core' ); ?></label>
-        <?php printf(
-            '<textarea name="video_trailer" id="video_trailer" class="regular-text input-field">%s</textarea>',
-            esc_textarea( $streamtube->get()->post->get_video_trailer() )
-        );?>
-        <p class="description">
-            <?php esc_html_e( 'Upload a video file or paste a link/iframe code', 'streamtube-core' );?>
-        </p>
-        <button id="upload-file" type="button" class="button button-large button-primary button-upload w-100" data-media-type="video" data-media-source="id">
-            <?php esc_html_e( 'Upload a file', 'streamtube-core' );?>
-        </button>
-    </div>    
-
-    <div class="field-group">
-        <label for="video_url"><?php esc_html_e( 'Media Id (Main Video Source)', 'streamtube-core' ); ?></label>
+        <label for="video_url"><?php esc_html_e( 'Media Id', 'streamtube-core' ); ?></label>
         
         <?php printf(
             '<textarea name="video_url" id="video_url" class="regular-text input-field">%s</textarea>',
-            esc_textarea( $streamtube->get()->post->get_source() )
+            esc_textarea( $this->plugin()->post->get_source() )
         );?>
 
         <p class="description">
             <?php esc_html_e( 'Upload a video file or paste a link/iframe code', 'streamtube-core' );?>
         </p>
 
-        <button id="upload-file" type="button" class="button button-large button-primary button-upload w-100" data-media-type="video" data-media-source="id">
+        <button id="upload-file" type="button" class="button button-primary button-upload w-100" data-media-type="video" data-media-source="id">
             <?php esc_html_e( 'Upload a file', 'streamtube-core' );?>
-        </button>
-
-        <?php if( function_exists( 'wp_cloudflare_stream' ) ): ?>
-
-            <div style="margin: 0 auto;text-align: center;margin-bottom: 1rem;">
-                <p><?php esc_html_e( 'OR', 'streamtube-core' );?></p>
-            </div>
-
-            <div style="display: flex; gap: 1rem">
-                <?php WP_Cloudflare_Stream_Admin::start_live_stream( $post ); ?>
-
-                <?php if( "" != $live_status = get_post_meta( $post->ID, 'live_status', true ) ): ?>
-
-                    <?php printf(
-                        '<button id="close-open-live" type="button" class="d-block w-100 button button-large button-%s" data-status="%s" data-post-id="%s" data-action="admin_close_open_live_stream">%s</button>',
-                        $live_status != 'close' ? 'secondary' : 'primary',
-                        esc_attr( $live_status ),
-                        $post->ID,
-                        $live_status != 'close' ? esc_html__( 'Close Live Stream', 'streamtube-core' ) : esc_html__( 'Open Live Stream', 'streamtube-core' )
-                    );?>
-
-                <?php endif;?>
-            </div>
-        <?php endif; ?>
+        </button>                
     </div>
 
     <div class="field-groups">
@@ -132,7 +92,7 @@ wp_enqueue_script( 'select2' );
 
             <?php printf(
                 '<input type="text" name="length" id="length" class="regular-text" value="%s">',
-                esc_attr( $streamtube->get()->post->get_length( $post->ID ) )
+                esc_attr( $this->plugin()->post->get_length( $post->ID ) )
             );?>
         </div>
 
@@ -156,7 +116,7 @@ wp_enqueue_script( 'select2' );
                         <?php printf(
                             '<option value="%s" %s>%s</option>',
                             esc_attr( $key ),
-                            selected( $streamtube->get()->post->get_aspect_ratio( $post->ID ), $key, false ),
+                            selected($this->plugin()->post->get_aspect_ratio( $post->ID ), $key, false ),
                             esc_html( $value )
                         );?>
 

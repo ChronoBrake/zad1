@@ -8,14 +8,6 @@ $post_statuses = array_merge( array(
     'reject'    =>  esc_html__( 'Rejected', 'streamtube-core' )
 ), get_post_statuses() );
 
-if( function_exists( 'wp_cloudflare_stream' ) ){
-
-	if( WP_Cloudflare_Stream_Permission::can_live_stream() ){
-		$post_statuses['live'] = esc_html__( 'Live', 'streamtube-core' );	
-	}
-
-}
-
 if( current_user_can( 'edit_others_posts' ) ){
     $post_statuses['trash'] = esc_html__( 'Trash', 'streamtube-core' );
 }

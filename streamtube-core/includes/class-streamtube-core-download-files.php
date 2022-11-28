@@ -31,11 +31,12 @@ class StreamTube_Core_Download_File{
      */
     const META_KEY  = 'download_video';
 
-    private $Post;
-
-    public function __construct(){
-        $this->Post = new Streamtube_Core_Post();
-    }
+    /**
+     * Get plugin objects
+     */
+    private function plugin(){
+        return streamtube_core()->get();
+    }    
 
     /**
      *
@@ -76,17 +77,13 @@ class StreamTube_Core_Download_File{
      * 
      */
     public function is_downloadable(){
+        $maybe_attachment = $this->plugin()->post->get_source();
 
-        $is_downloadable    = false;
-
-        $maybe_attachment   = $this->Post->get_source();
-
-        if( wp_attachment_is( 'video', $maybe_attachment ) || wp_attachment_is( 'audio', $maybe_attachment ) ){
-            $is_downloadable = true;
-            
+        if( wp_attachment_is( 'video', $maybe_attachment ) ){
+            return true;
         }
 
-        return apply_filters( 'streamtube/core/video/is_downloadable', $is_downloadable, $maybe_attachment );
+        return false;
     }
 
     /**
@@ -135,15 +132,12 @@ class StreamTube_Core_Download_File{
      * @since 1.1.7
      * 
      */
-    public function get_file_url(){
-
-        $post_id = get_the_ID();
-
+    private function get_file_url(){
         $url = add_query_arg( array(
             'download'  =>  '1'
-        ), get_permalink( $post_id ) );
+        ), get_permalink( get_the_ID() ) );
 
-        return apply_filters( 'streamtube/core/video/download_file_url', $url, $post_id );
+        return apply_filters( 'streamtube/core/video/download_file_url', $url );
     }
 
     /**
@@ -167,7 +161,7 @@ class StreamTube_Core_Download_File{
             return;
         }
 
-        $file       = get_attached_file( $this->Post->get_source() );
+        $file       = get_attached_file( $this->plugin()->post->get_source() );
         $filetype   = wp_check_filetype( $file );
         $filename   = sanitize_file_name( get_the_title() )  . '.' . $filetype['ext'];
 

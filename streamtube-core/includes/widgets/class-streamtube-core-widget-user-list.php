@@ -43,20 +43,6 @@ class Streamtube_Core_Widget_User_List extends WP_Widget{
 	}
 
 	/**
-	 *
-	 * Show count options
-	 * 
-	 * @return array
-	 */
-	public static function get_show_count_options(){
-		return array(
-			'none'			=>	esc_html__( 'None', 'streamtube-core' ),
-			'video'			=>	esc_html__( 'Video Count', 'streamtube-core' ),
-			'follower'		=>	esc_html__( 'Follower Count', 'streamtube-core' )
-		);
-	}
-
-	/**
 	 * {@inheritDoc}
 	 * @see WP_Widget::widget()
 	 */
@@ -66,18 +52,14 @@ class Streamtube_Core_Widget_User_List extends WP_Widget{
 			'title'					=>	'',
 			'number'				=>	5,
 			'role__in'				=>	'',
-			'who'					=>	'',
-			'orderby'				=>	'post_count',
-			'order'					=>	'DESC',
-			'show_count'			=>	'video'
+			'who'					=>	''
 		) );
 
 		$instance['title'] = apply_filters( 'widget_title', $instance['title'] );
 
 		$query_args = array(
 			'number'				=>	absint( $instance['number'] ),
-			'has_published_posts'	=>	array( 'video' ),
-			'order'					=>	$instance['order']
+			'has_published_posts'	=>	array( 'video' )
 		);
 
 		if( ! empty( $instance['role__in'] ) ){
@@ -86,19 +68,6 @@ class Streamtube_Core_Widget_User_List extends WP_Widget{
 
 		if( ! empty( $instance['who'] ) ){
 			$query_args['who'] = 'authors';
-		}
-
-		if( $instance['show_count'] == 'follower' ){
-			
-			$query_args = array_merge( $query_args, array(
-				'meta_query'	=>	array(
-					'key'		=>	'following_count',
-					'value'		=>	0,
-					'compare'	=>	'>'
-				),
-				'meta_key'		=>	'following_count',
-				'orderby'		=>	'meta_value_num'
-			) );
 		}
 
 		/**
@@ -123,6 +92,8 @@ class Streamtube_Core_Widget_User_List extends WP_Widget{
 
 				foreach ( $user_query->get_results() as $user ):
 
+					$count = count_user_posts( $user->ID, $query_args['has_published_posts'], true );
+
 					?>
 					<li class="user-item mb-4">
 						<div class="d-flex align-items-start">
@@ -143,29 +114,10 @@ class Streamtube_Core_Widget_User_List extends WP_Widget{
 			                            'after'     =>  '</h4>',
 			                            'link'		=>	true
 			                        ) );
-								?>
-
-								<?php if( $instance['show_count'] && $instance['show_count'] != 'none' ): ?>
-
-									<?php 
-									if( $instance['show_count'] == 'video' ): 
-									$count = count_user_posts( $user->ID, $query_args['has_published_posts'], true );
-									?>
-										<div class="video-count text-secondary small">
-											<?php printf( _n( '%s video', '%s videos', $count, 'streamtube-core' ), number_format_i18n( $count ) ); ?>
-										</div>
-									<?php endif;?>
-
-									<?php 
-									if( $instance['show_count'] == 'follower' && function_exists( 'wpuf_get_following_count' ) ): 
-									$count = wpuf_get_following_count( $user->ID )
-									?>
-										<div class="follower-count text-secondary small">
-											<?php printf( _n( '%s follower', '%s followers', $count, 'streamtube-core' ), number_format_i18n( $count ) ); ?>
-										</div>
-									<?php endif;?>									
-
-								<?php endif;?>
+								?>						
+								<div class="video-count">
+									<?php printf( _n( '%s video', '%s videos', $count, 'streamtube-core' ), number_format_i18n( $count ) ); ?>
+								</div>
 							</div>
 						</div>
 					</li>
@@ -195,8 +147,7 @@ class Streamtube_Core_Widget_User_List extends WP_Widget{
 			'title'					=>	'',
 			'number'				=>	5,
 			'role__in'				=>	'',
-			'who'					=>	'',
-			'show_count'			=>	'video'
+			'who'					=>	''
 		) );
 
 		?>
@@ -269,35 +220,7 @@ class Streamtube_Core_Widget_User_List extends WP_Widget{
 				esc_attr( $this->get_field_id( 'who' ) ),
 				esc_html__( 'Only Retrieve Authors', 'streamtube-core')
 			);?>		
-		</div>
-
-		<div class="field-control">
-			<?php printf(
-				'<label for="%s">%s</label>',
-				esc_attr( $this->get_field_id( 'show_count' ) ),
-				esc_html__( 'Show Count', 'streamtube-core')
-
-			);?>
-
-			<?php printf(
-				'<select class="widefat" id="%s" name="%s"/>',
-				esc_attr( $this->get_field_id( 'show_count' ) ),
-				esc_attr( $this->get_field_name( 'show_count' ) )
-			);?>
-
-				<?php foreach( self::get_show_count_options() as $key => $value ):?>
-
-					<?php printf(
-						'<option value="%s" %s>%s</option>',
-						esc_attr( $key ),
-						selected( $key, $instance['show_count'], false ),
-						esc_html( $value )
-					);?>
-
-				<?php endforeach;?>
-
-			</select><!-- end <?php echo $this->get_field_id( 'show_count' );?> -->
-		</div>	
+		</div>		
 
 		<?php
 	}

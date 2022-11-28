@@ -8,35 +8,32 @@
 				<div class="p-4">
 					<?php
 
-					global $post, $add_new_post_screen;
+					if( is_object( $args['post'] ) ){
 
-					if( $post && ! $add_new_post_screen ){
-
-						if( current_user_can( 'edit_post', $post->ID ) ){
+						if( current_user_can( 'edit_post', $args['post']->ID ) ){
 
 							printf(
 								'<h1 class="page-title h3 my-3">%s</h1>',
-								get_the_title( $post->ID )
+								get_the_title( $args['post']->ID )
 							);
 
-							$base_url = streamtube_core_get_user_dashboard_url( get_queried_object_id(), $post->post_type );
+							$base_url = streamtube_core_get_user_dashboard_url( get_queried_object_id(), $args['post']->post_type );
 
 							if( ! get_option( 'permalink_structure' ) ){
 								$base_url = add_query_arg(
 									array(
-										'post_id'	=>	$post->ID
+										'post_id'	=>	$args['post']->ID
 									),
 									$base_url
 								);
 							}
 							else{
-								$base_url = trailingslashit( $base_url ) . $post->ID;
+								$base_url = trailingslashit( $base_url ) . $args['post']->ID;
 							}
 
 							streamtube_core()->get()->post->the_edit_post_menu( array(
 								'user_id'		=>	get_queried_object_id(),
-								'base_url'      =>  $base_url,
-								'post'			=>	$post
+								'base_url'      =>  $base_url				
 							) );
 
 							streamtube_core()->get()->post->the_edit_post_main();
@@ -49,7 +46,7 @@
 						}
 					}
 					else{
-						streamtube_core_load_template( 'post/edit/details.php', true );
+						streamtube_core_load_template( 'post/edit/details.php', true, $args );
 					}
 					?>
 

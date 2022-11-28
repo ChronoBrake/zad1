@@ -1,9 +1,5 @@
 <?php
 
-if( ! defined('ABSPATH' ) ){
-    exit;
-}
-
 $tsp_path = get_option( 'system_tsp_path', '/usr/bin/tsp' );
 
 $task_id = isset( $_GET['task_id'] ) ? (int)$_GET['task_id'] : -1;

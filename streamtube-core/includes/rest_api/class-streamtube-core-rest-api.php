@@ -52,4 +52,13 @@ class StreamTube_Core_Rest_API{
     public function get_rest_url( $path = '' ){
         return rest_url( "{$this->namespace}{$this->version}{$this->path}{$path}" );
     }
+
+    /**
+     *
+     * Plugin instance
+     * 
+     */
+    protected function plugin(){
+        return streamtube_core()->get();
+    }
 }

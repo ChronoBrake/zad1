@@ -48,17 +48,6 @@ class Streamtube_Core_User {
 
 	/**
 	 *
-	 * Holds the is verified meta key.
-	 * 
-	 * @var string
-	 *
-	 * @since  1.0.0
-	 * 
-	 */	
-	protected $_is_verified 	=	'_verification';
-
-	/**
-	 *
 	 * Check if current author is mine
 	 *
 	 * 
@@ -92,13 +81,11 @@ class Streamtube_Core_User {
 	 */
 	public function is_verified( $user_id = 0 ){
 
-		$user_id = (int)$user_id;
-
 		if( ! $user_id ){
 			$user_id = get_current_user_id();
 		}
 
-		$is_verified = get_user_meta( $user_id, $this->_is_verified, true );
+		$is_verified = get_user_meta( get_current_user_id(), '_verification', true );
 
 		/**
 		 *
@@ -111,72 +98,8 @@ class Streamtube_Core_User {
 		 * 
 		 */
 		return apply_filters( 'streamtube/core/user/is_verified', $is_verified, $user_id );
+
 	}
-
-	/**
-	 *
-	 * Verify User
-	 * 
-	 * @param  integer $user_id
-	 */
-	public function verify_user( $user_id = 0 ){
-
-		if( $this->is_verified( $user_id ) ){
-			return delete_user_meta( $user_id, $this->_is_verified );
-		}else{
-			update_user_meta( $user_id, $this->_is_verified, 'on' );
-		}
-	}
-
-    /**
-     *
-     * do AJAX update user verification badge
-     * 
-     * @return JSON
-     *
-     * @since 2.0
-     * 
-     */
-	public function ajax_verify_user(){
-        check_ajax_referer( '_wpnonce' );
-
-        if( ! current_user_can( 'administrator' ) || ! $_POST['user_id'] ){
-            wp_send_json_error( array(
-                'message'   =>  esc_html__( 'You do not have permission to verify this user.', 'streamtube-core' ) 
-            ) );
-        }
-
-        $user_id = (int)$_POST['user_id'];
-
-        $result = $this->verify_user( $user_id );
-
-        wp_send_json_success( array(
-            'message'   =>  esc_html__( 'OK', 'streamtube-core' ),
-            'button'    =>  $this->get_verify_button( $user_id )
-        ) );       	
-	}
-
-    /**
-     *
-     * The verification button
-     * 
-     * @param  int $user_id
-     * @return string
-     *
-     * @since 2.0
-     * 
-     */
-    public function get_verify_button( $user_id = 0 ){
-
-        $is_verified = $this->is_verified( $user_id );
-
-        return sprintf(
-            '<button type="button" class="button button-%s button-small button-verification" data-user-id="%s">%s</button>',
-            $is_verified ? 'primary' : 'secondary',
-            esc_attr( $user_id ),
-            $is_verified ? esc_html__( 'Verified', 'streamtube-core' ) : esc_html__( 'Not Verified', 'streamtube-core' )
-        );
-    }	
 
 	/**
 	 *
@@ -310,7 +233,7 @@ class Streamtube_Core_User {
 			$image_classes[] = $args['wrap_class'];
 		}
 
-		if( $this->is_verified( $user_data->ID ) ){
+		if( $this->is_verified() ){
 			$image_classes[] = 'is-verified';
 		}
 

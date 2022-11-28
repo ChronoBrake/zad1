@@ -60,13 +60,13 @@ class Streamtube_Core_Taxonomy {
 			"show_in_nav_menus" 					=> true,
 			"query_var" 							=> true,
 			"rewrite" 								=> array(
-				'slug' 			=> sanitize_key( get_option( 'taxonomy_' . self::TAX_CATEGORY . '_slug', self::TAX_CATEGORY ) ), 
+				'slug' 			=> self::TAX_CATEGORY, 
 				'with_front' 	=> true,  
 				'hierarchical' 	=> true
 			),
 			"show_admin_column" 					=> true,
 			"show_in_rest" 							=> false,
-			"rest_base" 							=> self::TAX_CATEGORY,
+			"rest_base" 							=> "video_category",
 			"rest_controller_class" 				=> "WP_REST_Terms_Controller",
 			"show_in_quick_edit" 					=> true,
 		);
@@ -99,12 +99,12 @@ class Streamtube_Core_Taxonomy {
 			"show_in_nav_menus" 					=> true,
 			"query_var" 							=> true,
 			"rewrite" 								=> array(
-				'slug' 			=> sanitize_key( get_option( 'taxonomy_' . self::TAX_TAG . '_slug', self::TAX_TAG ) ), 
+				'slug' 			=> self::TAX_TAG, 
 				'with_front' 	=> true
 			),
 			"show_admin_column" 					=> true,
 			"show_in_rest" 							=> false,
-			"rest_base" 							=> self::TAX_TAG,
+			"rest_base" 							=> "video_tag",
 			"rest_controller_class"					=> "WP_REST_Terms_Controller",
 			"show_in_quick_edit" 					=> true,
 		);
@@ -121,14 +121,14 @@ class Streamtube_Core_Taxonomy {
 	 */
 	public function report_category(){
 		$labels = array(
-			"name" 									=> esc_html__( "Reports", "streamtube-core" ),
-			"singular_name" 						=> esc_html__( "Report", "streamtube-core" ),
+			"name" 									=> esc_html__( "Report Categories", "streamtube-core" ),
+			"singular_name" 						=> esc_html__( "Report Category", "streamtube-core" ),
 		);
 
 		$args = array(
-			"label" 								=> esc_html__( "Report", "streamtube-core" ),
+			"label" 								=> esc_html__( "Report Category", "streamtube-core" ),
 			"labels" 								=> $labels,
-			"public" 								=> false,
+			"public" 								=> true,
 			"publicly_queryable" 					=> true,
 			"hierarchical" 							=> true,
 			"show_ui" 								=> true,
@@ -142,13 +142,13 @@ class Streamtube_Core_Taxonomy {
 			),
 			"show_admin_column" 					=> true,
 			"show_in_rest" 							=> false,
-			"rest_base" 							=> self::TAX_REPORT,
+			"rest_base" 							=> "report_category",
 			"rest_controller_class" 				=> "WP_REST_Terms_Controller",
 			"show_in_quick_edit" 					=> true,
 		);
 
 		register_taxonomy( self::TAX_REPORT, array( 'video' ), $args );
-	}
+	}	
 
 	/**
 	 *
@@ -198,55 +198,22 @@ class Streamtube_Core_Taxonomy {
 
 	/**
 	 *
-	 * Get thumbnail ID
-	 * 
-	 * @param  WP_Term $term
-	 * 
-	 */
-	public function get_thumbnail_id( $term ){
-		return get_term_meta( $term->term_id, 'thumbnail_id', true );
-	}
-
-	/**
-	 *
 	 * Get term thumbnail image URL
 	 * 
-	 * @param  WP_Term $term
+	 * @param  int $term_id
 	 * @return string
 	 *
 	 * @since 2.2.1
 	 * 
 	 */
-	public function get_thumbnail_url( $term, $size = 'large' ){
+	public function get_thumbnail_url( $term_id, $size = 'medium' ){
+		$thumbnail = get_term_meta( $term_id, 'thumbnail_id', true );
 
-		if( is_int( $term ) ){
-			$term = get_term( $term );
+		if( wp_attachment_is_image( $thumbnail ) ){
+			$thumbnail = wp_get_attachment_image_url( $thumbnail, $size );
 		}
 
-		if( ! $term ){
-			return;
-		}
-
-		$thumbnail_url = $this->get_thumbnail_id( $term );
-
-		if( wp_http_validate_url( $thumbnail_url ) ){
-			return $thumbnail_url;
-		}
-
-		if( wp_attachment_is_image( $thumbnail_url ) ){
-			$thumbnail_url = wp_get_attachment_image_url( $thumbnail_url, $size );
-		}
-
-		/**
-		 *
-		 * Filter the thumbnail URL
-		 *
-		 * @param string $thumbnail_url
-		 * @param WP_Term $term
-		 * @param string $size
-		 * 
-		 */
-		return apply_filters( 'streamtube/core/taxonomy/thumbnail_url', $thumbnail_url, $term, $size );
+		return $thumbnail;
 	}
 
 	/**
@@ -266,22 +233,18 @@ class Streamtube_Core_Taxonomy {
 		<div class="form-field term-field-wrap">
 			<div class="metabox-wrap">
 				<label for="thumbnail_id">
-					<?php esc_html_e( 'Featured Image', 'streamtube-core' ); ?>
+					<?php esc_html_e( 'Thumbnail Image', 'streamtube-core' ); ?>
 				</label>
 
-				<div class="field-group field-group-upload">
-
-					<button type="button" class="button-upload button button-secondary" data-media-type="image" data-media-source="url">
-						<?php esc_html_e( 'Upload An Image', 'streamtube-core' );?>
+				<div class="field-group">
+					<button type="button" class="button-upload button-image w-100" data-media-type="image" data-media-source="url">
 	                </button>
 
-	            	<div class="placeholder-image no-image w-100">
-	            		<button type="button" class="button button-secondary button-delete">
-	            			<span class="dashicons dashicons-no"></span>
-	            		</button>
-	            	</div>
-
-					<input class="input-field" name="tax_meta[thumbnail_id]" id="thumbnail_id" type="hidden" value="">
+	                <?php printf(
+	                	'<input class="input-field" name="tax_meta[thumbnail_id]" id="thumbnail_id" type="text" value="%s" placeholder="%s">',
+	                	'',
+	                	esc_attr__( 'Thumbnail Image ID/URL', 'streamtube-core' )
+	                )?>
 				</div>
 			</div>
 		</div>
@@ -299,7 +262,7 @@ class Streamtube_Core_Taxonomy {
 	 * @since 2.2.1
 	 * 
 	 */
-	public function edit_thumbnail_field( $term, $taxonomy ){
+	public function edit_thumbnail_field( $term ){
 
 		wp_enqueue_media();
 
@@ -309,39 +272,31 @@ class Streamtube_Core_Taxonomy {
 		<tr class="form-field term-description-wrap">
 			<th scope="row">
 				<label for="thumbnail_id">
-					<?php esc_html_e( 'Featured Image', 'streamtube-core' ); ?>
+					<?php esc_html_e( 'Thumbnail Image', 'streamtube-core' ); ?>
 				</label>				
 			</th>
 
 			<td>
-				<div class="metabox-wrap">
-					<div class="field-group field-group-upload">
+				<div class="form-field term-field-wrap">
+					<div class="metabox-wrap">
+						<div class="field-group">
+							<button type="button" class="button-upload button-image w-100" data-media-type="image" data-media-source="url">
 
-						<button type="button" class="button-upload button button-secondary" data-media-type="image" data-media-source="url">
-							<?php esc_html_e( 'Upload An Image', 'streamtube-core' );?>
-		                </button>
+								<?php if( $thumbnail_url ){
+									printf(
+										'<img src="%s">',
+										esc_url( $thumbnail_url )
+									);
+								}?>
 
-		            	<?php printf(
-		            		'<div class="placeholder-image %s w-100">',
-		            		! $thumbnail_url ? 'no-image' : ''
-		            	);?>
-		            		<button type="button" class="button button-secondary button-delete">
-		            			<span class="dashicons dashicons-no"></span>
-		            		</button>
+			                </button>
 
-							<?php if( $thumbnail_url ){
-								printf(
-									'<img src="%s">',
-									esc_url( $thumbnail_url )
-								);
-							}?>
-
-		            	</div>
-
-						<?php printf(
-							'<input class="input-field" name="tax_meta[thumbnail_id]" id="thumbnail_id" type="hidden" value="%s">',
-							esc_attr( $thumbnail_url )
-						)?>
+			                <?php printf(
+			                	'<input class="input-field" name="tax_meta[thumbnail_id]" id="thumbnail_id" type="text" value="%s" placeholder="%s">',
+			                	get_term_meta( $term->term_id, 'thumbnail_id', true ),
+			                	esc_attr__( 'Thumbnail Image ID/URL', 'streamtube-core' )
+			                )?>
+						</div>
 					</div>
 				</div>
 			</td>

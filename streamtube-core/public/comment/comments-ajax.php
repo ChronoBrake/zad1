@@ -22,15 +22,6 @@ if( did_action( 'streamtube/core/widget/comments_template/loaded' ) ){
 	return;
 }
 
-if( ! comments_open() && ! get_comments_number() ){
-	return;
-}
-$comments_args = array(
-	'post_id'	=>	get_the_ID()
-);
-if( isset( $_GET['comment_id'] ) && get_comment_type( $_GET['comment_id'] ) ){
-	$comments_args['comment__in'] = array( $_GET['comment_id'] );
-}
 ?>
 <div class="comments-list-lg bg-white rounded shadow-sm mb-4">
 	<div id="comments" class="comments-area comments-ajax d-flex flex-column">
@@ -48,19 +39,12 @@ if( isset( $_GET['comment_id'] ) && get_comment_type( $_GET['comment_id'] ) ){
 		<?php endif;?>
 
 		<?php if( comments_open() || have_comments() ): ?>
-
-			<?php if( array_key_exists( 'comment__in' , $comments_args) ){
-			printf(
-				'<a class="btn border-bottom d-block w-100 rounded-0" href="%s">%s</a>',
-				esc_url( get_permalink( get_the_ID() ) ) . '#comments-list',
-				esc_html__( 'View all comments', 'streamtube-core' )
-			);				
-			}?>
-
 			<ul id="comments-list" class="comments-list list-unstyled py-4 m-0 flex-grow-1 position-relative">
-				<?php
+				<?php 
 
-				streamtube_core_list_comments( $comments_args );		
+				streamtube_core_list_comments( array(
+					'post_id'	=>	get_the_ID()
+				) );		
 
 				if( comments_open() && ! have_comments() ){
 					printf(

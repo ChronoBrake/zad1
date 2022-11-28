@@ -28,24 +28,7 @@ class Streamtube_Core_License{
      * @return WP_Error|true
      */
     public function is_verified(){
-
-        $check = get_option( 'envato_' . self::ENVATO_ITEM_ID );
-
-        if( ! $check || empty( $check ) || ! is_array( $check ) || ! array_key_exists( 'item', $check ) ){
-            return new WP_Error(
-                'not_verified',
-                esc_html__( 'Not verified yet', 'streamtube-core' )
-            );
-        }
-
-        if( (int)$check['item']['id'] == self::ENVATO_ITEM_ID ){
-            return $check;
-        }
-
-        return new WP_Error(
-            'not_verified',
-            esc_html__( 'Not verified yet', 'streamtube-core' )
-        );
+        return true;
     }
 
     public function get_message(){

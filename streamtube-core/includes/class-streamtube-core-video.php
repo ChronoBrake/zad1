@@ -25,6 +25,17 @@ if( ! defined('ABSPATH' ) ){
 class Streamtube_Core_Video {
 
 	/**
+	 * 
+	 *
+	 * Plugin instance.
+	 * 
+	 * @return [type] [description]
+	 */
+	private function plugin(){
+		return streamtube_core()->get();
+	}
+
+	/**
 	 *
 	 * Filter video embed url
 	 * 
@@ -103,16 +114,6 @@ class Streamtube_Core_Video {
 	}
 
 	/**
-	 * Convert rich to video type
-	 */
-	public function filter_embed_type( $data, $post, $width, $height ){
-		if( $post->post_type == Streamtube_Core_Post::CPT_VIDEO ){
-			$data['type'] = 'video';
-		}
-		return $data;
-	}
-
-	/**
 	 *
 	 * Load the share button
 	 * 
@@ -181,6 +182,21 @@ class Streamtube_Core_Video {
 	 */
 	public function load_single_post_date(){
 		get_template_part( 'template-parts/post-date', get_option( 'single_video_date_format', 'diff' ) );
+	}
+
+	/**
+	 *
+	 * Load single video post views 
+	 * 
+	 * @since 1.0.8
+	 * 
+	 */
+	public function load_single_post_views(){
+
+		if( ! $this->plugin()->googlesitekit->analytics->is_connected() ){
+			return;
+		}
+		get_template_part( 'template-parts/post-views', '', array( 'realtime' => false ) );
 	}
 
 	/**

@@ -3,15 +3,20 @@ if( ! defined('ABSPATH' ) ){
     exit;
 }
 
-global $post, $post_type_screen;
+$post_id = 0;
 
-$taxes_not_included = array( 
-	'video_tag', 
-	'post_tag', 
-	'post_format', 
-	'report_category',
-	'video_collection'
-);
+$postdata = $args['post'];
+
+$args = $args['args'];
+
+if( $postdata  ){
+
+	$args['post_type'] = $postdata->post_type;
+
+	$post_id = $postdata->ID;
+}
+
+$taxes_not_included = array( 'video_tag', 'post_tag', 'post_format', 'report_category' );
 
 /**
  *
@@ -21,15 +26,15 @@ $taxes_not_included = array(
  * @since 1.3
  * 
  */
-$taxes_not_included = apply_filters( 'streamtube/core/post/edit/taxes_not_included', $taxes_not_included );
+$taxes_not_included = apply_filters( 'streamtube/core/post/edit/taxes_not_included', $taxes_not_included, $post_id );
 
-if( is_post_type_viewable( $post_type_screen )):
+if( is_post_type_viewable( $args['post_type'] )):
 
-	$taxonomies = get_object_taxonomies( $post_type_screen, 'object' );
+	$taxonomies = get_object_taxonomies( $args['post_type'], 'object' );
 
 	if( $taxonomies ):
 
-		for ( $i = 0; $i < count( $taxes_not_included ); $i++) { 
+		for ( $i=0; $i < count( $taxes_not_included ); $i++) { 
 			if( array_key_exists( $taxes_not_included[$i] , $taxonomies ) ){
 				unset( $taxonomies[ $taxes_not_included[$i]] );
 			}
@@ -37,7 +42,7 @@ if( is_post_type_viewable( $post_type_screen )):
 
 		foreach ( $taxonomies as $tax => $object ):
 
-			if( get_option( $post_type_screen . '_taxonomy_' . $tax, 'on' ) ):
+			if( get_option( $args['post_type'] . '_taxonomy_' . $tax, 'on' ) ):
 
 				printf(
 					'<div class="widget widget-taxonomy widget-%1$s tax-%1$s shadow-sm rounded bg-white border" id="widget-%1$s">',
@@ -60,7 +65,7 @@ if( is_post_type_viewable( $post_type_screen )):
 					    	 * 
 					    	 * @since 1.3
 					    	 */
-					    	$title = apply_filters( 'streamtube/core/post/edit/tax/title', $title, $object, $tax );
+					    	$title = apply_filters( 'streamtube/core/post/edit/tax/title', $title, $object, $tax, $post_id );
 
 					    	echo $title;
 					    	?>
@@ -75,7 +80,7 @@ if( is_post_type_viewable( $post_type_screen )):
 						 *
 						 * @since 2.0
 						 */
-						do_action( 'streamtube/core/post/edit/tax/before', $object, $tax );
+						do_action( 'streamtube/core/post/edit/tax/before', $object, $tax, $post_id );
 						?>
 
 						<?php
@@ -89,9 +94,9 @@ if( is_post_type_viewable( $post_type_screen )):
 						 * 
 						 * @since 1.3
 						 */
-						$hierarchical = apply_filters( 'streamtube/core/post/edit/tax/hierarchical', $object->hierarchical, $object, $tax );
+						$hierarchical = apply_filters( 'streamtube/core/post/edit/tax/hierarchical', $object->hierarchical, $object, $tax, $post_id );
 
-						$max_items = (int)get_option( $post_type_screen . '_taxonomy_' . $tax . '_max_items', 0 );
+						$max_items = (int)get_option( $args['post_type'] . '_taxonomy_' . $tax . '_max_items', 0 );
 
 						/**
 						 *
@@ -104,7 +109,7 @@ if( is_post_type_viewable( $post_type_screen )):
 						 * @since 2.0
 						 * 
 						 */
-						$max_items = apply_filters( 'streamtube/core/post/edit/tax/max_items', $max_items, $object, $tax );
+						$max_items = apply_filters( 'streamtube/core/post/edit/tax/max_items', $max_items, $object, $tax, $post_id );
 
 						if( $hierarchical ):
 						?>
@@ -129,14 +134,14 @@ if( is_post_type_viewable( $post_type_screen )):
 								 * @since 1.3
 								 * 
 								 */
-								$checklist_args = apply_filters( 'streamtube/core/post/edit/tax/checklist_args', $checklist_args, $object, $tax );
+								$checklist_args = apply_filters( 'streamtube/core/post/edit/tax/checklist_args', $checklist_args, $object, $tax , $post_id );
 
-								wp_terms_checklist( $post ? $post->ID : 0, $checklist_args );
+								wp_terms_checklist( $post_id, $checklist_args );
 								?>
 							</ul>
 						<?php else:?>
 							<?php
-	                        $tag_terms = get_the_terms( $post->ID, $tax );
+	                        $tag_terms = get_the_terms( $post_id, $tax );
 
 	                        streamtube_core_the_field_control( array(
 	                    		'label'			=>	esc_html__( $object->label, 'streamtube-core' ),
@@ -157,7 +162,7 @@ if( is_post_type_viewable( $post_type_screen )):
 						 *
 						 * @since 2.0
 						 */
-						do_action( 'streamtube/core/post/edit/tax/after', $object, $tax );
+						do_action( 'streamtube/core/post/edit/tax/after', $object, $tax, $post_id );
 						?>
 
 					</div>		

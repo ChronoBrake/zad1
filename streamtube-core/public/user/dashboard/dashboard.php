@@ -7,7 +7,7 @@ define( 'STREAMTUBE_CORE_IS_DASHBOARD', true );
 
 $welcome_text = sprintf(
     esc_html__( 'Welcome back, %s!', 'streamtube-core' ),
-    '<strong class="text-body">'. wp_get_current_user()->display_name .'</strong>'
+    '<strong class="text-primary">'. wp_get_current_user()->display_name .'</strong>'
 );
 
 /**
@@ -28,7 +28,7 @@ wp_enqueue_script( 'bootstrap-masonry.pkgd' );
     </h1>
 
     <?php if( $welcome_text ): ?>
-        <span class="ms-auto text-secondary fw-bold">
+        <span class="ms-auto text-body fw-bold">
             <?php echo $welcome_text; ?>
         </span>
     <?php endif;?>

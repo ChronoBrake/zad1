@@ -4,8 +4,6 @@ if( ! defined('ABSPATH' ) ){
 }
 
 global $post;
-
-$post_status = get_post_status();
 ?>
 
 <tr <?php post_class( 'bg-white' ); ?> id="row-<?php the_ID(); ?>">
@@ -20,7 +18,7 @@ $post_status = get_post_status();
 	<td scope="row" class="col-title" data-title="<?php esc_attr_e( '#', 'streamtube-core' ); ?>">
 		<div class="d-sm-flex gap-3">
 
-			<a title="<?php echo esc_attr( wp_strip_all_tags(get_the_title()) ); ?>" href="<?php the_permalink() ?>">
+			<a title="<?php echo esc_attr( get_the_title() ); ?>" href="<?php the_permalink() ?>">
 	            <div class="post-thumbnail ratio ratio-16x9 rounded overflow-hidden bg-dark  mb-2 mb-sm-0">
                     <?php the_post_thumbnail( 'size-560-315', array(
                         'class' =>  'img-fluid'
@@ -42,7 +40,7 @@ $post_status = get_post_status();
             	?>
 
             	<?php the_title( 
-            		'<h2 class="post-title"><a title="'. esc_attr( wp_strip_all_tags(get_the_title()) ) .'" class="text-body" href="'. esc_url( get_permalink() ) .'">',
+            		'<h2 class="post-title"><a title="'. esc_attr( get_the_title() ) .'" class="text-body" href="'. esc_url( get_permalink() ) .'">',
             		'</a></h2>' 
             		); 
             	?>
@@ -71,7 +69,7 @@ $post_status = get_post_status();
 				endif;
 				?>
 
-            	<?php if( $post_status != 'trash' ):
+            	<?php if( get_post_status() != 'trash' ):
             		streamtube_core_load_template( 'post/table/row-buttons.php', false );
             	endif; ?>
            	</div>
@@ -91,9 +89,8 @@ $post_status = get_post_status();
 
 	<td class="col-visibility" data-title="<?php esc_attr_e( 'Visibility', 'streamtube-core' ); ?>">
 		<?php printf(
-			'<span class="text-capitalize badge bg-secondary badge-%1$s">%2$s</span>',
-			$post_status,
-			$post_status == 'publish' ? esc_html__( 'Published', 'streamtube-core' ) : $post_status
+			'<span class="text-capitalize badge bg-secondary badge-%1$s">%1$s</span>',
+			get_post_status()
 		);?>
 	</td>
 

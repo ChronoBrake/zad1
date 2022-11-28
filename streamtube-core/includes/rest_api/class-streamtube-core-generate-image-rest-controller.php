@@ -14,6 +14,8 @@ if ( ! defined( 'WPINC' ) ) {
  */
 class StreamTube_Core_Generate_Image_Rest_Controller extends StreamTube_Core_Rest_API{
 
+    protected $path     =   '/generate-image';
+
     /**
      * @since 1.0.6
      */
@@ -21,7 +23,7 @@ class StreamTube_Core_Generate_Image_Rest_Controller extends StreamTube_Core_Res
 
         register_rest_route(
             "{$this->namespace}{$this->version}",
-            '/generate-image',
+            $this->path,
             array(
                 'methods'   =>  WP_REST_Server::CREATABLE,
                 'callback'  =>  array( $this , 'create_item' ),
@@ -35,18 +37,13 @@ class StreamTube_Core_Generate_Image_Rest_Controller extends StreamTube_Core_Res
                         'validate_callback' => function( $param, $request, $key ) {
                             return is_numeric( $param ) && get_post_type( $param ) == 'video';
                         }
-                    ),
-                    'type'    =>  array(
-                        'validate_callback' => function( $param, $request, $key ) {
-                            return is_string( $param ) && in_array( $param , array( 'image', 'animated_image' ));
-                        }
                     )
                 ),
                 'permission_callback'   =>  function( $request ){
-                    return current_user_can( 'edit_posts' );
+                    return current_user_can( 'edit_others_posts' );
                 }
             )
-        );          
+        );      
     }
 
     /**
@@ -57,21 +54,8 @@ class StreamTube_Core_Generate_Image_Rest_Controller extends StreamTube_Core_Res
      * @since 1.0.6
      */
     public function create_item( $request ){
-
-        if( ! $request['mediaid'] ){
-
-            $Post = new Streamtube_Core_Post();
-
-            $request['mediaid'] = $Post->get_source( $request['parent'] );
-        }
-
          if( wp_attachment_is( 'video', $request['mediaid'] ) ){
-
-            if( $request['type'] == 'image' ){
-                return $this->generate_image_from_file( $request['mediaid'], $request );
-            }else{
-                return $this->generate_animated_image_from_file( $request['mediaid'], $request );
-            }
+            return $this->generate_image_from_file( $request['mediaid'], $request );
         }
         else{
             return $this->generate_image_from_url( $request['mediaid'], $request );
@@ -87,94 +71,57 @@ class StreamTube_Core_Generate_Image_Rest_Controller extends StreamTube_Core_Res
      * @since 1.0.6
      * 
      */
-    private function generate_image_from_file( $attachment_id = 0, $request ){
+    private function generate_image_from_file( $attachment_id, $request ){
 
-        $thumbnail_id = 0;
+        $bunnycdn = streamtube_core()->get()->bunnycdn;
 
-        if( has_post_thumbnail( $attachment_id ) ){
-            $thumbnail_id = get_post_thumbnail_id( $attachment_id );
+        if( $bunnycdn->settings['is_connected'] ){
+
+            if( ! function_exists( 'media_sideload_image' ) ){
+                require_once(ABSPATH . 'wp-admin/includes/media.php');
+                require_once(ABSPATH . 'wp-admin/includes/file.php');
+                require_once(ABSPATH . 'wp-admin/includes/image.php');
+            }
+
+            $thumbnail_url = $bunnycdn->bunnyAPI->get_video_thumbnail_url( $bunnycdn->get_video_guid( $attachment_id ) );
+
+            $thumbnail_id = media_sideload_image( $thumbnail_url, $attachment_id, null, 'id' );
+
+            if( is_wp_error(  $thumbnail_id ) ){
+                wp_send_json_error( $thumbnail_id );
+            }else{
+                set_post_thumbnail( $attachment_id, $thumbnail_id );
+                if( $request['parent'] ){
+                    set_post_thumbnail( $request['parent'], $thumbnail_id );
+                }
+                wp_send_json_success( array(
+                    'post_id'       =>  $request['parent'],
+                    'thumbnail_url' =>  wp_get_attachment_image_url( $thumbnail_id, 'full' )
+                ) );                
+            }
         }
 
-        /**
-         *
-         * Filter thumbnail image ID
-         * 
-         */
-        $thumbnail_id = apply_filters( 'streamtube/core/generate_image_from_file', $thumbnail_id, $attachment_id );
-
-        if( is_wp_error( $thumbnail_id ) ){
-            wp_send_json_error( $thumbnail_id );
-        }
-
-        if( empty( $thumbnail_id ) ){
+        if( ! function_exists( 'wp_video_encoder' ) ){
             wp_send_json_error( new WP_Error(
-                'thumbnail_id_not_found',
-                esc_html__( 'Thumbnail Image was not found', 'streamtube-core' )
+                'encoder_not_found',
+                esc_html__( 'Encoder was not found', 'streamtube-core' )
             ) );
         }
 
-        if( is_int( $thumbnail_id ) && wp_attachment_is( 'image', $thumbnail_id ) && $request['parent'] ){
-            set_post_thumbnail( $request['parent'], $thumbnail_id );
+        $results = wp_video_encoder()->get()->post->generate_attachment_image( $attachment_id );
 
-            wp_send_json_success( array(
-                'post_id'       =>  $request['parent'],
-                'thumbnail_url' =>  wp_get_attachment_image_url( $thumbnail_id, 'large' )
-            ) );              
-        }
-    }
-
-    /**
-     *
-     * Generate animated image from given attachment
-     * 
-     * @param  int $attachment_id
-     *
-     * @since 1.0.6
-     * 
-     */
-    private function generate_animated_image_from_file( $attachment_id = 0, $request ){
-
-        $Post = new Streamtube_Core_Post();
-
-        $thumbnail_url = '';
-
-        if( "" != $maybe_thumbnail_url = $Post->get_thumbnail_image_url_2( $attachment_id ) ){
-            $thumbnail_url = $maybe_thumbnail_url;
+        if( is_wp_error( $results ) ){
+            wp_send_json_error( $results );
         }
 
-        /**
-         *
-         * Filter thumbnail image ID
-         * 
-         */
-        $thumbnail_url = apply_filters( 'streamtube/core/generate_animated_image_from_file', $thumbnail_url, $attachment_id );
-
-        if( is_wp_error( $thumbnail_url ) ){
-            wp_send_json_error( $thumbnail_url );
+        if( $request['parent'] ){
+            set_post_thumbnail( $request['parent'], $results['thumbnail_id'] );
         }
 
-        if( empty( $thumbnail_url ) ){
-            wp_send_json_error( new WP_Error(
-                'thumbnail_not_found',
-                esc_html__( 'Thumbnail Image was not found', 'streamtube-core' )
-            ) );
-        }
-
-        if( is_string( $thumbnail_url ) && ! empty( $thumbnail_url ) && $request['parent'] ){
-
-            $Post->update_thumbnail_image_url_2( $attachment_id, $thumbnail_url );
-            $Post->update_thumbnail_image_url_2( $request['parent'], $thumbnail_url );
-
-            wp_send_json_success( array(
-                'post_id'       =>  $request['parent'],
-                'thumbnail_url' =>  $thumbnail_url
-            ) );              
-        }
-
-        wp_send_json_error( new WP_Error(
-            'undefined_error',
-            esc_html__( 'Undefined Error', 'streamtube-core' )
-        ) );        
+        wp_send_json_success( array_merge( $results, array(
+            'post_id'       =>  $request['parent'],
+            'thumbnail_url' =>  wp_get_attachment_image_url( $results['thumbnail_id'], 'full' )
+        ) ) );
     }
 
     /**
@@ -188,38 +135,14 @@ class StreamTube_Core_Generate_Image_Rest_Controller extends StreamTube_Core_Res
      */
     private function generate_image_from_url( $url, $request ){
 
-        $thumbnail_id = 0;
+        $results = $this->plugin()->oembed->generate_image( $request['parent'], $url );
 
-        /**
-         *
-         * Filter thumbnail image ID
-         * 
-         */
-        $thumbnail_id = apply_filters( 'streamtube/core/generate_image_from_url', $thumbnail_id, $url );
-
-        if( ! $thumbnail_id || is_wp_error( $thumbnail_id ) ){
-            $oembed = new Streamtube_Core_oEmbed();
-
-            $results = $oembed->generate_image( $request['parent'], $url );
-
-            if( is_wp_error( $results ) ){
-                wp_send_json_error( $results );
-            }
-
-            wp_send_json_success( array_merge( $results, array(
-                'thumbnail_url' =>  wp_get_attachment_image_url( $results['thumbnail_id'], 'large' )
-            ) ) );            
+        if( is_wp_error( $results ) ){
+            wp_send_json_error( $results );
         }
 
-        if( is_int( $thumbnail_id ) && wp_attachment_is( 'image', $thumbnail_id ) ){
-            wp_send_json_success( array(
-                'thumbnail_url' =>  wp_get_attachment_image_url( $thumbnail_id, 'large' )
-            ) );
-        }
-
-        wp_send_json_error( new WP_Error(
-            'undefined_error',
-            esc_html__( 'Undefined Error', 'streamtube-core' )
-        ) );
+        wp_send_json_success( array_merge( $results, array(
+            'thumbnail_url' =>  wp_get_attachment_image_url( $results['thumbnail_id'], 'full' )
+        ) ) );
     }
 }

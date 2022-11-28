@@ -36,10 +36,6 @@
     display: none!important;
 }
 
-.gap-3{
-    gap: 1rem;
-}
-
 .badge{
     display: inline-block;
     padding: 0.3rem;
@@ -60,26 +56,19 @@
     color: #fff;
 }
 
-.bg-disconnected,
-.bg-downloading,
 .bg-processing,
-.bg-warning,
-.bg-private{
+.bg-warning{
     background: #d09e06;
     color: #fff;
 }
 
-.bg-connected,
-.bg-ready,
 .bg-finished,
 .bg-resolution_finished,
-.bg-success,
-.bg-public{
+.bg-success{
     background: #198754;
     color: #fff;
 }
 
-.bg-initializing,
 .bg-encoding,
 .bg-scheduling,
 .bg-running,
@@ -88,7 +77,6 @@
     color: #fff;    
 }
 
-.bg-live_stream_closed,
 .bg-uploading,
 .bg-queued,
 .bg-secondary{
@@ -162,10 +150,6 @@
 .select2-container--open,
 #TB_ajaxContent .select2-container {
     z-index: 999999;
-}
-
-.btn .dashicons{
-    vertical-align: middle;
 }
 
 .field-help {
@@ -292,46 +276,25 @@
     padding: 1rem;
 }
 
-.metabox-wrap .placeholder-image {
+.metabox-wrap .button-image {
     padding: 0;
     border: none;
+    cursor: pointer;
     padding-bottom: calc(9 / 16 * 100%);
     position: relative;
     background: #ddd;
     margin-bottom:  1rem;
 }
 
-.metabox-wrap .placeholder-image img {
+
+.metabox-wrap .button-image img {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border: 1px solid #ddd;
-}
-
-.metabox-wrap .placeholder-image .button-delete{
-    position: absolute;
-    right: -9px;
-    top: -11px;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    line-height: 25px;
-    margin: 0;
-    padding: 0;
-    z-index: 1;
-    border: none;
-    background: red;
-}
-
-.metabox-wrap .placeholder-image.no-image .button-delete{
-    display:  none;
-}
-
-.metabox-wrap .placeholder-image .button-delete .dashicons{
-    color:  #fff;
+    border: 1px solid #ddd;    
 }
 
 .metabox-wrap .button {
@@ -483,28 +446,6 @@
     padding-left:  1rem;
 }
 
-.table-text-tracks .input-field{
-    width: 90%;
-}
-
-.table-text-tracks tbody tr{
-    cursor: grab;
-}
-
-.table-text-tracks tbody .ui-sortable-helper{
-    background: #f6f7f7;
-}
-
-.table-text-tracks thead th,
-.table-text-tracks tbody td{
-    padding: 15px 10px;
-    border: 1px solid #e9ecef;
-}
-
-.table-text-tracks tbody tr:first-child .track_remove{
-    display: none;
-}
-
 .button-yt-import .spinner{
     position: relative!important;
     transform: none!important;
@@ -615,17 +556,3 @@ div#yt-imported-videos .yt-video-list h3 a{
     display: inline-block;
     width: 3em    
 }
-
-#video-preview .ratio{
-    max-width: 700px;
-    margin: 0 auto;    
-}
-
-#video-preview iframe{
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;    
-}
-

@@ -26,14 +26,13 @@ class Streamtube_Core_User_Dashboard extends Streamtube_Core_User {
 
 	protected $endpoint = 'dashboard';
 
-	protected $post;
-
-	protected $comment;
-
-	public function __construct(){
-		$this->post = new Streamtube_Core_Post();
-
-		$this->comment = new Streamtube_Core_Comment();
+	/**
+	 *
+	 * Plugin instance
+	 * 
+	 */
+	private function plugin(){
+		return streamtube_core()->get();
 	}
 
 	/**
@@ -126,7 +125,7 @@ class Streamtube_Core_User_Dashboard extends Streamtube_Core_User {
 
 		$items['post'] = array(
 			'title'		=>	esc_html__( 'Posts', 'streamtube-core' ),
-			'badge'		=>	$this->post->get_pending_posts_badge( 'post' ),
+			'badge'		=>	$this->plugin()->post->get_pending_posts_badge( 'post' ),
 			'desc'		=>	esc_html__( 'All blog posts', 'streamtube-core' ),
 			'icon'		=>	'icon-edit',
 			'callback'	=>	function(){
@@ -139,7 +138,7 @@ class Streamtube_Core_User_Dashboard extends Streamtube_Core_User {
 
 		$items['video'] = array(
 			'title'		=>	esc_html__( 'Videos', 'streamtube-core' ),
-			'badge'		=>	$this->post->get_pending_posts_badge( 'video' ),
+			'badge'		=>	$this->plugin()->post->get_pending_posts_badge( 'video' ),
 			'desc'		=>	esc_html__( 'All videos', 'streamtube-core' ),
 			'icon'		=>	'icon-indent-right',
 			'callback'	=>	function(){
@@ -152,7 +151,7 @@ class Streamtube_Core_User_Dashboard extends Streamtube_Core_User {
 
 		$items['comments'] = array(
 			'title'		=>	esc_html__( 'Comments', 'streamtube-core' ),
-			'badge'		=>	$this->comment->get_pending_comments_badge(),
+			'badge'		=>	$this->plugin()->comment->get_pending_comments_badge(),
 			'desc'		=>	esc_html__( 'All comments', 'streamtube-core' ),
 			'icon'		=>	'icon-chat',
 			'callback'	=>	function(){
@@ -325,7 +324,7 @@ class Streamtube_Core_User_Dashboard extends Streamtube_Core_User {
 			$types['upload'] = array(
 				'text'	=>	esc_html__( 'Upload Video', 'streamtube-core' ),
 				'icon'	=>	'icon-videocam',
-				'cap'	=>	array( 'Streamtube_Core_Permission', 'can_upload' )
+				'cap'	=>	'publish_posts'
 			);
 		}
 
@@ -333,7 +332,7 @@ class Streamtube_Core_User_Dashboard extends Streamtube_Core_User {
 			$types['embed'] = array(
 				'text'	=>	esc_html__( 'Embed', 'streamtube-core' ),
 				'icon'	=>	'icon-youtube-play',
-				'cap'	=>	array( 'Streamtube_Core_Permission', 'can_embed' )
+				'cap'	=>	'publish_posts'
 			);
 		}
 

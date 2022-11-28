@@ -63,8 +63,6 @@ class Streamtube_Core_Advertising_Ad_Schedule{
      */
     public $placement       = array();
 
-    protected $post;
-
     /**
      *
      * Class contructor
@@ -78,8 +76,13 @@ class Streamtube_Core_Advertising_Ad_Schedule{
             'midroll'       =>  esc_html__( 'Mid-roll', 'streamtube-core' ),
             'postroll'      =>  esc_html__( 'Post-roll', 'streamtube-core' )
         );
+    }
 
-        $this->post = new Streamtube_Core_Post();
+    /**
+     * Plugin instance
+     */
+    private function plugin(){
+        return streamtube_core()->get();
     }
 
     /**
@@ -431,7 +434,7 @@ class Streamtube_Core_Advertising_Ad_Schedule{
     public function get_active_ad_schedules( $post_id = 0 ){
 
         if( $post_id ){
-            $maybe_post_ads = $this->post->get_ad_schedules( $post_id );
+            $maybe_post_ads = $this->plugin()->post->get_ad_schedules( $post_id );
 
             if( count( $maybe_post_ads ) > 0 ){
                 // Remove inactive ads

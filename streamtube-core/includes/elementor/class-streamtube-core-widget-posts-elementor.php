@@ -323,7 +323,7 @@ class Streamtube_Core_Widget_Posts_Elementor extends \Elementor\Widget_Base{
             $this->add_control(
                 'col_xxl',
                 array(
-                    'label'     =>  esc_html__( 'Columns - Extra extra large ≥1400px', 'streamtube-core' ),
+                    'label'     =>  esc_html__( 'Extra extra large ≥1400px', 'streamtube-core' ),
                     'type'      =>  \Elementor\Controls_Manager::NUMBER,
                     'default'   =>  4
                 )
@@ -332,7 +332,7 @@ class Streamtube_Core_Widget_Posts_Elementor extends \Elementor\Widget_Base{
             $this->add_control(
                 'col_xl',
                 array(
-                    'label'     =>  esc_html__( 'Columns - Extra large ≥1200px', 'streamtube-core' ),
+                    'label'     =>  esc_html__( 'Extra large ≥1200px', 'streamtube-core' ),
                     'type'      =>  \Elementor\Controls_Manager::NUMBER,
                     'default'   =>  4
                 )
@@ -341,7 +341,7 @@ class Streamtube_Core_Widget_Posts_Elementor extends \Elementor\Widget_Base{
             $this->add_control(
                 'col_lg',
                 array(
-                    'label'     =>  esc_html__( 'Columns - Large ≥992px', 'streamtube-core' ),
+                    'label'     =>  esc_html__( 'Large ≥992px', 'streamtube-core' ),
                     'type'      =>  \Elementor\Controls_Manager::NUMBER,
                     'default'   =>  2
                 )
@@ -350,7 +350,7 @@ class Streamtube_Core_Widget_Posts_Elementor extends \Elementor\Widget_Base{
             $this->add_control(
                 'col_md',
                 array(
-                    'label'     =>  esc_html__( 'Columns - Medium ≥768px', 'streamtube-core' ),
+                    'label'     =>  esc_html__( 'Medium ≥768px', 'streamtube-core' ),
                     'type'      =>  \Elementor\Controls_Manager::NUMBER,
                     'default'   =>  2
                 )
@@ -359,7 +359,7 @@ class Streamtube_Core_Widget_Posts_Elementor extends \Elementor\Widget_Base{
             $this->add_control(
                 'col_sm',
                 array(
-                    'label'     =>  esc_html__( 'Columns - Small ≥576px', 'streamtube-core' ),
+                    'label'     =>  esc_html__( 'Small ≥576px', 'streamtube-core' ),
                     'type'      =>  \Elementor\Controls_Manager::NUMBER,
                     'default'   =>  1
                 )
@@ -368,7 +368,7 @@ class Streamtube_Core_Widget_Posts_Elementor extends \Elementor\Widget_Base{
             $this->add_control(
                 'col',
                 array(
-                    'label'     =>  esc_html__( 'Columns - Extra small <576px', 'streamtube-core' ),
+                    'label'     =>  esc_html__( 'Extra small <576px', 'streamtube-core' ),
                     'type'      =>  \Elementor\Controls_Manager::NUMBER,
                     'default'   =>  1
                 )
@@ -484,30 +484,6 @@ class Streamtube_Core_Widget_Posts_Elementor extends \Elementor\Widget_Base{
                 'tab'       =>  \Elementor\Controls_Manager::TAB_CONTENT
             )
         );
-
-           $this->add_control(
-                'live_stream',
-                array(
-                    'label'     =>  esc_html__( 'Live Stream', 'streamtube-core' ),
-                    'type'      =>  \Elementor\Controls_Manager::SWITCHER,
-                    'default'   =>  '',
-                    'description'   =>  esc_html__( 'Retrieve Live Streams', 'streamtube-core' )
-                )
-            );
-
-           $this->add_control(
-                'live_status',
-                array(
-                    'label'     =>  esc_html__( 'Live Status', 'streamtube-core' ),
-                    'type'      =>  \Elementor\Controls_Manager::SELECT2,
-                    'default'   =>  array( 'connected' ),
-                    'condition' =>  array(
-                        'live_stream' =>  'yes'
-                    ),                    
-                    'multiple'  =>  true,
-                    'options'   =>  Streamtube_Core_Widget_Posts::get_live_statuses()
-                )
-            );                      
 
             $this->add_control(
                 'post_type',
@@ -649,26 +625,6 @@ class Streamtube_Core_Widget_Posts_Elementor extends \Elementor\Widget_Base{
                     'description'   =>  esc_html__( 'Retrieve posts of current logged in user', 'streamtube-core' )
                 )
             );
-
-            $this->add_control(
-                'current_logged_in_history',
-                array(
-                    'label'     =>  esc_html__( 'Current Logged In User\'s History', 'streamtube-core' ),
-                    'type'      =>  \Elementor\Controls_Manager::SWITCHER,
-                    'default'   =>  '',
-                    'description'   =>  esc_html__( 'Retrieve posts of current logged in user\'s history', 'streamtube-core' )
-                )
-            );
-
-            $this->add_control(
-                'current_logged_in_watch_later',
-                array(
-                    'label'     =>  esc_html__( 'Current Logged In User\'s Watch Later', 'streamtube-core' ),
-                    'type'      =>  \Elementor\Controls_Manager::SWITCHER,
-                    'default'   =>  '',
-                    'description'   =>  esc_html__( 'Retrieve posts of current logged in user\'s Watch Later', 'streamtube-core' )
-                )
-            );            
 
             $this->add_control(
                 'current_author',

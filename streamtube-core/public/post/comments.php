@@ -3,10 +3,8 @@ if( ! defined('ABSPATH' ) ){
     exit;
 }
 
-global $post;
-
 $args = array(
-	'post_id'	=>	$post->ID
+	'post_id'	=>	streamtube_core()->get()->post->get_edit_post_id()
 );
 
 streamtube_core_load_template( 'comment/table-comments.php', true, $args );

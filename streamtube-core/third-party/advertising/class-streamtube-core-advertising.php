@@ -57,8 +57,6 @@ class Streamtube_Core_Advertising{
      */
     public $ad_schedule;
 
-    protected $post;
-
     /**
      *
      * Class contructor
@@ -67,11 +65,15 @@ class Streamtube_Core_Advertising{
      * 
      */
     public function __construct(){
-
-        $this->post = new Streamtube_Core_Post();
-
         $this->load_dependencies();
-    }  
+    }
+
+    /**
+     * Plugin instance
+     */
+    private function plugin(){
+        return streamtube_core()->get();
+    }    
 
     /**
      *
@@ -222,7 +224,7 @@ class Streamtube_Core_Advertising{
         }
 
         // Check if Ad is disabled
-        if( $this->post->is_ad_disabled( $setup['mediaid'] ) ){
+        if( $this->plugin()->post->is_ad_disabled( $setup['mediaid'] ) ){
             return $setup;
         }
 

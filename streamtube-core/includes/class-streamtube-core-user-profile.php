@@ -36,15 +36,6 @@ class Streamtube_Core_User_Profile extends Streamtube_Core_User {
 
 		$items = array();
 
-		$items[ 'home' ] 	= array(
-			'title'			=>	esc_html__( 'Home', 'streamtube-core' ),
-			'icon'			=>	'icon-home',
-			'callback'		=>	function(){
-				streamtube_core_load_template( 'user/profile/home.php' );
-			},
-			'priority'		=>	1
-		);		
-
 		if( post_type_exists( Streamtube_Core_Post::CPT_VIDEO ) ){
 
 			$post_type_object = get_post_type_object( Streamtube_Core_Post::CPT_VIDEO );
@@ -58,18 +49,7 @@ class Streamtube_Core_User_Profile extends Streamtube_Core_User {
 				'cap'			=>	'publish_posts',
 				'priority'		=>	10
 			);
-		}
-
-		if( function_exists( 'WPPL' ) ){
-			$items['liked'] = array(
-				'title'		=>	esc_html__( 'Liked', 'streamtube-core' ),
-				'icon'		=>	'icon-thumbs-up',
-				'callback'	=>	function(){
-					streamtube_core_load_template( 'user/profile/liked.php' );
-				},				
-				'priority'	=>	20
-			);
-		}				
+		}	
 
 		$items[ 'post' ] 	= array(
 			'title'			=>	esc_html__( 'Blog', 'streamtube-core' ),
@@ -78,8 +58,19 @@ class Streamtube_Core_User_Profile extends Streamtube_Core_User {
 				streamtube_core_load_template( 'user/profile/posts.php' );
 			},
 			'cap'			=>	'publish_posts',
-			'priority'		=>	30
-		);	
+			'priority'		=>	15
+		);
+
+		if( function_exists( 'wprp' ) && wprp_get_settings( 'profile_liked_page', '1' ) ){
+			$items['liked'] = array(
+				'title'		=>	esc_html__( 'Liked', 'streamtube-core' ),
+				'icon'		=>	'icon-thumbs-up',
+				'callback'	=>	function(){
+					streamtube_core_load_template( 'user/profile/liked.php' );
+				},				
+				'priority'	=>	20
+			);
+		}		
 
 		$items['profile'] 	= array(
 			'title'			=>	esc_html__( 'Profile', 'streamtube-core' ),
@@ -87,7 +78,7 @@ class Streamtube_Core_User_Profile extends Streamtube_Core_User {
 			'callback'		=>	function(){
 				streamtube_core_load_template( 'user/profile/profile.php' );
 			},
-			'priority'		=>	40
+			'priority'		=>	30
 		);
 
 		if( function_exists( 'run_wp_user_follow' ) ){
@@ -97,7 +88,7 @@ class Streamtube_Core_User_Profile extends Streamtube_Core_User {
 				'callback'		=>	function(){
 					streamtube_core_load_template( 'user/profile/following.php' );
 				},				
-				'priority'		=>	50
+				'priority'		=>	40
 			);
 
 			$items['followers'] = array(
@@ -106,7 +97,7 @@ class Streamtube_Core_User_Profile extends Streamtube_Core_User {
 				'callback'		=>	function(){
 					streamtube_core_load_template( 'user/profile/followers.php' );
 				},				
-				'priority'		=>	60
+				'priority'		=>	50
 			);
 		}
 
@@ -117,7 +108,7 @@ class Streamtube_Core_User_Profile extends Streamtube_Core_User {
 				'callback'		=>	function(){
 					streamtube_core_load_template( 'user/profile/forum.php' );
 				},				
-				'priority'		=>	70
+				'priority'		=>	60
 			);
 		}
 
@@ -126,7 +117,7 @@ class Streamtube_Core_User_Profile extends Streamtube_Core_User {
 				'title'			=>	esc_html__( 'Shopping', 'streamtube-core' ),
 				'icon'			=>	'icon-th-list',
 				'url'			=>	trailingslashit( get_author_posts_url( get_current_user_id() ) ) . 'dashboard/shop',
-				'priority'		=>	80,
+				'priority'		=>	100,
 				'private'		=>	true
 			);
 
@@ -135,19 +126,11 @@ class Streamtube_Core_User_Profile extends Streamtube_Core_User {
 					'title'			=>	esc_html__( 'Cart', 'streamtube-core' ),
 					'icon'			=>	'icon-cart-plus',
 					'url'			=>	$cart_url,
-					'priority'		=>	81,
+					'priority'		=>	101,
 					'private'		=>	true
 				);
 			}
 		}
-
-		$items['settings'] = array(
-			'title'			=>	esc_html__( 'Settings', 'streamtube-core' ),
-			'icon'			=>	'icon-cog',
-			'url'			=>	trailingslashit( get_author_posts_url( get_current_user_id() ) ) . 'dashboard/settings',				
-			'priority'		=>	500,
-			'private'		=>	true
-		);
 
 		/**
 		 *
@@ -229,18 +212,7 @@ class Streamtube_Core_User_Profile extends Streamtube_Core_User {
 		}
 	}
 
-	/**
-	 *
-	 * The profile menu
-	 * 
-	 * @param  array  $args
-	 * 
-	 */
 	public function the_menu( $args = array() ){
-
-		$args = wp_parse_args( $args, array(
-			'location'	=>	''// or dropdown
-		) );
 
 		if( isset( $args['user_id'] ) ){
 			$args['base_url'] = get_author_posts_url( $args['user_id'] );

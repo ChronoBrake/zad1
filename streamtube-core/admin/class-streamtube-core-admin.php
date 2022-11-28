@@ -60,13 +60,20 @@ class Streamtube_Core_Admin {
 	}
 
 	/**
+	 * Plugin instance
+	 */
+	private function plugin(){
+		return streamtube_core()->get();
+	}
+
+	/**
 	 * Register the stylesheets for the admin area.
 	 *
 	 * @since    1.0.0
 	 */
 	public function enqueue_styles() {
 
-		wp_register_style( 
+		wp_enqueue_style( 
 			'select2', 
 			plugin_dir_url( dirname( __FILE__ ) ) . 'public/assets/vendor/select2/select2.min.css', 
 			array(), 
@@ -90,7 +97,7 @@ class Streamtube_Core_Admin {
 	 */
 	public function enqueue_scripts() {
 
-		wp_register_script(
+		wp_enqueue_script(
 			'select2',
 			plugin_dir_url( dirname( __FILE__ ) ) . 'public/assets/vendor/select2/select2.min.js',
 			array( 'jquery' ),
@@ -117,8 +124,7 @@ class Streamtube_Core_Admin {
 			'remove_featured_image'	=>	esc_html__( 'Remove featured image', 'streamtube-core' ),
 			'confirm_remove_ad'		=>	esc_html__( 'Do you want to remove this Ad Tag?', 'streamtube-core' ),
 			'confirm_import_yt'		=>	esc_html__( 'Do you want to import all checked items?', 'streamtube-core' ),
-			'number_posts_imported'	=>	esc_html__( '%s posts have been imported successfully.', 'streamtube-core' ),
-			'cannot_generate_image'	=>	esc_html__( 'Cannot generate animated image from an embed/URL.', 'streamtube-core' ),
+			'number_posts_imported'	=>	esc_html__( '%s posts have been imported successfully.', 'streamtube-core' )
 		) );
 	}
 
@@ -130,9 +136,9 @@ class Streamtube_Core_Admin {
 	 */
 	public function notices(){
 
-		//$this->notice_permalinks();
+		$this->notice_permalinks();
 
-		//$this->notice_new_features();
+		$this->notice_new_features();
 
 		/**
 		 * @since 2.0
@@ -237,7 +243,7 @@ class Streamtube_Core_Admin {
 
 	private function notice_new_features(){
 
-		if( ! current_user_can( 'administrator' ) ){
+		if( get_current_screen()->id == 'settings_page_sync-bunnycdn' || ! current_user_can( 'administrator' ) ){
 			return;
 		}
 

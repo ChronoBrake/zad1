@@ -38,7 +38,7 @@ $_bulk_actions = array_merge( array(
 
 	<div class="col-auto">
 
-		<select name="bulk_action_<?php echo $args['position']; ?>" class="form-select">
+		<select name="bulk_action_<?php echo $args['position']; ?>" class="form-select form-select-sm">
 			<?php foreach( $_bulk_actions as $option => $text ):?>
 
 				<?php printf(

@@ -51,13 +51,6 @@ function openPopup( button, width, height ){
 
 }
 
-function openUrl( button, target = "_blank" ){
-	var url = button.getAttribute( 'data-href' );
-	window.open( url, target );
-}
-
-
-
 /**
  *
  * @since 1.0.0
@@ -129,82 +122,6 @@ var controlBarLogo = videojs.extend( componentButton, {
 });
 videojs.registerComponent( 'controlBarLogo', controlBarLogo );
 
-
-/**
-*
-* topBar plugin
-*
-* @extends Plugin
-*
-* @since 1.0.0
-*
-*/
-class topBar extends Plugin {
-	constructor( player, options ) {
-		super(player, options);
-
-		let bar = document.createElement('div');
-		bar.className = 'streamtube-plugin streamtube-topbar';
-
-		player.addClass( 'vjs-has-topbar' );
-		player.el().appendChild( bar );
-	}	
-}
-videojs.registerPlugin( 'topBar', topBar );
-
-/**
-*
-* builtinEvents plugin
-*
-* @extends Plugin
-*
-* @since 1.0.0
-*
-*/
-class builtinEvents extends Plugin {
-
-	constructor( player, options ) {
-
-		super(player, options);
-
-		var defaults	=	{
-			post_id : 0
-		}
-
-		options = videojs.mergeOptions( defaults, options );
-
-		player.on( 'play', function(){
-			let event = new CustomEvent('player_play', { detail: options });
-			document.body.dispatchEvent( event );
-		});
-
-		player.on( 'progress', function(){
-			let event = new CustomEvent('player_progress', { detail: options });
-			document.body.dispatchEvent( event );
-		});
-
-		player.on( 'ended', function(){
-
-			if( ! player.hasClass( 'vjs-ad-loading' ) && ! player.addClass( 'vjs-share-active' ) ){
-				/**
-				 * Show the share box
-				 */
-				var shareBox = player.el().querySelector( '.streamtube-share' );
-
-				toggleClass( shareBox );
-
-				player.addClass( 'vjs-share-active' );
-
-				window.parent.postMessage( 'PLAYLIST_UPNEXT' );
-			}			
-
-			let event = new CustomEvent('player_ended', { detail: player });
-			document.body.dispatchEvent( event );			
-		});
-	}
-}
-videojs.registerPlugin('builtinEvents', builtinEvents );
-
 /**
 *
 * playerLogo plugin
@@ -248,6 +165,7 @@ class playerLogo extends Plugin {
 				img.addEventListener( 'click' , function () {
 					window.open( options.href, '_blank' );
 				});					
+
 			}
 
 			elm.appendChild( img );
@@ -273,7 +191,6 @@ class playerShareBox extends Plugin {
 		super(player, options);
 
 		var defaults	=	{
-			name 			: '',
 			id 				: '',
 			url				: '',
 			embed_url		: '',
@@ -282,8 +199,7 @@ class playerShareBox extends Plugin {
 			popup_width		: 700,
 			popup_height	: 500,
 			label_url		: '',
-			label_iframe	: '',
-			is_embed 		: false
+			label_iframe	: ''
 		}
 
 		options = videojs.mergeOptions( defaults, options );
@@ -301,11 +217,6 @@ class playerShareBox extends Plugin {
 		html 	+=			'<button onclick="javascript:toggleClass('+options.id+')" type="button" class="share-open">';
 		html 	+=				'<span class="vjs-icon-share"></span>';
 		html 	+=			'</button>';
-
-		if( options.is_embed ){
-			html +=			'<h3 data-href="'+options.url+'" onclick="javascript:openUrl( this )" class="post-title">'+ options.name +'</h3>';	
-		}
-
 		html	+=		'</div>';
 		html 	+=		'<div class="share-body">';
 
@@ -417,6 +328,21 @@ class playerTracker extends Plugin {
 				'gtm.videoProvider' : 'self_hosted'
 			});
 		});		
+
+		player.on( 'ended', function(){
+			if( ! this.hasClass( 'vjs-ad-loading' ) && ! this.addClass( 'vjs-share-active' ) ){
+				/**
+				 * Show the share box
+				 */
+				var shareBox = player.el().querySelector( '.streamtube-share' );
+
+				toggleClass( shareBox );
+
+				this.addClass( 'vjs-share-active' );
+
+				window.parent.postMessage( 'PLAYLIST_UPNEXT' );
+			}
+		} );
 	}
 }
 videojs.registerPlugin('playerTracker', playerTracker );
@@ -445,179 +371,10 @@ class playerhlsQualitySelector extends Plugin {
 		player.addClass( 'has-hlsQualitySelector' );
 
 		player.hlsQualitySelector(options);	
-		
+
 	}
 }
 videojs.registerPlugin('playerhlsQualitySelector', playerhlsQualitySelector );
-
-/**
-*
-* playerCollectionContent plugin
-*
-* @extends Plugin
-*
-* @since 1.0.0
-*
-*/
-class playerCollectionContent extends Plugin {
-
-	constructor( player, options ) {
-
-		super( player, options );
-
-		var list_items = [];
-
-		var defaults	=	{
-			list 			: [],
-			list_items 		: [],
-			current_post 	: 0,
-			index 			: 0,
-			total 			: 0,
-			user 			: [],
-			upnext 			: true
-		}
-
-		options = videojs.mergeOptions( defaults, options );
-
-		if( options.list_items.length > 0 ){
-			list_items = options.list_items;
-		}
-
-		if( list_items ){
-
-			var toggleButton = document.createElement('button');
-			toggleButton.classList 	= 'btn btn-toggle-playlist';
-			toggleButton.id 		= 'toggle-playlist';
-			toggleButton.innerHTML 	= '<span class="vjs-icon-chapters"></span>';
-
-			toggleButton.addEventListener( 'click' , function (e) {
-				document.getElementById( 'streamtube-playlist' ).classList.add( 'active' );
-				document.getElementById( 'playlist-item__' +  options.current_post ).scrollIntoView({
-					behavior 	: 'smooth',
-					block 		: 'center',
-					inline 		: 'start' 
-				});				
-			});
-
-			player.el().appendChild( toggleButton );
-
-			var playList 		= document.createElement('div');
-			playList.className 	= 'streamtube-plugin streamtube-playlist';
-			playList.id 		= 'streamtube-playlist';
-
-			var playListHeader = document.createElement('div');
-			playListHeader.className = 'playlist-header';
-
-			var headerContent = '<div class="playlist-header__left">';
-
-				headerContent += '<h2 class="playlist-title post-title">'+ options.name +'</h2>';
-
-				headerContent += '<div class="playlist-meta">';
-
-				if( options.author ){
-					headerContent += '<div class="playerlist-author">';
-						headerContent += '<a onclick="javascript:openUrl(this)" data-href="'+ options.author.link +'" href="#">'+ options.author.display_name +'</a>';
-					headerContent += '</div>';
-				}
-
-					headerContent += '<div class="playlist-total">';
-						headerContent += '<span class="index">'+ options.index +'</span>';
-						headerContent += '<span class="sep">/</span>';
-						headerContent += '<span class="total">'+ options.total +'</span>';
-					headerContent += '</div>';
-				headerContent += '</div>';
-
-			headerContent += '</div>';
-
-			playListHeader.innerHTML = headerContent;
-
-			var closeButton = document.createElement('button');
-			closeButton.className = 'btn btn-close shadow-none';
-			closeButton.innerHTML = '<span>&#8594;</span>';
-
-			closeButton.addEventListener( 'click' , function (e) {
-				document.getElementById( 'streamtube-playlist' ).classList.remove( 'active' );
-			});			
-
-			playListHeader.appendChild( closeButton );
-
-			playList.appendChild( playListHeader );
-
-			var playlistBody = document.createElement('div');
-			playlistBody.className = 'playlist-items';
-
-			for ( var i = 0; i < list_items.length; i++ ) {
-
-				let item = document.createElement('a');
-				item.className 	= 'playlist-item';
-				item.id 		= 'playlist-item__' +  list_items[i].id;
-
-				if( options.current_post == list_items[i].id ){
-					item.className += ' active';
-				}
-
-				item.setAttribute( 'href', list_items[i].permalink );
-				item.setAttribute( 'data-href', list_items[i].permalink_embed );
-
-				item.addEventListener( 'click' , function (e) {
-					e.preventDefault();
-					window.open( item.getAttribute( 'data-href' ), '_self' );
-				});
-
-				var _item = '<span class="item-index">';
-					if( options.current_post == list_items[i].id ){
-						_item += '<span class="vjs-icon-play"></span>';
-					}else{
-						_item += i+1;	
-					}	
-				_item += '</span>';
-
-				_item += '<div class="item-body">';
-
-						_item += '<div class="item-thumbnail">';
-							_item += '<img src="'+ list_items[i].thumbnail +'">';
-
-							if( list_items[i].length ){
-								_item += '<span class="item-length">'+ list_items[i].length +'</span>';
-							}
-
-						_item += '</div>';	
-
-					_item += '<div class="item-meta">';
-						_item += '<div class="item-title">';
-							_item += '<h3>';
-								_item += list_items[i].title;
-							_item += '</h3>';
-						_item += '</div>';
-
-						if( list_items[i].author ){
-							_item += '<div class="item-author">';
-								_item += '<a data-href="'+ list_items[i].author.link +'" href="#">'+ list_items[i].author.display_name +'</a>';
-							_item += '</div>';							
-						}
-
-					_item += '</div>';
-				_item += '</div>';
-
-				item.innerHTML = _item;
-
-				playlistBody.appendChild( item );
-			}
-
-			playList.appendChild( playlistBody );
-
-			player.el().appendChild( playList );
-			player.addClass( 'vjs-has-collection' );
-		}
-
-		player.on( 'ended', function(){
-			if( options.index < list_items.length && options.upnext ){
-				window.location.href = list_items[ parseInt( options.index )].permalink_embed;
-			}
-		} );
-	}
-}
-videojs.registerPlugin('playerCollectionContent', playerCollectionContent );
 
 document.addEventListener("DOMContentLoaded", function(event) {
 	try {
@@ -656,12 +413,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 						var plugins = setup.jplugins;
 
-						player.topBar();
-
-						if( plugins.builtinEvents ){
-							player.builtinEvents(plugins.builtinEvents);
-						}						
-
 						if( plugins.playerLogo ){
 							player.playerLogo( plugins.playerLogo );	
 						}
@@ -681,10 +432,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
 						if( plugins.hotkeys ){
 							player.hotkeys(plugins.hotkeys);
 						}
-
-						if( plugins.playerCollectionContent ){
-							player.playerCollectionContent(plugins.playerCollectionContent);
-						}						
 
 						if( plugins.landscapeFullscreen ){
 							player.landscapeFullscreen(plugins.landscapeFullscreen);

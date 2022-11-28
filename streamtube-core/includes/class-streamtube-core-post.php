@@ -39,6 +39,13 @@ class Streamtube_Core_Post{
 	const VIDEO_URL 			=	'video_url';
 
 	/**
+	 * Plugin instance
+	 */
+	private function plugin(){
+		return streamtube_core()->get();
+	}
+
+	/**
 	 *
 	 * Register video post type
 	 *
@@ -75,7 +82,7 @@ class Streamtube_Core_Post{
 			'map_meta_cap' 							=> true,
 			'hierarchical' 							=> false,
 			'rewrite' 								=> array( 
-				'slug'			=>	sanitize_key( get_option( 'video_slug', self::CPT_VIDEO ) ), 
+				'slug'			=>	'video', 
 				'with_front'	=>	true 
 			),
 			'query_var' 							=> true,
@@ -85,15 +92,12 @@ class Streamtube_Core_Post{
 				'thumbnail', 
 				'excerpt', 
 				'trackbacks', 
+				'custom-fields', 
 				'comments', 
-				'author'
+				'author' 
 			),
 			'menu_icon'								=>	'dashicons-video-alt3'
 		);
-
-		if( get_option( 'video_gutenberg' ) ){
-			$args['show_in_rest'] = true;
-		}
 
 		if( function_exists( 'buddypress' ) && bp_is_active( 'activity' ) ){
 			$args['labels'] = array_merge( $args['labels'], array(
@@ -120,16 +124,6 @@ class Streamtube_Core_Post{
 		}
 
 		register_post_type( self::CPT_VIDEO, $args );
-	}
-
-	/**
-	 *
-	 * Get supported track format
-	 * 
-	 * @return array
-	 */
-	public static function get_text_track_format(){
-		return apply_filters( 'streamtube/core/text_track_format',  array( 'vtt' ) );
 	}
 
 	/**
@@ -270,40 +264,6 @@ class Streamtube_Core_Post{
 
 	/**
 	 *
-	 * Get video trailer source
-	 * 
-	 * @param  integer $post_id
-	 * 
-	 */
-	public function get_video_trailer( $post_id = 0 ){
-
-		if( ! $post_id ){
-			$post_id = get_the_ID();
-		}		
-
-		$source = get_post_meta( $post_id, 'video_trailer', true );
-
-		/**
-		 *
-		 * Filter trailer source
-		 *
-		 * @param int $post_id
-		 * 
-		 */
-		return apply_filters( 'streamtube/core/video/trailer', $source, $post_id );
-	}
-
-	/**
-	 *
-	 * Update video trailer
-	 * 
-	 */
-	public function update_video_trailer( $post_id = 0, $source = '' ){
-		return update_post_meta( $post_id, 'video_trailer', $source );
-	}
-
-	/**
-	 *
 	 * Get video source
 	 * 
 	 * @param  int $post_id
@@ -314,35 +274,11 @@ class Streamtube_Core_Post{
 	 */
 	public function get_source( $post_id = 0 ){
 
-		$source = '';
-
 		if( ! $post_id ){
 			$post_id = get_the_ID();
 		}
 
 		$source = trim( get_post_meta( $post_id, self::VIDEO_URL, true ) );
-
-		if( empty( $source ) ){
-			// Firstly, check if file was found.
-			if( "" != $maybe_video_file = get_post_meta( $post_id, 'video_file', true ) ){
-
-				if( is_int( $maybe_video_file ) ){
-					$source = $maybe_video_file;
-				}
-
-				if( is_array( $maybe_video_file ) && count( $maybe_video_file ) > 0 ){
-					$source = $maybe_video_file[0];
-				}
-			}
-
-			if( "" != $maybe_vafpress = get_post_meta( $post_id, '_format_video_embed', true ) ){
-				$source = $maybe_vafpress;
-			}
-
-			if( ! empty( $source ) ){
-				update_post_meta( $post_id, self::VIDEO_URL, $source );
-			}			
-		}
 
 		/**
 		 *
@@ -368,9 +304,9 @@ class Streamtube_Core_Post{
 			$post_id = get_the_ID();
 		}
 
-		$source = trim( wp_unslash($source) );
+        $source = wp_unslash( $source );
 
-        return update_post_meta( $post_id, self::VIDEO_URL,$source );
+        return update_post_meta( $post_id, self::VIDEO_URL, $source );		
 	}
 
 	/**
@@ -392,11 +328,6 @@ class Streamtube_Core_Post{
 		$default = get_option( 'player_ratio', '21x9' );
 
 		$ratio = get_post_meta( $post_id, '_aspect_ratio', true );
-
-		if( strpos( $ratio, 'field_' ) !== false ){
-			// It seems ACF was used before.
-			$ratio = $default;
-		}
 
 		if( empty( $ratio ) ){
 			$ratio = $default;
@@ -490,15 +421,10 @@ class Streamtube_Core_Post{
 
 		$image_url = get_post_meta( $post_id, '_thumbnail_url_2', true );
 
-		if( strpos( $image_url, home_url('/') ) !== false ){
-			// self hosted file.
-			$attachment_id = attachment_url_to_postid( $image_url );
+		$attachment_id = attachment_url_to_postid( $image_url );
 
-			if( $attachment_id ){
-				$image_url = wp_get_attachment_image_url( $attachment_id, 'large' );
-			}else{
-				$image_url = '';
-			}
+		if( $attachment_id ){
+			$image_url = wp_get_attachment_image_url( $attachment_id, 'full' );
 		}
 
 		/**
@@ -550,7 +476,7 @@ class Streamtube_Core_Post{
 	 * @since  1.0.0
 	 * 
 	 */
-	public function get_length( $post_id = 0, $format = false ){
+	public function get_length( $post_id = 0 ){
 
 		if( ! $post_id ){
 			$post_id = get_the_ID();
@@ -558,7 +484,7 @@ class Streamtube_Core_Post{
 
 		$length = get_post_meta( $post_id, '_length', true );
 
-		$source = $this->get_source( $post_id );
+		$source = $this->get_source();
 
 		if( wp_attachment_is( 'video', $source ) ){
 			$metadata = wp_get_attachment_metadata( $source );
@@ -568,14 +494,6 @@ class Streamtube_Core_Post{
 					$length = absint( $metadata['length'] );	
 				}
 			}
-		}
-
-		if( $format && is_int( $length ) ){
-            if( $length >= 3600 ){
-                $length = gmdate( "H:i:s", $length%86400);
-            }else{
-                $length = gmdate( "i:s", $length%86400);
-            }
 		}
 
 		/**
@@ -659,92 +577,6 @@ class Streamtube_Core_Post{
 
 	/**
 	 *
-	 * Get text tracks
-	 * 
-	 * @param  integer $post_id
-	 * @return array|false
-	 */
-	public function get_text_tracks( $post_id = 0 ){
-
-		$_tracks = array();
-
-		$tracks = get_post_meta( $post_id, 'text_tracks', true );
-
-		if( ! $tracks || ! is_array( $tracks ) ){
-			return false;
-		}
-
-		if( ! array_key_exists( 'languages', $tracks ) || ! is_array( $tracks['languages'] ) ){
-			return false;
-		}
-
-		for ( $i = 0; $i < count( $tracks['languages'] ); $i++) {
-			if( $tracks['languages'][$i] && $tracks['sources'][$i] ){
-
-				$file_type = wp_check_filetype( $tracks['sources'][$i] );
-
-				if( array_key_exists( 'ext', $file_type ) && in_array( strtolower( $file_type['ext'] ), self::get_text_track_format() ) ){
-					$_tracks[] = array(
-						'language'	=>	$tracks['languages'][$i],
-						'source'	=>	$tracks['sources'][$i]
-					);
-				}
-			}
-		}
-
-		return apply_filters( 'streamtube/core/post/text_tracks', $_tracks, $post_id );
-	}
-
-	/**
-	 * 
-	 * Get Alt sources
-	 * 
-	 * @param  integer $post_id
-	 * @param  integer $index
-	 * @return array|false
-	 * 
-	 */
-	public function get_altsources( $post_id = 0, $index = false, $include_main = true ){
-
-		$_sources = array();
-
-		$sources = get_post_meta( $post_id, 'altsources', true );
-
-		if( ! $sources || ! is_array( $sources ) ){
-			return false;
-		}
-
-		if( ! array_key_exists( 'sources', $sources ) || ! is_array( $sources['sources'] ) ){
-			return false;
-		}
-
-		for ( $i = 0; $i < count( $sources['sources'] ); $i++) {
-			if( ! empty( $sources['sources'][$i] ) &&  ! empty( $sources['labels'][$i] ) ){
-				$_sources[] = array(
-					'label'		=>	$sources['labels'][$i],
-					'source'	=>	$sources['sources'][$i]
-				);
-			}
-		}
-
-		if( $include_main && $_sources ){
-			$_sources = array_merge( array(
-				array(
-					'label'		=>	esc_html__( 'Main', 'streamtube-core' ),
-					'source'	=>	$this->get_source( $post_id )
-				)
-			), $_sources );
-		}
-
-		if( $index !== false && isset( $_sources[ $index ] ) ){
-			$_sources = $_sources[ $index ];
-		}
-
-		return apply_filters( 'streamtube/core/post/altsources', $_sources, $post_id, $index );
-	}
-
-	/**
-	 *
 	 * Get last seen post meta
 	 * 
 	 * @param  int $post_id
@@ -753,7 +585,6 @@ class Streamtube_Core_Post{
 	 * @since 1.0.8
 	 */
 	public function get_last_seen( $post_id = 0, $unix_timestamp = false ){
-		
 		if( ! $post_id ){
 			$post_id = get_the_ID();
 		}
@@ -761,8 +592,7 @@ class Streamtube_Core_Post{
 		$last_seen = get_post_meta( $post_id, '_last_seen', true );
 
 		if( $last_seen ){
-
-			$last_seen = get_date_from_gmt(date( 'Y-m-d H:i:s', strtotime($last_seen) ));
+			$last_seen = date( 'Y-m-d H:i:s', strtotime($last_seen) );
 
 			if( $unix_timestamp ){
 				$last_seen = strtotime( $last_seen );
@@ -841,9 +671,53 @@ class Streamtube_Core_Post{
 	 */
 	public function upload_featured_image(){
 
-		if( ! isset( $_FILES[ 'featured-image' ] ) ){
-			return false;
+		$errors = new WP_Error();
+
+		// First, check user permission.
+		if( ! current_user_can( 'upload_files' ) ){
+			$errors->add( 
+				'no_upload_files_perm', 
+				esc_html__( 'You do no have permission to upload files.', 'streamtube-core' ) 
+			);
 		}
+
+		// Check file format, allows image only.
+		if( ! isset( $_FILES ) || ! array_key_exists( 'featured-image', $_FILES ) ){
+			$errors->add( 
+				'file_not_found', 
+				esc_html__( 'File was not found.', 'streamtube-core' ) 
+			);
+		}
+
+		if( $errors->get_error_code() ){
+			return $errors;
+		}		
+
+		$file = $_FILES[ 'featured-image' ];
+		
+		$type = array_key_exists( 'type' , $file ) ? $file['type'] : '';
+
+		if ( 0 !== strpos( $type, 'image/' ) ) {
+			$errors->add( 
+				'file_not_accepted', 
+				esc_html__( 'File format is not accepted.', 'streamtube-core' ) 
+			);
+		}
+
+		/**
+		 *
+		 * Filter the errors
+		 * 
+		 * @var WP_Error
+		 *
+		 * @since  1.0.0
+		 * 
+		 */
+		$errors = apply_filters( 'streamtube/core/post/upload_featured_image', $errors, $file );
+
+		if( $errors->get_error_code() ){
+			return $errors;
+		}		
 
 		$attachment_id = media_handle_upload( 'featured-image', $_POST['post_ID'], array( '' ), array( 'test_form' => false ) );
 
@@ -945,8 +819,6 @@ class Streamtube_Core_Post{
 
 			$this->upload_featured_image();
 
-			do_action( 'streamtube/core/post/added', $post_id, $postarr );
-
 			return $this->get_post( $post_id );
 		}
 
@@ -1036,34 +908,6 @@ class Streamtube_Core_Post{
 			);
 		}
 
-        if( isset( $_FILES ) && array_key_exists( 'featured-image', $_FILES ) && $_FILES['featured-image'] ){
-
-            $thumbnail_file = $_FILES[ 'featured-image' ];
-
-            if( $thumbnail_file['error'] == 0 ){
-                $type = array_key_exists( 'type' , $thumbnail_file ) ? $thumbnail_file['type'] : '';
-
-                if ( 0 !== strpos( $type, 'image/' ) ) {
-                    $errors->add( 
-                        'file_not_accepted', 
-                        esc_html__( 'File format is not accepted.', 'streamtube-core' )
-                    );
-                }
-
-                $max_size = streamtube_core_get_max_upload_image_size();
-
-                if( $thumbnail_file['size'] > $max_size ){
-                    $errors->add( 
-                        'file_size_not_allowed',
-                        sprintf(
-                            esc_html__( 'File size has to be smaller than %s', 'streamtube-core' ),
-                            size_format( $max_size )
-                        )
-                    );                    
-                }
-            }
-        }		
-
 		/**
 		 *
 		 * Filter the errors
@@ -1102,10 +946,10 @@ class Streamtube_Core_Post{
 				}
 			}
 
-			$source = $this->get_source( $post_id );
+			$attachment_id = $this->get_source( $post_id );
 
-			if( wp_attachment_is( 'video', $source ) ){
-				$thumbnail_id_2 = get_post_meta( $source, '_thumbnail_id_2', true );
+			if( wp_attachment_is( 'video', $attachment_id ) ){
+				$thumbnail_id_2 = get_post_meta( $attachment_id, '_thumbnail_id_2', true );
 
 				if( $thumbnail_id_2 ){
 					$this->update_thumbnail_image_url_2( $post_id, $thumbnail_id_2 );
@@ -1118,17 +962,6 @@ class Streamtube_Core_Post{
 				}
 				else{
 					delete_post_meta( $post_id, 'disable_ad' );	
-				}
-			}
-
-			if( get_option( 'allow_edit_source' ) || current_user_can( 'administrator' ) ){
-
-				if( isset( $_POST['video_trailer'] ) ){
-					$this->update_video_trailer( $post_id, $_POST['video_trailer'] );
-				}				
-
-				if( isset( $_POST['video_source'] ) ){
-					$this->update_source( $post_id, $_POST['video_source'] );
 				}
 			}
 
@@ -1579,18 +1412,16 @@ class Streamtube_Core_Post{
 
 		$postarr = array(
 			'post_title'		=>	'Untitled',
-			'post_type'			=>	self::CPT_VIDEO,
+			'post_type'			=>	'video',
 			'comment_status'	=>	'open',
 			'meta_input'		=>	array(
 				self::VIDEO_URL => $source
 			)
 		);
 
-		$oEmbed = new Streamtube_Core_oEmbed();
+		$oembed_data = $this->plugin()->oembed->get_data( $source );
 
-		$oembed_data = $oEmbed->get_data( $source );
-
-		if( ! is_wp_error( $oembed_data ) ){
+		if( ! is_wp_error( $oembed_data ) && ! is_wp_error( $this->plugin()->license->is_verified() ) ){
 			$postarr = array_merge( $postarr, array(
 				'post_content'	=>	$oembed_data['provider_name']
 			) );
@@ -1681,8 +1512,7 @@ class Streamtube_Core_Post{
 				esc_html__( '%s has been imported successfully.' , 'streamtube-core'),
 				'<strong>'. $response->post_title .'</strong>'
 			),
-			'post'			=>	$response,
-			'form'			=>	$this->the_edit_post_form( $response )
+			'post'			=>	$response
 		) );
 	}
 
@@ -1713,8 +1543,9 @@ class Streamtube_Core_Post{
 			);
 		}
 
-		// Check size
-		$allow_size = (int)streamtube_core_get_max_upload_size();
+		$allow_size = (int)get_option( 'upload_max_file_size', streamtube_core_get_max_upload_size()/1048576 );
+
+		$allow_size = $allow_size*1048576;
 
 		if( ! isset( $_FILES['video_file'] ) || (int)$_FILES['video_file']['error'] != 0 ){
 			$errors->add( 
@@ -1727,38 +1558,6 @@ class Streamtube_Core_Post{
 			$errors->add( 
 				'file_size_not_allowed', 
 				esc_html__( 'The upload file exceeds the maximum allow file size.', 'streamtube-core' ) 
-			);
-		}
-
-		$file_type = wp_check_filetype( $_FILES['video_file']['name'] );
-
-		if( ! $file_type ){
-			$errors->add( 
-				'file_type_not_allowed', 
-				esc_html__( 'File Type is not allowed.', 'streamtube-core' ) 
-			);
-		}
-
-		$type = explode( '/' , $file_type['type'] );
-
-		if( ! is_array( $type ) || count( $type ) != 2 || ! in_array( $type[0], array( 'video', 'audio' )) ){
-			$errors->add( 
-				'file_type_not_allowed', 
-				esc_html__( 'File Type is not allowed.', 'streamtube-core' ) 
-			);
-		}
-
-		if( $type[0] == 'video' && ! in_array( $file_type['ext'] , wp_get_video_extensions() ) ){
-			$errors->add( 
-				'video_format_not_allowed', 
-				esc_html__( 'Video Format is not allowed.', 'streamtube-core' ) 
-			);
-		}
-
-		if( $type[0] == 'audio' && ! in_array( $file_type['ext'] , wp_get_audio_extensions() ) ){
-			$errors->add( 
-				'audio_format_not_allowed', 
-				esc_html__( 'Audio Format is not allowed.', 'streamtube-core' ) 
 			);
 		}		
 
@@ -1783,7 +1582,7 @@ class Streamtube_Core_Post{
 		 */
 		$post = $this->add_post( array(
 			'post_title'	=>	preg_replace( '/\.[^.]+$/', '', basename( $_FILES['video_file']['name'] ) ),
-			'post_type'		=>	self::CPT_VIDEO,
+			'post_type'		=>	'video',
 			'post_status'	=>	'draft'
 		) );
 
@@ -1793,7 +1592,7 @@ class Streamtube_Core_Post{
 
 		$attachment_id = media_handle_upload( 'video_file', $post->ID );
 
-		if( is_wp_error( $attachment_id ) ){
+		if( is_wp_error( $attachment_id ) || ! wp_attachment_is( 'video', $attachment_id ) ){
 
 			wp_delete_post( $post->ID, true );
 
@@ -1852,28 +1651,10 @@ class Streamtube_Core_Post{
 
 		$errors = new WP_Error();
 
-		$file_type = get_post_mime_type( $attachment_id );
-
-		if( ! $file_type ){
+		if( ! wp_attachment_is( 'video', $attachment_id ) ){
 			$errors->add(
 				'invalid_file_format',
 				esc_html__( 'Invalid file format.', 'streamtube-core' )
-			);			
-		}
-
-		$type = explode( '/', $file_type );
-
-		if( ! is_array( $type ) || count( $type ) != 2 || ! in_array( $type[0], array( 'video', 'audio' )) ){
-			$errors->add( 
-				'file_type_not_allowed', 
-				esc_html__( 'File Type is not allowed.', 'streamtube-core' ) 
-			);
-		}
-
-		if( ! in_array( $type[0] , array( 'video', 'audio' )) ){
-			$errors->add( 
-				'file_format_not_allowed', 
-				esc_html__( 'File Format is not allowed.', 'streamtube-core' ) 
 			);
 		}
 
@@ -1896,9 +1677,6 @@ class Streamtube_Core_Post{
 		$errors = apply_filters( 'streamtube/core/upload_chunks/video/errors', $errors );		
 
 		if( $errors->get_error_code() ){
-
-			wp_delete_attachment( $attachment_id );
-
 			return $errors;
 		}		
 
@@ -1906,7 +1684,7 @@ class Streamtube_Core_Post{
 
 		$postarr = array(
 			'post_title'	=>	get_the_title( $attachment_id ),
-			'post_type'		=>	self::CPT_VIDEO,
+			'post_type'		=>	'video',
 			'meta_input'	=>	array(
 				self::VIDEO_URL => $attachment_id,
 				'_thumbnail_id'			=> get_post_thumbnail_id( $attachment_id ),
@@ -2044,8 +1822,7 @@ class Streamtube_Core_Post{
 				esc_html__( '%s has been uploaded successfully.' , 'streamtube-core'),
 				'<strong>'. $response->post_title .'</strong>'
 			),
-			'post'	=>	$response,
-			'form'	=>	$this->the_edit_post_form( $response )
+			'post'	=>	$response
 		) );
 	}
 
@@ -2062,8 +1839,7 @@ class Streamtube_Core_Post{
 
 		$_post = wp_parse_args( $_POST, array(
 			'name'	=>	'',
-			'type'	=>	'',
-			'size'	=>	''
+			'type'	=>	''
 		) );
 
 		if( ! get_option( 'upload_files', 'on' ) ){
@@ -2080,45 +1856,19 @@ class Streamtube_Core_Post{
 			);
 		}
 
-		// Check size
-		$allow_size = (int)streamtube_core_get_max_upload_size();
+		$ext = pathinfo( $_post['name'], PATHINFO_EXTENSION );
 
-		if( $allow_size < (int)$_POST['size'] ){
-			$errors->add( 
-				'file_size_not_allowed', 
-				esc_html__( 'The upload file exceeds the maximum allow file size.', 'streamtube-core' ) 
-			);
-		}		
-
-		$file_type = wp_check_filetype( $_post['name'] );
-
-		if( ! $file_type ){
-			$errors->add( 
-				'file_type_not_allowed', 
-				esc_html__( 'File Type is not allowed.', 'streamtube-core' ) 
-			);			
-		}
-
-		$type = explode( '/' , $file_type['type'] );
-
-		if( ! is_array( $type ) || count( $type ) != 2 || ! in_array( $type[0], array( 'video', 'audio' )) ){
-			$errors->add( 
-				'file_type_not_allowed', 
-				esc_html__( 'File Type is not allowed.', 'streamtube-core' ) 
+		if( ! $ext || empty( $_post['name'] ) || empty( $_post['type'] ) ){
+			$errors->add(
+				'invalid_file_format',
+				esc_html__( 'Invalid file format.', 'streamtube-core' )
 			);
 		}
 
-		if( $type[0] == 'video' && ! in_array( $file_type['ext'] , wp_get_video_extensions() ) ){
-			$errors->add( 
-				'video_format_not_allowed', 
-				esc_html__( 'Video Format is not allowed.', 'streamtube-core' ) 
-			);
-		}
-
-		if( $type[0] == 'audio' && ! in_array( $file_type['ext'] , wp_get_audio_extensions() ) ){
-			$errors->add( 
-				'audio_format_not_allowed', 
-				esc_html__( 'Audio Format is not allowed.', 'streamtube-core' ) 
+		if( ! in_array( strtolower($ext) , wp_get_video_extensions() ) ){
+			$errors->add(
+				'invalid_file_format',
+				esc_html__( 'Invalid file format.', 'streamtube-core' )
 			);
 		}
 
@@ -2174,8 +1924,7 @@ class Streamtube_Core_Post{
 				esc_html__( '%s has been uploaded successfully.' , 'streamtube-core' ),
 				'<strong>'. $response->post_title .'</strong>'
 			),
-			'post'	=>	$response,
-			'form'	=>	$this->the_edit_post_form( $response )
+			'post'	=>	$response
 		) );
 	}
 
@@ -2420,7 +2169,7 @@ class Streamtube_Core_Post{
 		check_ajax_referer( '_wpnonce' );
 
 		$request = wp_parse_args( $_GET, array(
-			'post_type'		=>	self::CPT_VIDEO,
+			'post_type'		=>	'video',
 			'responseType'	=>	'',
 			's'				=>	''
 		) );
@@ -2519,381 +2268,6 @@ class Streamtube_Core_Post{
 	}
 
 	/**
-	 * Upload text track file controller
-	 */
-	public function upload_text_track(){
-
-		$errors = new WP_Error();
-
-		$max_size = apply_filters( 'streamtube/core/max_text_track_size', 1024*1024*10 );// 10MB
-
-		$post_id = isset( $_POST['post_ID'] ) ? (int)$_POST['post_ID'] : 0;
-
-		if( ! current_user_can( 'edit_post', $post_id ) || get_post_type( $post_id ) != self::CPT_VIDEO ){
-			$errors->add( 
-				'no_permission', 
-				esc_html__( 'You do not have permission to upload subtitle for this post.', 'streamtube-core' ) 
-			);
-		}		
-
-		if( ! isset( $_FILES['file'] ) || (int)$_FILES['file']['error'] != 0 ){
-			$errors->add( 
-				'file_error', 
-				esc_html__( 'File was not found or empty.', 'streamtube-core' ) 
-			);
-		}
-
-		if( $max_size < (int)$_FILES['file']['size'] ){
-			$errors->add( 
-				'file_size_not_allowed', 
-				esc_html__( 'The upload file exceeds the maximum allow file size.', 'streamtube-core' ) 
-			);
-		}
-
-		$file_type = wp_check_filetype($_FILES['file']['name']);
-
-		if( ! in_array( strtolower( $file_type['ext'] ), self::get_text_track_format() ) ){
-			$errors->add( 'file_not_accepted', esc_html__( 'File format is not accepted', 'streamtube-core' ) );
-		}
-
-		/**
-		 *
-		 * Filter the errors
-		 * 
-		 * @param WP_Error $errors
-		 *
-		 * @since  1.0.0
-		 * 
-		 */
-		$errors = apply_filters( 'streamtube/core/upload/text_track/errors', $errors );
-
-		if( $errors->get_error_code() ){
-			return $errors;
-		}
-
-		return media_handle_upload( 'file', $post_id );
-	}
-
-	/**
-	 * AJAX upload text track file controller
-	 */
-	public function ajax_upload_text_track(){
-		check_ajax_referer( '_wpnonce' );
-
-		$track_id = $this->upload_text_track();
-
-		if( is_wp_error( $track_id ) ){
-			wp_send_json_error( $track_id );
-		}
-
-		wp_send_json_success( wp_get_attachment_url( $track_id ) );
-	}
-
-	/**
-	 * AJAX upload text track file controller
-	 */
-	public function update_text_tracks(){
-
-		$errors 	= new WP_Error();
-
-		$post_id 	= isset( $_POST['post_ID'] ) ? (int)$_POST['post_ID'] : 0;
-
-		if( ! current_user_can( 'edit_post', $post_id ) || get_post_type( $post_id ) != self::CPT_VIDEO ){
-			$errors->add( 
-				'no_permission', 
-				esc_html__( 'You do not have permission to update subtitles for this post.', 'streamtube-core' ) 
-			);
-		}
-
-		if( ! array_key_exists( 'text_tracks', $_POST ) ){
-			$errors->add( 
-				'tracks_not_found', 
-				esc_html__( 'No Subtitles were found.', 'streamtube-core' ) 
-			);			
-		}
-
-		/**
-		 *
-		 * Filter the errors
-		 * 
-		 * @param WP_Error $errors
-		 *
-		 * @since  1.0.0
-		 * 
-		 */
-		$errors = apply_filters( 'streamtube/core/update/text_tracks/errors', $errors );
-
-		if( $errors->get_error_code() ){
-			return $errors;
-		}
-
-		return update_post_meta( $post_id, 'text_tracks', wp_unslash( $_POST['text_tracks'] ) );
-	}
-
-	/**
-	 * AJAX uddate text tracks
-	 */
-	public function ajax_update_text_tracks(){
-		check_ajax_referer( '_wpnonce' );
-
-		$result = $this->update_text_tracks();
-
-		if( is_wp_error( $result ) ){
-			wp_send_json_error( $result );
-		}		
-
-		if( ! $result ){
-			wp_send_json_error( new WP_Error(
-				'error',
-				esc_html__( 'Cannot update subtitles, it seems you tried to update the same content.', 'streamtube-core' )
-			) );
-		}
-
-		wp_send_json_success( array(
-			'message'	=>	esc_html__( 'Subtitles have been updated successfully', 'streamtube-core' )
-		) );
-	}
-
-	/**
-	 *
-	 * Updaet Alt sources
-	 * 
-	 */
-	public function update_altsources(){
-		$errors 	= new WP_Error();
-
-		$post_id 	= isset( $_POST['post_ID'] ) ? (int)$_POST['post_ID'] : 0;
-
-		if( ! current_user_can( 'edit_post', $post_id ) || get_post_type( $post_id ) != self::CPT_VIDEO ){
-			$errors->add( 
-				'no_permission', 
-				esc_html__( 'You do not have permission to update alt sources for this post.', 'streamtube-core' ) 
-			);
-		}
-
-		if( ! array_key_exists( 'altsources', $_POST ) ){
-			$errors->add( 
-				'altsources_not_found', 
-				esc_html__( 'No sources were found.', 'streamtube-core' ) 
-			);			
-		}
-
-		/**
-		 *
-		 * Filter the errors
-		 * 
-		 * @param WP_Error $errors
-		 *
-		 * @since  1.0.0
-		 * 
-		 */
-		$errors = apply_filters( 'streamtube/core/update/altsources/errors', $errors );
-
-		if( $errors->get_error_code() ){
-			return $errors;
-		}
-
-		return update_post_meta( $post_id, 'altsources', wp_unslash( $_POST['altsources'] ) );		
-	}
-
-	/**
-	 *
-	 * Updaet Alt sources
-	 * 
-	 */
-	public function ajax_update_altsources(){
-		check_ajax_referer( '_wpnonce' );
-
-		$result = $this->update_altsources();
-
-		if( is_wp_error( $result ) ){
-			wp_send_json_error( $result );
-		}
-
-		if( ! $result ){
-			wp_send_json_error( new WP_Error(
-				'error',
-				esc_html__( 'Cannot update sources, it seems you tried to update the same content.', 'streamtube-core' )
-			) );
-		}
-
-		wp_send_json_success( array(
-			'message'	=>	esc_html__( 'Sources have been updated successfully', 'streamtube-core' )
-		) );		
-	}	
-
-	public function ajax_get_post_thumbnail(){
-		check_ajax_referer( '_wpnonce' );
-
-		$post_id = isset( $_GET['post_id'] ) ? (int)$_GET['post_id'] : 0;
-
-		if( ! $post_id || ! get_post_status( $post_id ) ){
-			exit;
-		}
-
-		if( has_post_thumbnail( $post_id ) ){
-			wp_send_json_success( get_the_post_thumbnail( $post_id ) );
-		}
-
-		wp_send_json_error( new WP_Error(
-			'no_thumbnail',
-			esc_html__( 'No Thumbnail was found', 'streamtube-core' )
-		) );
-	}
-
-	/**
-	 *
-	 * AJAX get post by given url
-	 * 
-	 */
-	public function ajax_get_post_by_url(){
-		check_ajax_referer( '_wpnonce' );
-
-		$url = isset( $_GET['url'] ) ? trim( $_GET['url'] ) : false;
-
-		if( ! $url ){
-			wp_send_json_error( new WP_Error(
-				'url_not_found',
-				esc_html__( 'URL was not found', 'streamtube-core' )
-			) );
-		}
-
-		$post_id = url_to_postid( $url );
-
-		if( ! $post_id ){
-			wp_send_json_error( new WP_Error(
-				'post_not_found',
-				esc_html__( 'Post was not found', 'streamtube-core' )
-			) );			
-		}
-
-		$post = get_post( $post_id );
-
-		$length = (int)$this->get_length( $post_id );
-
-	    if( $length >= 3600 ){
-	        $length = gmdate( "H:i:s", $length%86400);
-	    }else{
-	        $length = gmdate( "i:s", $length%86400);
-	    }
-
-	    $author = get_userdata( $post->post_author );
-
-		wp_send_json_success( array(
-			'thumbnail'		=>	get_the_post_thumbnail_url( $post_id, 'streamtube-image-medium' ),
-			'permalink'		=>	$url,
-			'title'			=>	$post->post_title,
-			'length'		=>	$length,
-			'author'		=>	array(
-				'name'	=>	$author->display_name,
-				'url'	=>	get_author_posts_url( $author->ID )
-			)
-		) );
-	}
-
-	public function ajax_search_autocomplete(){
-
-		check_ajax_referer( '_wpnonce' );
-
-		$output = '';
-
-		$http_get = wp_parse_args( $_GET, array(
-			's'					=>	'',
-			'search_filter'		=>	'default',
-			'post_type'			=>	'any',
-			'taxonomy'			=>	'categories',
-			'term_slug'			=>	''
-		) );
-
-		if( $http_get['search_filter'] == 'default' ){
-			$http_get['post_types'] = array( 'video' );
-		}
-
-		if( $http_get['search_filter'] == 'post_types' ){
-			$_post_types = get_option( 'search_post_types', 'video,post' );
-
-			if( ! empty( $_post_types ) ){
-				$_post_types = array_map( "trim", explode(',', $_post_types ));
-			}
-
-			if( $http_get['post_type'] == 'any' ){
-				$http_get['post_type'] = $_post_types;
-			}else{
-				if( ! in_array( $http_get['post_type'] , $_post_types ) ){
-					$http_get['post_type'] = 'video';
-				}
-			}
-		}
-
-		if( empty( $http_get['s'] ) ){
-			wp_send_json_error( new WP_Error(
-				'keyword_not_found',
-				esc_html__( 'No keywords were found', 'streamtube-core' )
-			) );
-		}
-
-		$search_args = array(
-			'id'					=>	'search_autocomplete',
-			'post_type'				=>	is_array( $http_get['post_type'] ) ? $http_get['post_type'] : array( $http_get['post_type'] ),
-			'post_status'			=>	'publish',
-			'posts_per_page'		=>	get_option( 'search_autocomplete_number', 20 ),
-			's'						=>	sanitize_text_field( $http_get['s'] ),
-			'tax_query'				=>	array(),
-			'layout'				=>	'list_sm',
-			'hide_empty_thumbnail'	=>	true,
-			'hide_if_empty'			=>	true,
-			'pagination'			=>	false,
-			'container'				=>  false,
-			'show_post_date'		=>	'diff',
-			'show_post_view'		=>	true,
-			'col_xxl'				=>	1,
-			'col_xl'				=>	1,
-			'col_lg'				=>	1,
-			'col_md'				=>	1,
-			'col_sm'				=>	1,
-			'col'					=>	1,
-			'margin_bottom'			=>	0
-		);
-
-		if( $http_get['search_filter'] == 'taxonomy' ){
-			if( $http_get['term_slug'] ){
-				$search_args['tax_query'][] = array(
-					'taxonomy'	=>	$http_get['taxonomy'],
-					'field'		=>	'slug',
-					'terms'		=>	$http_get['term_slug']
-				);
-			}
-		}		
-
-		/**
-		 *
-		 * Filter $search_args
-		 * 
-		 */
-		$search_args = apply_filters( 'streamtube/core/search/autocomplete/args', $search_args );
-
-		add_filter( 'wp_doing_ajax', '__return_false' );
-
-		unset( $_REQUEST[ 'action' ] );
-
-		ob_start();
-
-		the_widget( 'Streamtube_Core_Widget_Posts', $search_args );
-
-		$output = trim( ob_get_clean() );
-
-		if( ! empty( $output ) ){
-			wp_send_json_success( $output );
-		}
-
-		wp_send_json_error( new WP_Error(
-			'posts_not_found',
-			esc_html__( 'No posts were found', 'streamtube-core' )
-		) );
-
-	}
-
-	/**
 	 *
 	 * Update attachment title after updating its parent
 	 *
@@ -2970,19 +2344,6 @@ class Streamtube_Core_Post{
 	}
 
 	/**
-	 *
-	 * Check if current is add new post screen
-	 * 
-	 * @return true|false
-	 *
-	 * @since  1.0.0
-	 * 
-	 */
-	public function is_add_new_post_screen(){
-		return isset( $_GET['view'] ) && $_GET['view'] == 'add-post' ? true : false;
-	}	
-
-	/**
 	 * 
 	 * Get user nav items
 	 * 
@@ -2991,13 +2352,7 @@ class Streamtube_Core_Post{
 	 * @since  1.0.0
 	 * 
 	 */
-	public function get_edit_post_menu_items( $post = null ){
-
-		$post_id = $this->get_edit_post_id();
-
-		if( $post_id ){
-			$post = get_post( $post_id );
-		}
+	public function get_edit_post_menu_items(){
 
 		$items = array();
 
@@ -3013,40 +2368,23 @@ class Streamtube_Core_Post{
 			'icon'			=>	'icon-comment',
 			'template'		=>	streamtube_core_get_template( 'post/comments.php' ),
 			'priority'		=>	20
-		);		
+		);
+
+		if( $this->plugin()->googlesitekit->analytics->is_active() ){
+			$items['analytics'] 	= array(
+				'title'			=>	esc_html__( 'Analytics', 'streamtube-core' ),
+				'icon'			=>	'icon-chart-area',
+				'template'		=>	streamtube_core_get_template( 'post/analytics.php' ),
+				'priority'		=>	100
+			);
+		}	
 
 		/**
 		 * filter items
 		 *
 		 * @since 1.0.0
 		 */
-		$items = apply_filters( 'streamtube_core_get_edit_post_nav_items', $items, $post );
-
-		if( $post ){
-
-			if( $post->post_type == 'video' ){
-				$items['subtitles'] 	= array(
-					'title'			=>	esc_html__( 'Subtitles', 'streamtube-core' ),
-					'icon'			=>	'icon-doc',
-					'template'		=>	streamtube_core_get_template( 'post/subtitles.php' ),
-					'priority'		=>	5
-				);
-
-				$items['altsources'] 	= array(
-					'title'			=>	esc_html__( 'Alternative Sources', 'streamtube-core' ),
-					'icon'			=>	'icon-server',
-					'template'		=>	streamtube_core_get_template( 'post/altsources.php' ),
-					'priority'		=>	10
-				);				
-			}
-
-			/**
-			 * filter items
-			 *
-			 * @since 1.0.0
-			 */
-			$items = apply_filters( "streamtube_core_get_edit_post_{$post->post_type}_nav_items", $items, $post );			
-		}
+		$items = apply_filters( 'streamtube_core_get_edit_post_nav_items', $items );
 
 		return $items;	
 	}
@@ -3103,7 +2441,7 @@ class Streamtube_Core_Post{
 	 */
 	public function the_edit_post_menu( $args = array() ){
 
-		$menu_items = $this->get_edit_post_menu_items( $args['post'] );
+		$menu_items = $this->get_edit_post_menu_items();
 
 		$menu = new Streamtube_Core_Menu( array_merge( $args, array(
 			'menu_classes'	=>	'nav nav-tabs secondary-nav mb-4',
@@ -3116,11 +2454,6 @@ class Streamtube_Core_Post{
 		return $menu->the_menu();
 	}
 
-	/**
-	 *
-	 * The Edit Post main template
-	 * 
-	 */
 	public function the_edit_post_main(){
 
 		$menu_items = $this->get_edit_post_menu_items();
@@ -3135,8 +2468,8 @@ class Streamtube_Core_Post{
 	 * @since 1.0.0
 	 * 
 	 */
-	public function load_thumbnail_metabox(){
-		streamtube_core_load_template( 'post/edit/thumbnail.php', false );
+	public function load_thumbnail_metabox( $args ){
+		streamtube_core_load_template( 'post/edit/thumbnail.php', false, $args );
 	}
 
 	/**
@@ -3146,8 +2479,8 @@ class Streamtube_Core_Post{
 	 * @since 1.0.0
 	 * 
 	 */
-	public function load_taxonomies_metabox(){
-		streamtube_core_load_template( 'post/edit/taxonomies.php', false );
+	public function load_taxonomies_metabox( $args ){
+		streamtube_core_load_template( 'post/edit/taxonomies.php', false, $args );
 	}
 
 	/**
@@ -3163,31 +2496,24 @@ class Streamtube_Core_Post{
 			return;
 		}
 
-		$GLOBALS['post_type_screen'] = 'post';
+		$post_id = $postdata = false;
 
-		$post_id  = $this->get_edit_post_id();
+		if( $this->is_edit_post_screen() || ( isset( $_GET['view'] ) && $_GET['view'] == 'add-post' ) ){
 
-		if( $post_id || $this->is_add_new_post_screen() ){
+			$post_id = $this->get_edit_post_id();
 
 			if( $post_id ){
-				$post = get_post( $post_id );
-
-				$GLOBALS['post_type_screen'] = $post->post_type;
-
-				setup_postdata( $GLOBALS['post'] =& $post );
-			}
-
-			if( $this->is_add_new_post_screen() ){
-				$GLOBALS['add_new_post_screen'] = true;
+				$postdata = get_post( $post_id );
 			}
 
 			add_filter( 'sidebar_float', function( $show ){
 				return false;
 			} );			
 
-			streamtube_core_load_template( 'post/edit.php', true );
-
-			wp_reset_postdata();
+			streamtube_core_load_template( 'post/edit.php', true, array(
+				'post'		=>	is_object( $postdata ) ? $postdata : '',
+				'post_type'	=>	is_object( $postdata ) ? $postdata->post_type : 'post'
+			) );
 
 			exit;
 		}
@@ -3255,7 +2581,7 @@ class Streamtube_Core_Post{
 				}
 			}
 
-			if( is_tax( 'categories' ) || is_tax( 'video_tag' ) || is_post_type_archive( self::CPT_VIDEO ) ){
+			if( is_tax( 'categories' ) || is_tax( 'video_tag' ) || is_post_type_archive( 'video' ) ){
 
 				$query->set( 'meta_query', array(
 					array(
@@ -3387,7 +2713,7 @@ class Streamtube_Core_Post{
 				'pageviews', 'uniquepageviews'
 			);
 
-			if( $post->post_type == self::CPT_VIDEO ){
+			if( $post->post_type == 'video' ){
 				$_metadata = array_merge( $_metadata, array(
 					'videoviews',
 					'uniquevideoviews'
@@ -3494,9 +2820,7 @@ class Streamtube_Core_Post{
 				'ratio'		=>	get_option( 'player_ratio', '21x9' )
 			) );
 
-			$shortcode = new Streamtube_Core_ShortCode();
-
-			$output = $shortcode->_player( $attr );
+			$output = $this->plugin()->shortcode->_player( $attr );
 		}
 
 		return $output;
@@ -3594,262 +2918,5 @@ class Streamtube_Core_Post{
          */
         return apply_filters( 'streamtube/core/posts_count_badge', $badge, $posts, $post_type );
 	}
-
-	/**
-	 *
-	 * Load Alt Source if Index found
-	 * 
-	 * @param  array $args
-	 * @return array
-	 * 
-	 */
-	public function filter_altsource( $args ){
-		
-		if( ! isset( $_GET['source_index'] ) || (int)$_GET['source_index'] == 0 ){
-			return $args;
-		}
-
-		$source_index = (int)$_GET['source_index'];
-
-		$source = $this->get_altsources( $args['post_id'], $source_index );
-
-		if( is_array( $source ) && array_key_exists( 'source', $source ) ){
-			$args['source'] = $source['source'];
-		}
-
-		return $args;
-	}
-
-	/**
-	 *
-	 * The sources navigator
-	 * 
-	 * @param  integer $post_id
-	 * @return HTML
-	 * 
-	 */
-	public function the_altsources_navigator(){
-		load_template( trailingslashit( STREAMTUBE_CORE_PUBLIC ) . 'misc/altsources-navigator.php' );
-	}
-
-	/**
-	 *
-	 * The trailer button
-	 * 
-	 */
-	public function the_trailer_button(){
-
-		if( $this->get_video_trailer( get_the_ID() ) ){
-			load_template( trailingslashit( STREAMTUBE_CORE_PUBLIC ) . 'video/button-trailer.php' );
-		}
-	}
-
-	/**
-	 *
-	 * Pre filter player
-	 * 
-	 * @param  array $args
-	 * 
-	 */
-	public function filter_pre_player_args( $args ){
-
-		if( isset( $_GET['view_trailer'] ) && "" != $source = $this->get_video_trailer( $args['post_id'] ) ){
-			$args['source'] = $source;
-		}
-
-		return $args;
-	}
-
-	/**
-	 *
-	 * Add custom videojs skin classname
-	 * 
-	 * @param  array $setup
-	 * @param  string $source
-	 * 
-	 */
-	public function filter_player_setup( $setup, $source ){
-
-		// Custom skin classname
-		if( "" != $skin_class_name = get_option( 'player_skin_custom' ) ){
-			$setup['classes'][] = $skin_class_name;
-		}
-
-		if( "" != $inactivity_timeout = get_option( 'inactivity_timeout', 1000 ) ){
-			$setup['inactivityTimeout'] = (int)$inactivity_timeout;
-		}
-
-		if( "" != $player_language = get_option( 'player_language' ) ){
-
-			wp_enqueue_script( 'videojs-language' );
-
-			$setup['language'] = $player_language;
-		}
-
-		$default_playback_rates = implode( ',' , array( 0.25, 0.5, 1,1.25, 1.5, 1.75, 2 ) );
-
-		if( "" != $playback_rates = get_option( 'player_playbackrates', $default_playback_rates ) ){
-			$playback_rates = array_map( 'floatval', explode(',', $playback_rates ) );
-
-			if( is_array( $playback_rates ) ){
-				$setup['playbackRates'] = $playback_rates;
-			}
-		}
-
-		if( array_key_exists( 'playerShareBox', $setup['plugins'] ) ){
-			$setup['plugins']['playerShareBox']['name'] = get_the_title( $setup['mediaid'] );
-			$setup['plugins']['playerShareBox']['is_embed'] = is_embed() ? true : false;
-		}
-
-		$setup['plugins']['builtinEvents'] = array(
-			'post_id'	=>	$setup['mediaid']
-		);
-
-		// Text Tracks
-		$tracks = $this->get_text_tracks( $setup['mediaid'] );
-
-		if( $tracks ){
-			for ( $i=0; $i < count( $tracks ); $i++) {
-
-				$language = streamtube_core_get_language_by_code( strtolower( $tracks[$i]['language'] ) );
-
-				$track = array(
-					'kind'		=>	'captions',
-					'srclang'	=>	$tracks[$i]['language'],
-					'label'		=>	$language ? $language['name'] : '',
-					'src'		=>	$tracks[$i]['source']
-				);
-
-				/**
-				 * Filter the track
-				 */
-				$track = apply_filters( 'streamtube/core/post/player/track', $track, $setup, $source );
-
-				$setup['tracks'][] = $track;
-			}
-		}
-
-		if( get_option( 'fs_landscape_mode', 'on' ) ){
-
-			$is_mobile = wp_is_mobile();
-
-			if ( ! empty( $_SERVER['HTTP_USER_AGENT'] ) ){
-				if( false !== strpos($_SERVER['HTTP_USER_AGENT'], 'iPad' ) 
-					|| false !== strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone' ) ){
-					$is_mobile = false;
-				}
-				
-			}
-
-			if( $is_mobile ){
-				$setup['plugins']['landscapeFullscreen'] = array(
-					'fullscreen'	=>	array(
-						'alwaysInLandscapeMode'	=>	true,
-						'enterOnRotate'			=>	true,
-						'iOS'					=>	true
-					)
-				);
-			}
-		}
-
-		return $setup;
-	}	
-
-	/**
-	 *
-	 * The Edit Post form
-	 * 
-	 * @param  WP_Post $post
-	 * @return HTML
-	 */
-	private function the_edit_post_form( $post ){
-		ob_start();
-
-		$GLOBALS['post_type_screen'] = $post->post_type;
-
-		setup_postdata( $GLOBALS['post'] =& $post );		
-
-		?>
-            <div class="row">
-                <div class="col-12 col-xl-8">
-                    <?php streamtube_core_load_template( 'post/edit/details/main.php', false ); ?>
-        		</div>
-                <div class="col-12 col-xl-4">
-                    <?php streamtube_core_load_template( 'post/edit/metaboxes.php', false ); ?>
-                </div><!--.col-3-->
-    		</div>
-		<?php
-
-		wp_reset_postdata();
-
-		return ob_get_clean();		
-	}
-
-    /**
-     * Add custom fields to the Video table
-     *
-     * @param array $columns
-     */
-    public function filter_post_table( $columns ){
-        return array_merge( $columns, array(
-			'mediaid'	=>	esc_html__( 'Media ID', 'streamtube-core' ),
-			'thumbnail'	=>	esc_html__( 'Thumbnail', 'streamtube-core' ),        	
-            'last_seen' =>  esc_html__( 'Last Seen', 'streamtube-core' )
-        ) );
-    }
-
-    /**
-     *
-     * Custom Columns callback
-     * 
-     * @param  string $column
-     * @param  int $post_id
-     * 
-     */
-    public function filter_post_table_columns( $column, $post_id ){
-
-    	$source = $this->get_source( $post_id );
-
-		switch ( $column ) {
-
-			case 'mediaid':
-				if( wp_attachment_is( 'video', $source ) ){
-					printf(
-						'<a target="_blank" href="%s">%s</a>',
-						esc_url( admin_url( 'post.php?post='.$source.'&action=edit' ) ),
-						get_the_title( $source )
-					);
-				}else{
-					esc_html_e( 'Embedded', 'streamtube-core' );
-				}
-			break;
-
-			case 'thumbnail':
-				if( has_post_thumbnail( $post_id ) ){
-					printf(
-						'<div class="ratio ratio-16x9"><a target="_blank" href="%s">%s</a></div>',
-						esc_url( get_permalink( $post_id ) ),
-						get_the_post_thumbnail( $post_id, 'thumbnail' )
-					);
-				}
-			break;
-
-			case 'last_seen':
-				$last_seen = $this->get_last_seen( $post_id, true );
-
-				if( $last_seen > 0 ){
-					printf(
-						esc_html__( '%s ago', 'streamtube-core' ),
-						human_time_diff( 
-							$last_seen, 
-							current_time( 'timestamp' )
-						)
-					);
-				}  
-			break;
-
-		}
-
-    } 	
 
 }
